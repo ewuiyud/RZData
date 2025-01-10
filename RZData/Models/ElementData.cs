@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using CommunityToolkit.Mvvm.ComponentModel;
+using RZData.Helper;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -18,35 +19,16 @@ namespace RZData.Models
             Families = new ObservableCollection<Family>();
         }
         public ObservableCollection<Family> Families { get; set; }
-        public void Add(Element element, ExcelRecord excelRecord)
-        {
-            if (Families.ToList().Exists(a => a.Name == element.Category.Name))
-            {
-                var family = Families.FirstOrDefault(a => a.Name == element.Category.Name);
-                family.Add(element, excelRecord);
-            }
-            else
-            {
-                var family = new Family();
-                family.Name = element.Category.Name;
-                family.Add(element, excelRecord);
-                Families.Add(family);
-            }
-        }
+
         public void Add(Element element)
         {
-            if (Families.ToList().Exists(a => a.Name == element.Category.Name))
+            var family = Families.FirstOrDefault(a => a.Name == element.GetFamily());
+            if (family == null)
             {
-                var family = Families.FirstOrDefault(a => a.Name == element.Category.Name);
-                family.Add(element);
-            }
-            else
-            {
-                var family = new Family();
-                family.Name = element.Category.Name;
-                family.Add(element);
+                family = new Family { Name = element.GetFamily() };
                 Families.Add(family);
             }
+            family.Add(element);
         }
 
         internal void Clear()
@@ -62,34 +44,18 @@ namespace RZData.Models
         }
         public string Name { get; set; }
         public ObservableCollection<FamilyType> FamilyTypes { get; set; }
-        public void Add(Element element, ExcelRecord excelRecord)
-        {
-            if (FamilyTypes.Any(a => a.Name == element.Category.Name))
-            {
-                FamilyTypes.First(a => a.Name == element.Category.Name).Add(element, excelRecord);
-            }
-            else
-            {
-                FamilyType familyType = new FamilyType();
-                familyType.Name = element.Category.Name;
-                familyType.Add(element, excelRecord);
-                FamilyTypes.Add(familyType);
-            }
-        }
 
-        internal void Add(Element element)
+        public void Add(Element element)
         {
-            if (FamilyTypes.Any(a => a.Name == (element as FamilySymbol).FamilyName))
+            if (element.GetFamilyType() == null) return;
+
+            var familyType = FamilyTypes.FirstOrDefault(a => a.Name == element.GetFamilyType());
+            if (familyType == null)
             {
-                FamilyTypes.First(a => a.Name == (element as FamilySymbol).FamilyName).Add(element);
-            }
-            else
-            {
-                FamilyType familyType = new FamilyType();
-                familyType.Name = (element as FamilySymbol).FamilyName;
-                familyType.Add(element);
+                familyType = new FamilyType { Name = element.GetFamilyType() };
                 FamilyTypes.Add(familyType);
             }
+            familyType.Add(element);
         }
     }
     public class FamilyType
@@ -100,31 +66,11 @@ namespace RZData.Models
         }
         public string Name { get; set; }
         public ObservableCollection<FamilyExtend> FamilyExtends { get; set; }
-        public void Add(Element element, ExcelRecord excelRecord)
-        {
-            FamilyExtend familyExtend = new FamilyExtend();
-            familyExtend.ID = element.Id;
-            familyExtend.Name = element.Name;
-            foreach (var item in excelRecord.RequiredProperties)
-            {
-                var parameter = element.LookupParameter(item);
-                if (parameter != null)
-                {
-                    familyExtend.Parameters.Add(new Parameter { Name = item, Value = "正常" });
-                }
-                else
-                {
-                    familyExtend.Parameters.Add(new Parameter { Name = item, Value = "缺失" });
-                }
-            }
-            FamilyExtends.Add(familyExtend);
-        }
-
         internal void Add(Element element)
         {
             FamilyExtend familyExtend = new FamilyExtend();
-            familyExtend.ID = element.Id;
-            familyExtend.Name = element.Name;
+            familyExtend.Element = element;
+            familyExtend.Name = element.GetExtendName();
             FamilyExtends.Add(familyExtend);
         }
     }
@@ -135,7 +81,7 @@ namespace RZData.Models
             Parameters = new List<Parameter>();
         }
         public string Name { get; set; }
-        public ElementId ID { get; set; }
+        public Element Element { get; set; }
         public List<Parameter> Parameters { get; set; }
     }
     public class Parameter

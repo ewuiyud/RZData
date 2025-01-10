@@ -12,6 +12,7 @@ using Microsoft.Win32;
 using OfficeOpenXml;
 using System.IO;
 using RZData.Models;
+using RZData.Helper;
 
 namespace RZData.ViewModels
 {
@@ -46,18 +47,17 @@ namespace RZData.ViewModels
             var loadableFamilyDictionary = records.FindAll(a => a.ExtendName == "²»Ìî");
             var document = _uiDocument.Document;
             var collector = new FilteredElementCollector(document);
-            var families = collector.OfClass(typeof(Autodesk.Revit.DB.Family)).Cast<Autodesk.Revit.DB.Family>();
+            var elements = collector.WhereElementIsNotElementType();
 
             Elements.Clear();
-            foreach (var family in families)
+            ElementData revitElementData = new ElementData();
+
+            foreach (var element in elements)
             {
-                foreach (var familySymbolId in family.GetFamilySymbolIds())
+                if (records.Exists(a => a.FamilyName == element.GetFamily()))
                 {
-                    var familySymbol = document.GetElement(familySymbolId) as FamilySymbol;
-                    if (familySymbol != null)
-                    {
-                        Elements.Add(familySymbol);
-                    }
+                    revitElementData.Add(element);
+                    Elements.Add(element);
                 }
             }
         }
