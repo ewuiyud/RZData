@@ -10,7 +10,6 @@
     <Grid>
         <StackPanel >
             <Button Content="加载Excel数据" Command="{Binding LoadDataFromExcelCommand}" Width="100" Height="20" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10"/>
-            <Button Content="检查族信息" Command="{Binding CheckFamiliesCommand}" Width="100" Height="20" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10"/>
             <TabControl>
                 <TabItem Header="族匹配校验" Margin="0">
                     <TreeView ItemsSource="{Binding Elements.Families}" Margin="20" Height="330">
