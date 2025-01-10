@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35527.113
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RZData", "RZData\RZData.csproj", "{E8F4747D-8B5E-4145-95C6-8DC4F7D9AE0A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "测试", "测试\测试.csproj", "{13ED7108-44CA-4353-B6DC-5737F2A944D9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E8F4747D-8B5E-4145-95C6-8DC4F7D9AE0A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8F4747D-8B5E-4145-95C6-8DC4F7D9AE0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8F4747D-8B5E-4145-95C6-8DC4F7D9AE0A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E8F4747D-8B5E-4145-95C6-8DC4F7D9AE0A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{13ED7108-44CA-4353-B6DC-5737F2A944D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{13ED7108-44CA-4353-B6DC-5737F2A944D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{13ED7108-44CA-4353-B6DC-5737F2A944D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{13ED7108-44CA-4353-B6DC-5737F2A944D9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
