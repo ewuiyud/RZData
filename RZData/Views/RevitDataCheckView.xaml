@@ -6,38 +6,47 @@
              xmlns:local="clr-namespace:RZData.Views"
              mc:Ignorable="d" 
              Title="睿住数据"
-             d:DesignHeight="450" d:DesignWidth="400">
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/RZData;component/Styles/Style.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
     <Grid>
         <StackPanel >
-            <Button Content="加载Excel数据" Command="{Binding LoadDataFromExcelCommand}" Width="100" Height="20" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10"/>
-            <TabControl>
-                <TabItem Header="族匹配校验" Margin="0">
-                    <TreeView ItemsSource="{Binding Elements.Families}" Margin="20" Height="330">
-                        <TreeView.ItemTemplate>
-                            <HierarchicalDataTemplate ItemsSource="{Binding FamilyTypes}">
+            <Grid  Width="auto" HorizontalAlignment="Stretch" >
+                <Button Style="{StaticResource CustomButtonStyle}"  Content="加载模板" Command="{Binding LoadDataFromExcelCommand}" Width="100" Height="30" HorizontalAlignment="Left" Margin="20"/>
+                <ComboBox HorizontalAlignment="Right" ItemsSource="{Binding Elements.Families}" SelectedItem="{Binding SelectedFamily}" Style="{StaticResource cmbstyle}" Margin="20" Height="30" Width="160"/>
+            </Grid>
+            <TextBox Text="{Binding SelectedFamily.Name}" Margin="20" FontSize="20" />
+            <StackPanel Orientation="Horizontal">
+                <TreeView ItemsSource="{Binding Elements.Families}" Margin="20" Height="400">
+                <TreeView.ItemTemplate>
+                    <HierarchicalDataTemplate ItemsSource="{Binding FamilyTypes}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding Name}" Width="200"/>
+                        </StackPanel>
+                        <HierarchicalDataTemplate.ItemTemplate>
+                            <HierarchicalDataTemplate ItemsSource="{Binding FamilyExtends}">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="{Binding Name}" Width="200"/>
                                 </StackPanel>
                                 <HierarchicalDataTemplate.ItemTemplate>
-                                    <HierarchicalDataTemplate ItemsSource="{Binding FamilyExtends}">
+                                    <HierarchicalDataTemplate ItemsSource="{Binding Parameters}">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="{Binding Name}" Width="200"/>
+                                            <TextBlock Text="{Binding Value}" Width="200"/>
                                         </StackPanel>
-                                        <HierarchicalDataTemplate.ItemTemplate>
-                                            <HierarchicalDataTemplate ItemsSource="{Binding Parameters}">
-                                                <StackPanel Orientation="Horizontal">
-                                                    <TextBlock Text="{Binding Name}" Width="200"/>
-                                                    <TextBlock Text="{Binding Value}" Width="200"/>
-                                                </StackPanel>
-                                            </HierarchicalDataTemplate>
-                                        </HierarchicalDataTemplate.ItemTemplate>
                                     </HierarchicalDataTemplate>
                                 </HierarchicalDataTemplate.ItemTemplate>
                             </HierarchicalDataTemplate>
-                        </TreeView.ItemTemplate>
-                    </TreeView>
-                </TabItem>
-            </TabControl>
+                        </HierarchicalDataTemplate.ItemTemplate>
+                    </HierarchicalDataTemplate>
+                </TreeView.ItemTemplate>
+            </TreeView>
+            </StackPanel>
         </StackPanel>
     </Grid>
 </Window>

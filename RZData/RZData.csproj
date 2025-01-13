@@ -105,10 +105,16 @@
     <Compile Include="Helper\ElementHelper.cs" />
     <Compile Include="Helper\ExcelDataProcessor.cs" />
     <Compile Include="Commands\RevitDataCheckCommand.cs" />
-    <Compile Include="Models\ElementData.cs" />
+    <Compile Include="Models\DataElementData.cs" />
     <Compile Include="Models\ExcelRecord.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Styles\Style.xaml.cs">
+      <DependentUpon>Style.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ViewModels\RevitDataCheckViewModel.cs" />
+    <Compile Include="Views\ResourceDictionary.xaml.cs">
+      <DependentUpon>ResourceDictionary.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\RevitDataCheckView.xaml.cs">
       <DependentUpon>RevitDataCheckView.xaml</DependentUpon>
     </Compile>
@@ -117,6 +123,14 @@
     <Resource Include="Resources\data_check_large.png" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Styles\Style.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ResourceDictionary.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\RevitDataCheckView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -129,6 +143,5 @@
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
