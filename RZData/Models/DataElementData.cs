@@ -9,6 +9,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Xml.Linq;
 
 namespace RZData.Models
@@ -26,7 +27,7 @@ namespace RZData.Models
             set => SetProperty(ref _families, value);
         }
 
-        public DataInstance Add(Element element)
+        public FamilyExtend Add(Element element)
         {
             var family = Families.FirstOrDefault(a => a.Name == element.GetFamily());
             if (family == null)
@@ -41,6 +42,76 @@ namespace RZData.Models
         {
             Families = new ObservableCollection<Family>();
         }
+        internal DataElementData Copy()
+        {
+            DataElementData dataElementData = new DataElementData();
+            Families.ToList().ForEach(a => dataElementData.Families.Add(a));
+            return dataElementData;
+        }
+
+        internal DataElementData FindCorrect()
+        {
+            var dataElementData = new DataElementData();
+            foreach (var family in Families)
+            {
+                foreach (var familyType in family.FamilyTypes)
+                {
+                    foreach (var familyExtend in familyType.FamilyExtends)
+                    {
+                        if (familyExtend.IsNameCorrect && familyExtend.IsPropertiesCorrect)
+                        {
+                            dataElementData.Add(familyExtend);
+                        }
+                    }
+                }
+            }
+            return dataElementData;
+        }
+
+        internal DataElementData FindFamilyNameIncorrect()
+        {
+            var dataElementData = new DataElementData();
+            foreach (var family in Families)
+            {
+                foreach (var familyType in family.FamilyTypes)
+                {
+                    foreach (var familyExtend in familyType.FamilyExtends)
+                    {
+                        if (!familyExtend.IsNameCorrect)
+                        {
+                            dataElementData.Add(familyExtend);
+                        }
+                    }
+                }
+            }
+            return dataElementData;
+        }
+
+
+        internal DataElementData FindParameterIncorrect()
+        {
+            var dataElementData = new DataElementData();
+            foreach (var family in Families)
+            {
+                foreach (var familyType in family.FamilyTypes)
+                {
+                    foreach (var familyExtend in familyType.FamilyExtends)
+                    {
+                        if (familyExtend.IsNameCorrect && !familyExtend.IsPropertiesCorrect)
+                        {
+                            dataElementData.Add(familyExtend);
+                        }
+                    }
+                }
+            }
+            return dataElementData;
+        }
+
+        private void Add(DataInstance familyExtend)
+        {
+            var dataInstance = Add(familyExtend.Element);
+            dataInstance.Parameters = familyExtend.Parameters;
+        }
     }
     public class Family
     {
@@ -51,7 +122,7 @@ namespace RZData.Models
         public string Name { get; set; }
         public ObservableCollection<FamilyType> FamilyTypes { get; set; }
 
-        public DataInstance Add(Element element)
+        public FamilyExtend Add(Element element)
         {
             if (element.GetFamilyType() == null) return null;
 
@@ -68,16 +139,41 @@ namespace RZData.Models
     {
         public FamilyType()
         {
-            FamilyExtends = new ObservableCollection<DataInstance>();
+            FamilyExtends = new ObservableCollection<FamilyExtend>();
         }
         public string Name { get; set; }
-        public ObservableCollection<DataInstance> FamilyExtends { get; set; }
+        public ObservableCollection<FamilyExtend> FamilyExtends { get; set; }
 
-        internal DataInstance Add(Element element)
+        internal FamilyExtend Add(Element element)
         {
-            var elementInstance = new DataInstance(element);
+            var elementInstance = new FamilyExtend(element);
             FamilyExtends.Add(elementInstance);
             return elementInstance;
+        }
+    }
+    public class FamilyExtend
+    {
+        public string Name { get; set; }
+        public FamilyExtend(Element element)
+        {
+            Parameters = new ObservableCollection<Parameter>();
+            Name = element.GetExtendName();
+        }
+        public bool IsNameCorrect { get; set; }
+        public bool IsPropertiesCorrect { get; set; }
+        public List<Element> Elements { get; set; }
+        public ObservableCollection<Parameter> Parameters { get; set; }
+        public void CheckParameters(ExcelRecord excelRecord)
+        {
+            excelRecord.RequiredProperties.ForEach(a =>
+            {
+                Parameters.Add(new Parameter
+                {
+                    Name = a,
+                    Value = Elements[0].GetParameters(a).Count() > 0 ? Elements[0].GetParameters(a).First().AsString() : "缺失"
+                });
+            });
+            IsPropertiesCorrect = Parameters.All(a => a.Value != "缺失");
         }
     }
     public class DataInstance

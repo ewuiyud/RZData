@@ -15,19 +15,8 @@ namespace RZData.Helper
         }
         public static string GetFamilyType(this Element element)
         {
-            if (element is ElementType elementType)
-            {
-                return elementType.FamilyName;
-            }
-            else if (element is FamilyInstance familyInstance)
-            {
-                return familyInstance.Symbol.FamilyName;
-            }
-            else
-            {
-                var dd = element.GetParameters("族");
-                return dd[0].Element.Category?.Name ?? null;
-            }
+            var dd = element.GetParameters("族");
+            return dd[0].AsValueString() ?? null;
         }
         public static string GetExtendName(this Element element)
         {

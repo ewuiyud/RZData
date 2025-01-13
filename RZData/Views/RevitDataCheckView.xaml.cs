@@ -1,4 +1,6 @@
-﻿using Autodesk.Revit.UI;
+﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.UI;
+using RZData.Models;
 using RZData.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -26,6 +28,27 @@ namespace RZData.Views
         {
             InitializeComponent();
             DataContext = new RevitDataCheckViewModel(uiDocument);
+        }
+
+        private void TreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            var viewModel = DataContext as RevitDataCheckViewModel;
+            if (e.NewValue is DataInstance dataInstance)
+            {
+                viewModel.SelectedItem = dataInstance;
+            }
+        }
+
+        private void TreeView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            var viewModel = DataContext as RevitDataCheckViewModel;
+            viewModel.DoubleClickAndPickObjects((sender as TreeView).SelectedValue);
+        }
+
+        private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var viewModel = DataContext as RevitDataCheckViewModel;
+            viewModel.OptionChanged();
         }
     }
 }

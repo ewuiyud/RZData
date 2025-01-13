@@ -16,6 +16,7 @@ using RZData.Helper;
 using System.Xml.Linq;
 using System;
 using System.Windows;
+using System.CodeDom;
 
 namespace RZData.ViewModels
 {
@@ -26,7 +27,10 @@ namespace RZData.ViewModels
     public class RevitDataCheckViewModel : ObservableObject
     {
         private readonly UIDocument _uiDocument;
-        public DataElementData _elements;
+        private DataElementData _elements;
+        public ObservableCollection<string> ComboboxOptions { get; set; }
+        private string _comboboxOption;
+        private object _selectedItem;
 
         public RevitDataCheckViewModel(UIDocument uiDocument)
         {
@@ -34,12 +38,32 @@ namespace RZData.ViewModels
             _uiDocument = uiDocument;
             LoadDataFromExcelCommand = new RelayCommand(LoadDataFromExcel);
             Elements = new DataElementData();
+            AllElements = new DataElementData();
+            ComboboxOptions = new ObservableCollection<string>
+            {
+                ComboboxOptionEnum.所有.ToString(),
+                ComboboxOptionEnum.族匹配缺失.ToString(),
+                ComboboxOptionEnum.属性项匹配缺失.ToString(),
+                ComboboxOptionEnum.检验通过.ToString()
+            };
+            ComboboxOption = ComboboxOptionEnum.所有.ToString();
         }
 
+        private DataElementData AllElements { get; set; }
+        public object SelectedItem
+        {
+            get => _selectedItem;
+            set => SetProperty(ref _selectedItem, value);
+        }
         public DataElementData Elements
         {
             get => _elements;
             set => SetProperty(ref _elements, value);
+        }
+        public string ComboboxOption
+        {
+            get => _comboboxOption;
+            set => SetProperty(ref _comboboxOption, value);
         }
         public ICommand LoadDataFromExcelCommand { get; }
 
@@ -63,6 +87,7 @@ namespace RZData.ViewModels
             var collector = new FilteredElementCollector(document);
             var elements = collector.WhereElementIsNotElementType();
 
+            AllElements.Clear();
             Elements.Clear();
             DataElementData revitElementData = new DataElementData();
 
@@ -70,7 +95,7 @@ namespace RZData.ViewModels
             {
                 if (familyList.Contains(element.GetFamily()))
                 {
-                   var dataInstance =  Elements.Add(element);
+                    var dataInstance = AllElements.Add(element);
                     if (element is FamilyInstance familyInstance)
                     {
                         var typeName = element.GetFamilyType();
@@ -89,7 +114,7 @@ namespace RZData.ViewModels
                     {
                         var extendName = element.GetExtendName();
                         var typeNames = systemFamilyDictionary.FindAll(a => CheckRecordExtendName(a, element)).ToList();
-                        if (typeNames.Count() == 0 || !typeNames.Exists(a=>a.TypeName ==element.GetFamilyType()))
+                        if (typeNames.Count() == 0 || !typeNames.Exists(a => a.TypeName == element.GetFamilyType()))
                         {
                             dataInstance.IsNameCorrect = false;
                         }
@@ -102,6 +127,8 @@ namespace RZData.ViewModels
                     }
                 }
             }
+            ComboboxOption = ComboboxOptionEnum.所有.ToString();
+            Elements = AllElements.Copy();
         }
         private bool CheckRecordExtendName(ExcelRecord excelRecord, Element element)
         {
@@ -142,5 +169,85 @@ namespace RZData.ViewModels
                 else { MessageBox.Show(incorrectMessage); return false; }
             }
         }
+
+        internal void OptionChanged()
+        {
+            Elements.Clear();
+            switch (ComboboxOption)
+            {
+                case "所有":
+                    Elements = AllElements.Copy();
+                    break;
+                case "族匹配缺失":
+                    Elements = AllElements.FindFamilyNameIncorrect();
+                    break;
+                case "属性项匹配缺失":
+                    Elements = AllElements.FindParameterIncorrect();
+                    break;
+                case "检验通过":
+                    Elements = AllElements.FindCorrect();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        internal void DoubleClickAndPickObjects(object selectedValue)
+        {
+            switch (selectedValue)
+            {
+                case Models.Family family:
+                    SelectElementInRevit(family);
+                    break;
+                case Models.FamilyType familyType:
+                    SelectElementInRevit(familyType);
+                    break;
+                case DataInstance dataInstance:
+                    SelectElementInRevit(dataInstance);
+                    break;
+                default:
+                    break;
+            }
+        }
+        private void SelectElementInRevit(Models.Family family)
+        {
+            var uidoc = _uiDocument;
+            var elementIds = new List<ElementId>();
+            foreach (var familyType in family.FamilyTypes)
+            {
+                foreach (var dataInstance in familyType.FamilyExtends)
+                {
+                    elementIds.Add(dataInstance.Element.Id);
+                }
+            }
+            uidoc.Selection.SetElementIds(elementIds);
+        }
+        private void SelectElementInRevit(Models.FamilyType familyType)
+        {
+            var uidoc = _uiDocument;
+            var elementIds = new List<ElementId>();
+            foreach (var dataInstance in familyType.FamilyExtends)
+            {
+                elementIds.Add  (dataInstance.Element.Id);
+            }
+            uidoc.Selection.SetElementIds(elementIds);
+        }
+        private void SelectElementInRevit(DataInstance dataInstance)
+        {
+            SelectElementInRevit(dataInstance.Element);
+        }
+        private void SelectElementInRevit(Element element)
+        {
+            var uidoc = _uiDocument;
+            var elementId = element.Id;
+            uidoc.Selection.SetElementIds(new List<ElementId> { elementId });
+        }
+    }
+    public enum ComboboxOptionEnum
+    {
+        所有,
+        族匹配缺失,
+        属性项匹配缺失,
+        检验通过
     }
 }
