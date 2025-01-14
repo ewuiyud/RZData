@@ -33,9 +33,9 @@ namespace RZData.Views
         private void TreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
             var viewModel = DataContext as RevitDataCheckViewModel;
-            if (e.NewValue is DataInstance dataInstance)
+            if (e.NewValue is FamilyExtend familyExtend)
             {
-                viewModel.SelectedItem = dataInstance;
+                viewModel.SelectedItem = familyExtend;
             }
         }
 

@@ -20,10 +20,6 @@ using System.CodeDom;
 
 namespace RZData.ViewModels
 {
-    //todo:
-    //1. 多个实体同一个族的情况，需要处理
-    //2. 属性的匹配问题
-    //3. 界面绘制和优化
     public class RevitDataCheckViewModel : ObservableObject
     {
         private readonly UIDocument _uiDocument;
@@ -95,19 +91,19 @@ namespace RZData.ViewModels
             {
                 if (familyList.Contains(element.GetFamily()))
                 {
-                    var dataInstance = AllElements.Add(element);
+                    var familyExtend = AllElements.Add(element);
                     if (element is FamilyInstance familyInstance)
                     {
                         var typeName = element.GetFamilyType();
                         var record = loadableFamilyDictionary.FirstOrDefault(a => typeName.StartsWith(a.TypeName.Substring(0, a.TypeName.Length - 1)));
                         if (record == null || element.GetFamily() != record.FamilyName)
                         {
-                            dataInstance.IsNameCorrect = false;
+                            familyExtend.FamilyExtend.IsNameCorrect = false;
                         }
                         else
                         {
-                            dataInstance.IsNameCorrect = true;
-                            dataInstance.CheckParameters(record);
+                            familyExtend.FamilyExtend.IsNameCorrect = true;
+                            familyExtend.CheckParameters(record);
                         }
                     }
                     else
@@ -116,13 +112,13 @@ namespace RZData.ViewModels
                         var typeNames = systemFamilyDictionary.FindAll(a => CheckRecordExtendName(a, element)).ToList();
                         if (typeNames.Count() == 0 || !typeNames.Exists(a => a.TypeName == element.GetFamilyType()))
                         {
-                            dataInstance.IsNameCorrect = false;
+                            familyExtend.FamilyExtend.IsNameCorrect = false;
                         }
                         else
                         {
                             var record = typeNames.First(a => a.TypeName == element.GetFamilyType());
-                            dataInstance.IsNameCorrect = true;
-                            dataInstance.CheckParameters(record);
+                            familyExtend.FamilyExtend.IsNameCorrect = true;
+                            familyExtend.CheckParameters(record);
                         }
                     }
                 }
@@ -202,8 +198,8 @@ namespace RZData.ViewModels
                 case Models.FamilyType familyType:
                     SelectElementInRevit(familyType);
                     break;
-                case DataInstance dataInstance:
-                    SelectElementInRevit(dataInstance);
+                case FamilyExtend familyExtend:
+                    SelectElementInRevit(familyExtend);
                     break;
                 default:
                     break;
@@ -215,9 +211,12 @@ namespace RZData.ViewModels
             var elementIds = new List<ElementId>();
             foreach (var familyType in family.FamilyTypes)
             {
-                foreach (var dataInstance in familyType.FamilyExtends)
+                foreach (var familyExtend in familyType.FamilyExtends)
                 {
-                    elementIds.Add(dataInstance.Element.Id);
+                    foreach (var item in familyExtend.DataInstances)
+                    {
+                        elementIds.Add(item.Element.Id);
+                    }
                 }
             }
             uidoc.Selection.SetElementIds(elementIds);
@@ -226,21 +225,24 @@ namespace RZData.ViewModels
         {
             var uidoc = _uiDocument;
             var elementIds = new List<ElementId>();
-            foreach (var dataInstance in familyType.FamilyExtends)
+            foreach (var familyExtend in familyType.FamilyExtends)
             {
-                elementIds.Add  (dataInstance.Element.Id);
+                foreach (var item in familyExtend.DataInstances)
+                {
+                    elementIds.Add(item.Element.Id);
+                }
             }
             uidoc.Selection.SetElementIds(elementIds);
         }
-        private void SelectElementInRevit(DataInstance dataInstance)
-        {
-            SelectElementInRevit(dataInstance.Element);
-        }
-        private void SelectElementInRevit(Element element)
+        private void SelectElementInRevit(FamilyExtend familyExtend)
         {
             var uidoc = _uiDocument;
-            var elementId = element.Id;
-            uidoc.Selection.SetElementIds(new List<ElementId> { elementId });
+            var elementIds = new List<ElementId>();
+            foreach (var item in familyExtend.DataInstances)
+            {
+                elementIds.Add(item.Element.Id);
+            }
+            uidoc.Selection.SetElementIds(elementIds);
         }
     }
     public enum ComboboxOptionEnum
