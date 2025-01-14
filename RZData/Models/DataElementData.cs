@@ -42,80 +42,21 @@ namespace RZData.Models
         {
             Families = new ObservableCollection<Family>();
         }
-        internal DataElementData Copy()
+        internal void MergeParameters()
         {
-            DataElementData dataElementData = new DataElementData();
-            Families.ToList().ForEach(a => dataElementData.Families.Add(a));
-            return dataElementData;
-        }
-
-        internal DataElementData FindCorrect()
-        {
-            var dataElementData = new DataElementData();
             foreach (var family in Families)
             {
                 foreach (var familyType in family.FamilyTypes)
                 {
                     foreach (var familyExtend in familyType.FamilyExtends)
                     {
-                        if (familyExtend.IsNameCorrect && familyExtend.IsPropertiesCorrect)
-                        {
-                            foreach (var dataInstance in familyExtend.DataInstances)
-                            {
-                                dataElementData.Add(dataInstance);
-                            }
-                        }
+                        familyExtend.MergeParameters();
                     }
                 }
             }
-            return dataElementData;
         }
 
-        internal DataElementData FindFamilyNameIncorrect()
-        {
-            var dataElementData = new DataElementData();
-            foreach (var family in Families)
-            {
-                foreach (var familyType in family.FamilyTypes)
-                {
-                    foreach (var familyExtend in familyType.FamilyExtends)
-                    {
-                        if (!familyExtend.IsNameCorrect)
-                        {
-                            foreach (var dataInstance in familyExtend.DataInstances)
-                            {
-                                dataElementData.Add(dataInstance);
-                            }
-                        }
-                    }
-                }
-            }
-            return dataElementData;
-        }
-
-        internal DataElementData FindParameterIncorrect()
-        {
-            var dataElementData = new DataElementData();
-            foreach (var family in Families)
-            {
-                foreach (var familyType in family.FamilyTypes)
-                {
-                    foreach (var familyExtend in familyType.FamilyExtends)
-                    {
-                        if (familyExtend.IsNameCorrect && !familyExtend.IsPropertiesCorrect)
-                        {
-                            foreach (var dataInstance in familyExtend.DataInstances)
-                            {
-                                dataElementData.Add(dataInstance);
-                            }
-                        }
-                    }
-                }
-            }
-            return dataElementData;
-        }
-
-        private void Add(DataInstance dataInstance)
+        public void Add(DataInstance dataInstance)
         {
             var e = Add(dataInstance.Element);
             e.Parameters = dataInstance.Parameters;
@@ -159,7 +100,7 @@ namespace RZData.Models
             var familyExtend = FamilyExtends.FirstOrDefault(a => a.Name == element.GetExtendName());
             if (familyExtend == null)
             {
-                familyExtend = new FamilyExtend(element,this);
+                familyExtend = new FamilyExtend(element, this);
                 FamilyExtends.Add(familyExtend);
             }
             return familyExtend.Add(element);
@@ -172,15 +113,38 @@ namespace RZData.Models
         public FamilyExtend(Element element, FamilyType familyType)
         {
             DataInstances = new ObservableCollection<DataInstance>();
+            Parameters = new ObservableCollection<ParameterSet>();
             Name = element.GetExtendName();
             FamilyType = familyType;
         }
         public bool IsNameCorrect { get; set; }
         public bool IsPropertiesCorrect { get; set; }
         public ObservableCollection<DataInstance> DataInstances { get; set; }
+        public ObservableCollection<ParameterSet> Parameters { get; set; }
+        internal void MergeParameters()
+        {
+            foreach (var dataInstance in DataInstances)
+            {
+                foreach (var parameter in dataInstance.Parameters)
+                {
+                    var currentP = Parameters.FirstOrDefault(a => a.Name == parameter.Name);
+                    if (currentP != null)
+                    {
+                        if (!currentP.Values.Contains(parameter.Value))
+                        {
+                            currentP.Values.Add(parameter.Value);
+                        }
+                    }
+                    else
+                    {
+                        Parameters.Add(new ParameterSet() { Values = new List<string> { parameter.Value }, Name = parameter.Name });
+                    }
+                }
+            }
+        }
         public DataInstance Add(Element element)
         {
-            var dataInstance = new DataInstance(element,this);
+            var dataInstance = new DataInstance(element, this);
             DataInstances.Add(dataInstance);
             return dataInstance;
         }
@@ -197,7 +161,7 @@ namespace RZData.Models
         public bool IsPropertiesCorrect { get; set; }
         public Element Element { get; set; }
         public ObservableCollection<Parameter> Parameters { get; set; }
-        public void CheckParameters(ExcelRecord excelRecord)
+        public bool CheckParameters(ExcelRecord excelRecord)
         {
             excelRecord.RequiredProperties.ForEach(a =>
             {
@@ -208,11 +172,31 @@ namespace RZData.Models
                 });
             });
             IsPropertiesCorrect = Parameters.All(a => a.Value != "缺失");
+            return IsPropertiesCorrect;
         }
     }
     public class Parameter
     {
         public string Name { get; set; }
         public string Value { get; set; }
+    }
+    public class ParameterSet
+    {
+        public string Name { get; set; }
+        public List<string> Values { get; set; }
+        public string Value
+        {
+            get
+            {
+                if (Values.Count == 1)
+                {
+                    return Values[0];
+                }
+                else
+                {
+                    return $"[{string.Join(", ", Values)}]";
+                }
+            }
+        }
     }
 }

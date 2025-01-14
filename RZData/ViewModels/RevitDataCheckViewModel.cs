@@ -4,63 +4,61 @@ using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
-using System.Windows.Documents;
 using System.Collections.Generic;
 using System.Linq;
-using Autodesk.Revit.DB.Architecture;
-using Microsoft.Win32;
 using OfficeOpenXml;
-using System.IO;
 using RZData.Models;
 using RZData.Helper;
-using System.Xml.Linq;
 using System;
 using System.Windows;
-using System.CodeDom;
 
 namespace RZData.ViewModels
 {
     public class RevitDataCheckViewModel : ObservableObject
     {
+        // 静态全局实例
+        private static RevitDataCheckViewModel _instance;
+        public static RevitDataCheckViewModel Instance(UIDocument uiDocument)
+        {
+            if (_instance == null)
+            {
+                _instance = new RevitDataCheckViewModel(uiDocument);
+            }
+            return _instance;
+        }
+        public RevitTemplateLoadViewModel revitTemplateLoadViewModel;
         private readonly UIDocument _uiDocument;
         private DataElementData _elements;
         public ObservableCollection<string> ComboboxOptions { get; set; }
         private string _comboboxOption;
         private object _selectedItem;
-
+        private string _templatePath;
         public RevitDataCheckViewModel(UIDocument uiDocument)
         {
+            RevitTemplateLoadViewModel = new RevitTemplateLoadViewModel();
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
             _uiDocument = uiDocument;
             LoadDataFromExcelCommand = new RelayCommand(LoadDataFromExcel);
-            Elements = new DataElementData();
+            ShowElements = new DataElementData();
             AllElements = new DataElementData();
+            FamilyNameCheckElements = new DataElementData();
+            ParametersCheckElements = new DataElementData();
             ComboboxOptions = new ObservableCollection<string>
             {
-                ComboboxOptionEnum.所有.ToString(),
-                ComboboxOptionEnum.族匹配缺失.ToString(),
-                ComboboxOptionEnum.属性项匹配缺失.ToString(),
-                ComboboxOptionEnum.检验通过.ToString()
+                ComboboxOptionEnum.族匹配检验.ToString(),
+                ComboboxOptionEnum.属性项校验.ToString(),
             };
-            ComboboxOption = ComboboxOptionEnum.所有.ToString();
+            ComboboxOption = ComboboxOptionEnum.族匹配检验.ToString();
         }
 
         private DataElementData AllElements { get; set; }
-        public object SelectedItem
-        {
-            get => _selectedItem;
-            set => SetProperty(ref _selectedItem, value);
-        }
-        public DataElementData Elements
-        {
-            get => _elements;
-            set => SetProperty(ref _elements, value);
-        }
-        public string ComboboxOption
-        {
-            get => _comboboxOption;
-            set => SetProperty(ref _comboboxOption, value);
-        }
+        private DataElementData FamilyNameCheckElements { get; set; }
+        private DataElementData ParametersCheckElements { get; set; }
+        public object SelectedItem { get => _selectedItem; set => SetProperty(ref _selectedItem, value); }
+        public string TemplatePath { get => _templatePath; set => SetProperty(ref _templatePath, value); }
+        public DataElementData ShowElements { get => _elements; set => SetProperty(ref _elements, value); }
+        public string ComboboxOption { get => _comboboxOption; set => SetProperty(ref _comboboxOption, value); }
+        public RevitTemplateLoadViewModel RevitTemplateLoadViewModel { get => revitTemplateLoadViewModel; set => SetProperty(ref revitTemplateLoadViewModel, value); }
         public ICommand LoadDataFromExcelCommand { get; }
 
         /// <summary>
@@ -68,7 +66,9 @@ namespace RZData.ViewModels
         /// </summary>
         private void LoadDataFromExcel()
         {
-            List<ExcelRecord> records = ExcelDataProcessor.LoadDataFromExcel();
+            string path = "";
+            List<ExcelRecord> records = ExcelDataProcessor.LoadDataFromExcel(ref path);
+            TemplatePath = path;
             CheckModel(records);
         }
 
@@ -84,26 +84,32 @@ namespace RZData.ViewModels
             var elements = collector.WhereElementIsNotElementType();
 
             AllElements.Clear();
-            Elements.Clear();
+            ShowElements.Clear();
+            FamilyNameCheckElements.Clear();
+            ParametersCheckElements.Clear();
             DataElementData revitElementData = new DataElementData();
 
             foreach (var element in elements)
             {
                 if (familyList.Contains(element.GetFamily()))
                 {
-                    var familyExtend = AllElements.Add(element);
+                    var dataInstance = AllElements.Add(element);
                     if (element is FamilyInstance familyInstance)
                     {
                         var typeName = element.GetFamilyType();
                         var record = loadableFamilyDictionary.FirstOrDefault(a => typeName.StartsWith(a.TypeName.Substring(0, a.TypeName.Length - 1)));
                         if (record == null || element.GetFamily() != record.FamilyName)
                         {
-                            familyExtend.FamilyExtend.IsNameCorrect = false;
+                            dataInstance.FamilyExtend.IsNameCorrect = false;
+                            FamilyNameCheckElements.Add(dataInstance);
                         }
                         else
                         {
-                            familyExtend.FamilyExtend.IsNameCorrect = true;
-                            familyExtend.CheckParameters(record);
+                            dataInstance.FamilyExtend.IsNameCorrect = true;
+                            if (!dataInstance.CheckParameters(record))
+                            {
+                                ParametersCheckElements.Add(dataInstance);
+                            }
                         }
                     }
                     else
@@ -112,19 +118,26 @@ namespace RZData.ViewModels
                         var typeNames = systemFamilyDictionary.FindAll(a => CheckRecordExtendName(a, element)).ToList();
                         if (typeNames.Count() == 0 || !typeNames.Exists(a => a.TypeName == element.GetFamilyType()))
                         {
-                            familyExtend.FamilyExtend.IsNameCorrect = false;
+                            dataInstance.FamilyExtend.IsNameCorrect = false;
+                            FamilyNameCheckElements.Add(dataInstance);
                         }
                         else
                         {
                             var record = typeNames.First(a => a.TypeName == element.GetFamilyType());
-                            familyExtend.FamilyExtend.IsNameCorrect = true;
-                            familyExtend.CheckParameters(record);
+                            dataInstance.FamilyExtend.IsNameCorrect = true;
+                            if (!dataInstance.CheckParameters(record))
+                            {
+                                ParametersCheckElements.Add(dataInstance);
+                            }
                         }
                     }
                 }
             }
-            ComboboxOption = ComboboxOptionEnum.所有.ToString();
-            Elements = AllElements.Copy();
+            AllElements.MergeParameters();
+            FamilyNameCheckElements.MergeParameters();
+            ParametersCheckElements.MergeParameters();
+            ComboboxOption = ComboboxOptionEnum.属性项校验.ToString();
+            ShowElements = ParametersCheckElements;
         }
         private bool CheckRecordExtendName(ExcelRecord excelRecord, Element element)
         {
@@ -168,20 +181,13 @@ namespace RZData.ViewModels
 
         internal void OptionChanged()
         {
-            Elements.Clear();
             switch (ComboboxOption)
             {
-                case "所有":
-                    Elements = AllElements.Copy();
+                case "族匹配检验":
+                    ShowElements = FamilyNameCheckElements;
                     break;
-                case "族匹配缺失":
-                    Elements = AllElements.FindFamilyNameIncorrect();
-                    break;
-                case "属性项匹配缺失":
-                    Elements = AllElements.FindParameterIncorrect();
-                    break;
-                case "检验通过":
-                    Elements = AllElements.FindCorrect();
+                case "属性项校验":
+                    ShowElements = ParametersCheckElements;
                     break;
                 default:
                     break;
@@ -247,9 +253,7 @@ namespace RZData.ViewModels
     }
     public enum ComboboxOptionEnum
     {
-        所有,
-        族匹配缺失,
-        属性项匹配缺失,
-        检验通过
+        族匹配检验,
+        属性项校验,
     }
 }

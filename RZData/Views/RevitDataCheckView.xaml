@@ -27,7 +27,7 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <TreeView ItemsSource="{Binding Elements.Families}" Margin="20" Height="400" 
+                <TreeView ItemsSource="{Binding ShowElements.Families}" Margin="20" Height="400" 
                           SelectedItemChanged="TreeView_SelectedItemChanged" MouseDoubleClick="TreeView_MouseDoubleClick">
                     <TreeView.ItemTemplate>
                         <HierarchicalDataTemplate ItemsSource="{Binding FamilyTypes}">

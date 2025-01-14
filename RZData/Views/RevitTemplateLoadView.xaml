@@ -1,0 +1,35 @@
+﻿<Window x:Class="RZData.Views.RevitTemplateLoadView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:RZData.Views"
+             mc:Ignorable="d" 
+             Title="模板载入"
+             MaxHeight="170" MinHeight="170" MaxWidth="360" MinWidth="360">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/RZData;component/Styles/Style.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal">
+            <Button Content="选择文件" Style="{StaticResource CustomButtonStyle}" 
+                    Command="{Binding LoadDataFromExcelCommand}" Width="80" Height="25" HorizontalAlignment="Left" Margin="20,15,0,20"/>
+            <TextBlock Text="{Binding LoadFileName}" Margin="10,0" FontSize="11" VerticalAlignment="Center" Foreground="#4F4F4F"/>
+        </StackPanel>
+        <StackPanel Grid.Row="1"  Orientation="Horizontal">
+            <TextBlock Grid.Row="1" Text="当前模板：" Margin="30,0,0,0" FontSize="11" Foreground="#4F4F4F" />
+            <TextBlock Grid.Row="1" Text="{Binding CurrentFileName}"  FontSize="11" VerticalAlignment="Center" Foreground="#4F4F4F" />
+        </StackPanel>
+        <Button Grid.Row="2" Content="确定" Style="{StaticResource CustomButtonStyle}" FontSize="15"
+                Command="{Binding OKCommand}" Width="80" Height="30" HorizontalAlignment="Right" Margin="20,10"/>
+    </Grid>
+</Window>

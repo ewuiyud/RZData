@@ -17,10 +17,10 @@ namespace RZData
             RibbonPanel panel = application.CreateRibbonPanel(tabName, "数据操作");
 
             // 添加按钮到面板
-            AddButton(panel, "数据检验", "DataValidation", "数据检验功能", "RZData.Commands.RevitDataCheckCommand", "Resources/data_check.png");
-            AddButton(panel, "数据录入", "DataEntry", "数据录入功能", "Namespace.ClassName2");
-            AddButton(panel, "数据汇总", "DataSummary", "数据汇总功能", "Namespace.ClassName3");
-            AddButton(panel, "数据筛选", "DataFilter", "数据筛选功能", "Namespace.ClassName4");
+            AddButton(panel, "模板载入", "Template Load", "模板载入功能", "RZData.Commands.RevitTemplateLoadCommand", "Resources/template_load.png");
+            AddButton(panel, "数据检验", "DataValidation", "数据检验功能", "RZData.Commands.RevitDataCheckCommand", "Resources/data_validation.png");
+            AddButton(panel, "数据录入", "DataEntry", "数据录入功能", "Namespace.ClassName2", "Resources/data_Entry.png");
+            AddButton(panel, "清单计算", "ListSummary", "清单计算功能", "Namespace.ClassName3", "Resources/list_summary.png");
 
             return Result.Succeeded;
         }
@@ -28,15 +28,6 @@ namespace RZData
         public Result OnShutdown(UIControlledApplication application)
         {
             return Result.Succeeded;
-        }
-
-        private void AddButton(RibbonPanel panel, string buttonText, string buttonName, string toolTip, string className)
-        {
-            PushButtonData buttonData = new PushButtonData(buttonName, buttonText, Assembly.GetExecutingAssembly().Location, className)
-            {
-                ToolTip = toolTip
-            };
-            panel.AddItem(buttonData);
         }
         private void AddButton(RibbonPanel panel, string buttonText, string buttonName, string toolTip, string className, string imagePath)
         {

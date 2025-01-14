@@ -8,8 +8,9 @@ namespace RZData.Models
 {
     public static class ExcelDataProcessor
     {
-        public static List<ExcelRecord> LoadDataFromExcel()
+        public static List<ExcelRecord> LoadDataFromExcel(ref string templatePath)
         {
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
             List<ExcelRecord> records = new List<ExcelRecord>();
             OpenFileDialog openFileDialog = new OpenFileDialog
             {
@@ -19,9 +20,9 @@ namespace RZData.Models
 
             if (openFileDialog.ShowDialog() == true)
             {
-                string filePath = openFileDialog.FileName;
+                templatePath = openFileDialog.FileName;
 
-                using (var package = new ExcelPackage(new FileInfo(filePath)))
+                using (var package = new ExcelPackage(new FileInfo(templatePath)))
                 {
                     // 读取所有工作表
                     var worksheets = new[] { "族匹配表-装修", "族匹配表-机电", "族匹配表-结构" };
