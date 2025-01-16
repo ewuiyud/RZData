@@ -72,10 +72,14 @@ namespace RZData.ViewModels
         }
         private void OK()
         {
-            CurrentTemplatePath = LoadTemplatePath;
-            LoadTemplatePath = "";
-            CurrentFileName = loadFileName;
-            loadFileName = "无";
+            if (CurrentTemplatePath != "")
+            {
+                CurrentTemplatePath = LoadTemplatePath;
+                LoadTemplatePath = "";
+                CurrentFileName = loadFileName;
+                loadFileName = "无";
+                RevitDataCheckViewModel.Instance().CheckModel(records);
+            }
             view.Close();
         }
     }

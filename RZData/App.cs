@@ -19,7 +19,7 @@ namespace RZData
             // 添加按钮到面板
             AddButton(panel, "模板载入", "Template Load", "模板载入功能", "RZData.Commands.RevitTemplateLoadCommand", "Resources/template_load.png");
             AddButton(panel, "数据检验", "DataValidation", "数据检验功能", "RZData.Commands.RevitDataCheckCommand", "Resources/data_validation.png");
-            AddButton(panel, "数据录入", "DataEntry", "数据录入功能", "Namespace.ClassName2", "Resources/data_Entry.png");
+            AddButton(panel, "数据录入", "DataEntry", "数据录入功能", "RZData.Commands.RevitDataEntryCommand", "Resources/data_Entry.png");
             AddButton(panel, "清单计算", "ListSummary", "清单计算功能", "Namespace.ClassName3", "Resources/list_summary.png");
 
             return Result.Succeeded;

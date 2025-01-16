@@ -61,6 +61,50 @@ namespace RZData.Models
             var e = Add(dataInstance.Element);
             e.Parameters = dataInstance.Parameters;
         }
+
+        internal DataElementData Search(string searchKeyword)
+        {
+            var result = new DataElementData();
+            foreach (var family in Families)
+            {
+                if (family.Name.IndexOf(searchKeyword, StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    result.Families.Add(family);
+                    continue;
+                }
+
+                var newFamily = new Family { Name = family.Name };
+                foreach (var familyType in family.FamilyTypes)
+                {
+                    if (familyType.Name.IndexOf(searchKeyword, StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        newFamily.FamilyTypes.Add(familyType);
+                        continue;
+                    }
+
+                    var newFamilyType = new FamilyType(newFamily) { Name = familyType.Name };
+                    foreach (var familyExtend in familyType.FamilyExtends)
+                    {
+                        if (familyExtend.Name.IndexOf(searchKeyword, StringComparison.OrdinalIgnoreCase) >= 0)
+                        {
+                            newFamilyType.FamilyExtends.Add(familyExtend);
+                        }
+                    }
+
+                    if (newFamilyType.FamilyExtends.Any())
+                    {
+                        newFamily.FamilyTypes.Add(newFamilyType);
+                    }
+                }
+
+                if (newFamily.FamilyTypes.Any())
+                {
+                    result.Families.Add(newFamily);
+                }
+            }
+
+            return result;
+        }
     }
     public class Family
     {
@@ -137,7 +181,7 @@ namespace RZData.Models
                     }
                     else
                     {
-                        Parameters.Add(new ParameterSet() { Values = new List<string> { parameter.Value }, Name = parameter.Name });
+                        Parameters.Add(new ParameterSet() { Values = new List<string> { parameter.Value }, Name = parameter.Name, ValueType = parameter.ValueType });
                     }
                 }
             }
@@ -161,17 +205,23 @@ namespace RZData.Models
         public bool IsPropertiesCorrect { get; set; }
         public Element Element { get; set; }
         public ObservableCollection<Parameter> Parameters { get; set; }
-        public bool CheckParameters(ExcelRecord excelRecord)
+        public bool CheckParameters(ExcelRecord excelRecord, Document document)
         {
-            excelRecord.RequiredProperties.ForEach(a =>
+            var familyElementID = Element.LookupParameter("族与类型")?.AsElementId();
+            var familyElement = document.GetElement(familyElementID);
+
+            foreach (var propertyName in excelRecord.RequiredProperties)
             {
+                var parameter = Element.LookupParameter(propertyName) ?? familyElement?.LookupParameter(propertyName);
                 Parameters.Add(new Parameter
                 {
-                    Name = a,
-                    Value = Element.GetParameters(a).Count() > 0 ? Element.GetParameters(a).First().AsString() : "缺失"
+                    Name = propertyName,
+                    Value = parameter?.AsValueString() ?? "缺失",
+                    ValueType = parameter != null ? (parameter.Element.Id == Element.Id ? "实例参数" : "类型参数") : ""
                 });
-            });
-            IsPropertiesCorrect = Parameters.All(a => a.Value != "缺失");
+            }
+
+            IsPropertiesCorrect = Parameters.All(p => p.Value != "缺失");
             return IsPropertiesCorrect;
         }
     }
@@ -179,11 +229,27 @@ namespace RZData.Models
     {
         public string Name { get; set; }
         public string Value { get; set; }
+        public string ValueType { get; set; }
     }
     public class ParameterSet
     {
         public string Name { get; set; }
         public List<string> Values { get; set; }
+        public string ValueType { get; set; }
+        public string Status
+        {
+            get
+            {
+                if (Values.Count == 1)
+                {
+                    return "";
+                }
+                else
+                {
+                    return "多参数";
+                }
+            }
+        }
         public string Value
         {
             get
@@ -195,6 +261,20 @@ namespace RZData.Models
                 else
                 {
                     return $"[{string.Join(", ", Values)}]";
+                }
+            }
+        }
+        public string ShowValue
+        {
+            get
+            {
+                if (Value == "缺失")
+                {
+                    return "缺失";
+                }
+                else
+                {
+                    return "正常";
                 }
             }
         }

@@ -1,5 +1,4 @@
-﻿using Autodesk.Revit.DB;
-using Autodesk.Revit.UI;
+﻿using Autodesk.Revit.UI;
 using RZData.Models;
 using RZData.ViewModels;
 using System;
@@ -20,65 +19,65 @@ using System.Windows.Shapes;
 namespace RZData.Views
 {
     /// <summary>
-    /// RevitDataCheckView.xaml 的交互逻辑
+    /// RevitDataEntryView.xaml 的交互逻辑
     /// </summary>
-    public partial class RevitDataCheckView : Window
+    public partial class RevitDataEntryView : Window
     {
-        public RevitDataCheckView(UIDocument uiDocument)
+        private const string DefaultSearchText = "请输入关键词搜索";
+        public RevitDataEntryView(UIDocument uiDocument)
         {
             InitializeComponent();
-            DataContext = RevitDataCheckViewModel.Instance();
-            Loaded += (s, e) =>
-            {
-                var textBox = this.FindName("SearchTextBox") as System.Windows.Controls.TextBox;
-                if (textBox != null && string.IsNullOrEmpty(textBox.Text))
-                {
-                    textBox.Text = "请输入关键词搜索";
-                    textBox.Foreground = System.Windows.Media.Brushes.Gray;
-                }
-            };
+            var revitDataEntryViewModel = RevitDataCheckViewModel.Instance().RevitDataEntryViewModel;
+            DataContext = revitDataEntryViewModel;
+            Loaded += OnLoaded;
         }
-
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            if (FindName("SearchTextBox") is System.Windows.Controls.TextBox textBox && string.IsNullOrEmpty(textBox.Text))
+            {
+                SetDefaultSearchText(textBox);
+            }
+        }
         private void TreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
-            var viewModel = DataContext as RevitDataCheckViewModel;
+            var viewModel = DataContext as RevitDataEntryViewModel;
             if (e.NewValue is FamilyExtend familyExtend)
             {
                 viewModel.SelectedItem = familyExtend;
             }
         }
-
         private void TreeView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            var viewModel = DataContext as RevitDataCheckViewModel;
+            var viewModel = DataContext as RevitDataEntryViewModel;
             viewModel.DoubleClickAndPickObjects((sender as TreeView).SelectedValue);
         }
-
         private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            var viewModel = DataContext as RevitDataCheckViewModel;
-            if (viewModel.SearchKeyword != null&& viewModel.SearchKeyword != "请输入关键词搜索")
+            var viewModel = DataContext as RevitDataEntryViewModel;
+            if (viewModel.SearchKeyword != null && viewModel.SearchKeyword != DefaultSearchText)
                 viewModel.SearchCommand.Execute(null);
         }
-
         private void TextBox_GotFocus(object sender, RoutedEventArgs e)
         {
             var textBox = sender as System.Windows.Controls.TextBox;
-            if (textBox.Text == "请输入关键词搜索")
+            if (textBox.Text == DefaultSearchText)
             {
                 textBox.Text = string.Empty;
                 textBox.Foreground = System.Windows.Media.Brushes.Black;
             }
         }
-
         private void TextBox_LostFocus(object sender, RoutedEventArgs e)
         {
             var textBox = sender as System.Windows.Controls.TextBox;
             if (string.IsNullOrEmpty(textBox.Text))
             {
-                textBox.Text = "请输入关键词搜索";
-                textBox.Foreground = System.Windows.Media.Brushes.Gray;
+                SetDefaultSearchText(textBox);
             }
+        }
+        private void SetDefaultSearchText(System.Windows.Controls.TextBox textBox)
+        {
+            textBox.Text = DefaultSearchText;
+            textBox.Foreground = Brushes.Gray;
         }
     }
 }

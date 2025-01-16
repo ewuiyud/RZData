@@ -5,8 +5,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:RZData.Views"
              mc:Ignorable="d" 
-             Title="睿住数据"
-             d:DesignHeight="650" d:DesignWidth="800">
+             Title="数据校验"
+             MaxHeight="500" MinHeight="500" MaxWidth="700" MinWidth="700">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -15,53 +15,119 @@
         </ResourceDictionary>
     </Window.Resources>
     <Grid>
-        <StackPanel >
-            <Grid  Width="auto" HorizontalAlignment="Stretch" >
-                <Button Style="{StaticResource CustomButtonStyle}"  Content="加载模板" Command="{Binding LoadDataFromExcelCommand}" Width="100" Height="30" HorizontalAlignment="Left" Margin="20"/>
-                <ComboBox HorizontalAlignment="Right" ItemsSource="{Binding ComboboxOptions}"  SelectionChanged="ComboBox_SelectionChanged"
-                          SelectedItem="{Binding ComboboxOption}" Style="{StaticResource cmbstyle}" Margin="20" Height="30" Width="160"/>
-            </Grid>
-            <TextBox Text="{Binding SelectedFamily.Name}" Margin="20,0" FontSize="20" />
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <TreeView ItemsSource="{Binding ShowElements.Families}" Margin="20" Height="400" 
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="auto"/>
+        </Grid.ColumnDefinitions>
+        <TabControl Margin="20" x:Name="MainTabControl">
+            <TabItem Header="属性校验" >
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBox x:Name="SearchTextBox" Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}" Margin="20" FontSize="14" 
+         GotFocus="TextBox_GotFocus" LostFocus="TextBox_LostFocus" TextChanged="TextBox_TextChanged"/>
+                    <TreeView Grid.Row="1" ItemsSource="{Binding ShowElements.Families}" Margin="20,0,20,20" HorizontalAlignment="Stretch" 
                           SelectedItemChanged="TreeView_SelectedItemChanged" MouseDoubleClick="TreeView_MouseDoubleClick">
-                    <TreeView.ItemTemplate>
-                        <HierarchicalDataTemplate ItemsSource="{Binding FamilyTypes}">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{Binding Name}"/>
-                                <TextBlock Text="("/>
-                                <TextBlock Text="{Binding FamilyTypes.Count}"/>
-                                <TextBlock Text=")"/>
-                            </StackPanel>
-                            <HierarchicalDataTemplate.ItemTemplate>
-                                <HierarchicalDataTemplate ItemsSource="{Binding FamilyExtends}">
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="{Binding Name}" Width="200"/>
-                                    </StackPanel>
-                                </HierarchicalDataTemplate>
-                            </HierarchicalDataTemplate.ItemTemplate>
-                        </HierarchicalDataTemplate>
-                    </TreeView.ItemTemplate>
-                </TreeView>
-                <DataGrid Grid.Column="1" ItemsSource="{Binding SelectedItem.Parameters}" AutoGenerateColumns="True" Margin="20">
-                    <DataGrid.Style>
-                        <Style TargetType="DataGrid">
+                        <TreeView.ItemTemplate>
+                            <HierarchicalDataTemplate ItemsSource="{Binding FamilyTypes}">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding Name}"/>
+                                </StackPanel>
+                                <HierarchicalDataTemplate.ItemTemplate>
+                                    <HierarchicalDataTemplate ItemsSource="{Binding FamilyExtends}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Name}" Width="auto"/>
+                                        </StackPanel>
+                                        <HierarchicalDataTemplate.ItemTemplate>
+                                            <HierarchicalDataTemplate ItemsSource="{Binding FamilyExtends}">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding Name}" Width="auto"/>
+                                                    <TextBlock Text="("/>
+                                                    <TextBlock Text="{Binding DataInstances.Count}"/>
+                                                    <TextBlock Text=")"/>
+                                                </StackPanel>
+                                            </HierarchicalDataTemplate>
+                                        </HierarchicalDataTemplate.ItemTemplate>
+                                    </HierarchicalDataTemplate>
+                                </HierarchicalDataTemplate.ItemTemplate>
+                            </HierarchicalDataTemplate>
+                        </TreeView.ItemTemplate>
+                    </TreeView>
+                    <Button Grid.Row="2" Content="导出" HorizontalAlignment="Right" Margin="5" Width="50" Command="{Binding ParameterExportCommand}"/>
+                </Grid>
+            </TabItem>
+            <TabItem Header="族匹配校验">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="选择组类型以查看未匹配模板构件" Margin="20,20,20,10" FontSize="12"  Foreground="#4F4F4F"/>
+                    <TreeView Grid.Row="1" ItemsSource="{Binding FamilyNameCheckElements.Families}" Margin="20,0,20,20" HorizontalAlignment="Stretch" 
+      SelectedItemChanged="TreeView_SelectedItemChanged" MouseDoubleClick="TreeView_MouseDoubleClick">
+                        <TreeView.ItemTemplate>
+                            <HierarchicalDataTemplate ItemsSource="{Binding FamilyTypes}">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding Name}"/>
+                                </StackPanel>
+                                <HierarchicalDataTemplate.ItemTemplate>
+                                    <HierarchicalDataTemplate ItemsSource="{Binding FamilyExtends}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Name}" Width="200"/>
+                                        </StackPanel>
+                                        <HierarchicalDataTemplate.ItemTemplate>
+                                            <HierarchicalDataTemplate ItemsSource="{Binding FamilyExtends}">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding Name}" Width="auto"/>
+                                                    <TextBlock Text="("/>
+                                                    <TextBlock Text="{Binding DataInstances.Count}"/>
+                                                    <TextBlock Text=")"/>
+                                                </StackPanel>
+                                            </HierarchicalDataTemplate>
+                                        </HierarchicalDataTemplate.ItemTemplate>
+                                    </HierarchicalDataTemplate>
+                                </HierarchicalDataTemplate.ItemTemplate>
+                            </HierarchicalDataTemplate>
+                        </TreeView.ItemTemplate>
+                    </TreeView>
+                    <Button Grid.Row="2" Content="导出" HorizontalAlignment="Right" Margin="5" Width="50" Command="{Binding FamilyExportCommand}"/>
+                </Grid>
+            </TabItem>
+        </TabControl>
+        <DataGrid Grid.Column="1" ItemsSource="{Binding SelectedItem.Parameters}" AutoGenerateColumns="False" Margin="20" Width="258">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="参数名称" Binding="{Binding Name}" Width="150"/>
+                <DataGridTextColumn Header="状态" Binding="{Binding ShowValue}" Width="100">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding SelectedItem}" Value="{x:Null}">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                <DataTrigger Binding="{Binding ShowValue}" Value="缺失">
+                                    <Setter Property="Foreground" Value="Red"/>
                                 </DataTrigger>
-                                <DataTrigger Binding="{Binding SelectedItem}" Value="{x:Null}">
-                                    <Setter Property="Visibility" Value="Visible"/>
+                                <DataTrigger Binding="{Binding ShowValue}" Value="正常">
+                                    <Setter Property="Foreground" Value="Black"/>
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
-                    </DataGrid.Style>
-                </DataGrid>
-            </Grid>
-        </StackPanel>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+            </DataGrid.Columns>
+            <DataGrid.Style>
+                <Style TargetType="DataGrid">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ElementName=MainTabControl, Path=SelectedIndex}" Value="0">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding ElementName=MainTabControl, Path=SelectedIndex}" Value="1">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.Style>
+        </DataGrid>
     </Grid>
 </Window>
