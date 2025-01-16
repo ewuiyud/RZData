@@ -57,14 +57,14 @@ namespace RZData.ViewModels
             ParameterExportCommand = new RelayCommand(ParameterExport);
             FamilyExportCommand = new RelayCommand(FamilyExport);
             //other viewModels
-            RevitTemplateLoadViewModel = new RevitTemplateLoadViewModel();
+            RevitTemplateLoadViewModel = new RevitTemplateLoadViewModel(uiDocument);
             RevitDataEntryViewModel = new RevitDataEntryViewModel(uiDocument, AllElements);
         }
 
         public DataElementData AllElements { get => _allElements; set => SetProperty(ref _allElements, value); }
-        public string SearchKeyword { get => _searchKeyword; set => SetProperty(ref _searchKeyword, value); }
         public DataElementData FamilyNameCheckElements { get => _familyNameCheckElements; set => SetProperty(ref _familyNameCheckElements, value); }
         public DataElementData ParametersCheckElements { get => _parametersCheckElements; set => SetProperty(ref _parametersCheckElements, value); }
+        public string SearchKeyword { get => _searchKeyword; set => SetProperty(ref _searchKeyword, value); }
         public object SelectedItem { get => _selectedItem; set => SetProperty(ref _selectedItem, value); }
         public DataElementData ShowElements { get => _showElements; set => SetProperty(ref _showElements, value); }
         public RevitTemplateLoadViewModel RevitTemplateLoadViewModel { get => _revitTemplateLoadViewModel; set => SetProperty(ref _revitTemplateLoadViewModel, value); }

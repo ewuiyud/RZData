@@ -22,15 +22,19 @@
         <TabControl Margin="20" x:Name="MainTabControl">
             <TabItem Header="属性校验" >
                 <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="25*"/>
+                        <ColumnDefinition Width="64*"/>
+                    </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="auto"/>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="auto"/>
                     </Grid.RowDefinitions>
-                    <TextBox x:Name="SearchTextBox" Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}" Margin="20" FontSize="14" 
-         GotFocus="TextBox_GotFocus" LostFocus="TextBox_LostFocus" TextChanged="TextBox_TextChanged"/>
-                    <TreeView Grid.Row="1" ItemsSource="{Binding ShowElements.Families}" Margin="20,0,20,20" HorizontalAlignment="Stretch" 
-                          SelectedItemChanged="TreeView_SelectedItemChanged" MouseDoubleClick="TreeView_MouseDoubleClick">
+                    <TextBox x:Name="SearchTextBox" Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}" Margin="20,20,20,20" FontSize="14" 
+         GotFocus="TextBox_GotFocus" LostFocus="TextBox_LostFocus" TextChanged="TextBox_TextChanged" Grid.ColumnSpan="2"/>
+                    <TreeView Grid.Row="1" ItemsSource="{Binding ShowElements.Families}" Margin="20,0,20,20" 
+                          SelectedItemChanged="TreeView_SelectedItemChanged" MouseDoubleClick="TreeView_MouseDoubleClick" Grid.ColumnSpan="2">
                         <TreeView.ItemTemplate>
                             <HierarchicalDataTemplate ItemsSource="{Binding FamilyTypes}">
                                 <StackPanel Orientation="Horizontal">
@@ -56,7 +60,7 @@
                             </HierarchicalDataTemplate>
                         </TreeView.ItemTemplate>
                     </TreeView>
-                    <Button Grid.Row="2" Content="导出" HorizontalAlignment="Right" Margin="5" Width="50" Command="{Binding ParameterExportCommand}"/>
+                    <Button Grid.Row="2" Content="导出" Margin="201,0,0,0" Width="50" Command="{Binding ParameterExportCommand}" Grid.Column="1" VerticalAlignment="Center"/>
                 </Grid>
             </TabItem>
             <TabItem Header="族匹配校验">

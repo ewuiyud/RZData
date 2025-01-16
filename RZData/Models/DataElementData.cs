@@ -216,7 +216,7 @@ namespace RZData.Models
                 Parameters.Add(new Parameter
                 {
                     Name = propertyName,
-                    Value = parameter?.AsValueString() ?? "缺失",
+                    Value = parameter != null ? GetValue(parameter) : "缺失",
                     ValueType = parameter != null ? (parameter.Element.Id == Element.Id ? "实例参数" : "类型参数") : ""
                 });
             }
@@ -224,15 +224,34 @@ namespace RZData.Models
             IsPropertiesCorrect = Parameters.All(p => p.Value != "缺失");
             return IsPropertiesCorrect;
         }
+
+        private string GetValue(Autodesk.Revit.DB.Parameter parameter)
+        {
+           switch( parameter.StorageType)
+            {
+                case StorageType.String:
+                    return parameter.AsString();
+                case StorageType.Double:
+                    return parameter.AsValueString();
+                case StorageType.Integer:
+                    return parameter.AsValueString(); 
+                case StorageType.ElementId:
+                    return parameter.AsInteger().ToString(); 
+                default:
+                    return parameter.AsString();
+            }
+        }
     }
+    
     public class Parameter
     {
         public string Name { get; set; }
         public string Value { get; set; }
         public string ValueType { get; set; }
     }
-    public class ParameterSet
+    public class ParameterSet : ObservableObject
     {
+        private string _value;
         public string Name { get; set; }
         public List<string> Values { get; set; }
         public string ValueType { get; set; }
@@ -254,15 +273,18 @@ namespace RZData.Models
         {
             get
             {
-                if (Values.Count == 1)
-                {
-                    return Values[0];
-                }
-                else
-                {
-                    return $"[{string.Join(", ", Values)}]";
-                }
+                if (_value == null)
+                    if (Values.Count == 1)
+                    {
+                        return Values[0];
+                    }
+                    else
+                    {
+                        return $"[{string.Join(", ", Values)}]";
+                    }
+                return _value;
             }
+            set => SetProperty(ref _value, value);
         }
         public string ShowValue
         {

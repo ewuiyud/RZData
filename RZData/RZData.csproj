@@ -111,6 +111,7 @@
     <Compile Include="Commands\RevitDataCheckCommand.cs" />
     <Compile Include="Models\DataElementData.cs" />
     <Compile Include="Models\ExcelRecord.cs" />
+    <Compile Include="ViewModels\BaseViewModel.cs" />
     <Compile Include="ViewModels\RevitDataEntryViewModel.cs" />
     <Compile Include="ViewModels\RevitTemplateLoadViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -118,6 +119,7 @@
       <DependentUpon>Style.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModels\RevitDataCheckViewModel.cs" />
+    <Compile Include="ViewModels\ViewModelLocator.cs" />
     <Compile Include="Views\RevitDataCheckView.xaml.cs">
       <DependentUpon>RevitDataCheckView.xaml</DependentUpon>
     </Compile>
@@ -155,6 +157,9 @@
     <Resource Include="Resources\data_validation.png" />
     <Resource Include="Resources\template_load.png" />
     <Resource Include="Resources\list_summary.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\search_icon.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Microsoft.Web.WebView2.1.0.1264.42\build\Microsoft.Web.WebView2.targets" Condition="Exists('..\packages\Microsoft.Web.WebView2.1.0.1264.42\build\Microsoft.Web.WebView2.targets')" />

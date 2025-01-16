@@ -27,10 +27,10 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <TextBlock Text="根据族筛选" FontSize="12" Margin="2" Foreground="#4F4F4F"/>
-            <TextBox x:Name="SearchTextBox" Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}" Margin="20" FontSize="14" 
+            <TextBox Grid.Row="1" x:Name="SearchTextBox" Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}" Margin="2,5" FontSize="14" 
 GotFocus="TextBox_GotFocus" LostFocus="TextBox_LostFocus" TextChanged="TextBox_TextChanged"/>
-            <ComboBox Grid.Row="2" Style="{StaticResource cmbstyle}"/>
-            <TreeView Grid.Row="3" ItemsSource="{Binding ShowElements.Families}" Margin="20,0,20,20" HorizontalAlignment="Stretch" 
+            <ComboBox Grid.Row="2"  Margin="2,0,2,5" ItemsSource="{Binding Families}" DisplayMemberPath="Name" SelectedItem="{Binding SelectedElement}"  />
+            <TreeView Grid.Row="3" ItemsSource="{Binding ShowElements.Families}" Margin="2,0,2,0" HorizontalAlignment="Stretch" 
                       SelectedItemChanged="TreeView_SelectedItemChanged" MouseDoubleClick="TreeView_MouseDoubleClick">
                 <TreeView.ItemTemplate>
                     <HierarchicalDataTemplate ItemsSource="{Binding FamilyTypes}">
@@ -58,14 +58,32 @@ GotFocus="TextBox_GotFocus" LostFocus="TextBox_LostFocus" TextChanged="TextBox_T
                 </TreeView.ItemTemplate>
             </TreeView>
         </Grid>
-        <DataGrid Grid.Column="1" ItemsSource="{Binding SelectedItem.Parameters}" AutoGenerateColumns="False" Margin="20" Width="358">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="参数名称" Binding="{Binding Name}" Width="100"/>
-                <DataGridTextColumn Header="参数类型" Binding="{Binding ValueType}" Width="100"/>
-                <DataGridTextColumn Header="参数值" Binding="{Binding Value}" Width="100"/>
-                <DataGridTextColumn Header="状态" Binding="{Binding Status}" Width="50">
-                </DataGridTextColumn>
-            </DataGrid.Columns>
-        </DataGrid>
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="auto"/>
+            </Grid.RowDefinitions>
+            <DataGrid ItemsSource="{Binding SelectedItem.Parameters}" AutoGenerateColumns="False" Margin="20,20,20,0" Width="358">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="参数名称" Binding="{Binding Name}" Width="100"/>
+                    <DataGridTextColumn Header="参数类型" Binding="{Binding ValueType}" Width="100"/>
+                    <DataGridTemplateColumn Header="参数值" Width="100">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBox Text="{Binding Value,UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SimbleTextBox}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                        <DataGridTemplateColumn.CellEditingTemplate>
+                            <DataTemplate>
+                                <TextBox Text="{Binding Value,Mode=TwoWay}" Style="{StaticResource SimbleTextBox}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellEditingTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Header="状态" Binding="{Binding Status}" Width="50">
+                    </DataGridTextColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+            <Button Grid.Row="1" Content="确定" Margin="20" HorizontalAlignment="Right" Width="80" Height="30" FontSize="18" Command="{Binding OKCommand}"/>
+        </Grid>
     </Grid>
 </Window>

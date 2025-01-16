@@ -9,20 +9,22 @@ namespace RZData.Controls
     {
         private const string DefaultSearchText = "ÇëÊäÈë¹Ø¼ü´ÊËÑË÷";
 
+        public static readonly DependencyProperty SearchCommandProperty =
+            DependencyProperty.Register(nameof(SearchCommand), typeof(ICommand), typeof(SearchTextBox), new PropertyMetadata(null));
+        public ICommand SearchCommand
+        {
+            get => (ICommand)GetValue(SearchCommandProperty);
+            set => SetValue(SearchCommandProperty, value);
+        }
+
         public SearchTextBox()
         {
             this.Text = DefaultSearchText;
             this.Foreground = Brushes.Gray;
             this.GotFocus += OnGotFocus;
             this.LostFocus += OnLostFocus;
-            this.TextChanged += OnTextChanged;
         }
 
-        public ICommand SearchCommand
-        {
-            get => (ICommand)GetValue(SearchCommandProperty);
-            set => SetValue(SearchCommandProperty, value);
-        }
         private void OnGotFocus(object sender, RoutedEventArgs e)
         {
             if (this.Text == DefaultSearchText)
@@ -40,13 +42,6 @@ namespace RZData.Controls
             }
         }
 
-        private void OnTextChanged(object sender, TextChangedEventArgs e)
-        {
-            if (this.Text != DefaultSearchText)
-            {
-                SearchCommand.Execute(null);
-            }
-        }
 
         private void SetDefaultSearchText()
         {
