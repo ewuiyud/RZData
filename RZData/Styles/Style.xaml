@@ -24,7 +24,6 @@
             </Setter.Value>
         </Setter>
     </Style>
-
     <!-- 简单TextBox -->
     <Style x:Key="SimbleTextBox" TargetType="{x:Type TextBox}">
         <Setter Property="Background" Value="White"/>
@@ -45,8 +44,6 @@
 
     <Style TargetType="{x:Type Button}">
         <Setter Property="Background" Value="White"/>
-        <Setter Property="Foreground" Value="Black"/>
-        <Setter Property="FontFamily" Value="Segoe UI"/>
         <Setter Property="FontSize" Value="12"/>
         <Setter Property="FontWeight" Value="Normal"/>
         <Setter Property="Padding" Value="10,5"/>
@@ -62,9 +59,6 @@
                             BorderBrush="{TemplateBinding BorderBrush}" 
                             BorderThickness="{TemplateBinding BorderThickness}" 
                             CornerRadius="3">
-                        <!--<Border.Effect>
-                            <DropShadowEffect Color="Gray" BlurRadius="5" ShadowDepth="0" Opacity="0.3"/>
-                        </Border.Effect>-->
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <ControlTemplate.Triggers>

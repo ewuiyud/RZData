@@ -27,7 +27,7 @@ namespace RZData.Views
         public RevitDataEntryView(UIDocument uiDocument)
         {
             InitializeComponent();
-            var revitDataEntryViewModel = RevitDataCheckViewModel.Instance().RevitDataEntryViewModel;
+            var revitDataEntryViewModel = ViewModelLocator.Instance(uiDocument).RevitDataEntryViewModel;
             DataContext = revitDataEntryViewModel;
             Loaded += OnLoaded;
         }

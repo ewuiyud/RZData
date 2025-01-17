@@ -22,18 +22,14 @@
         <TabControl Margin="20" x:Name="MainTabControl">
             <TabItem Header="属性校验" >
                 <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="25*"/>
-                        <ColumnDefinition Width="64*"/>
-                    </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="auto"/>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="auto"/>
                     </Grid.RowDefinitions>
-                    <TextBox x:Name="SearchTextBox" Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}" Margin="20,20,20,20" FontSize="14" 
+                    <TextBox x:Name="SearchTextBox" Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}" Margin="20,20,20,20" FontSize="16" 
          GotFocus="TextBox_GotFocus" LostFocus="TextBox_LostFocus" TextChanged="TextBox_TextChanged" Grid.ColumnSpan="2"/>
-                    <TreeView Grid.Row="1" ItemsSource="{Binding ShowElements.Families}" Margin="20,0,20,20" 
+                    <TreeView Grid.Row="1" ItemsSource="{Binding ShowParametersCheckElements.Families}" Margin="20,0,20,20" 
                           SelectedItemChanged="TreeView_SelectedItemChanged" MouseDoubleClick="TreeView_MouseDoubleClick" Grid.ColumnSpan="2">
                         <TreeView.ItemTemplate>
                             <HierarchicalDataTemplate ItemsSource="{Binding FamilyTypes}">

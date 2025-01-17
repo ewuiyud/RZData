@@ -1,5 +1,7 @@
-﻿using Autodesk.Revit.UI;
+﻿using Autodesk.Revit.DB.Structure;
+using Autodesk.Revit.UI;
 using CommunityToolkit.Mvvm.ComponentModel;
+using OfficeOpenXml;
 using RZData.Models;
 using System;
 using System.Collections.Generic;
@@ -9,18 +11,10 @@ using System.Threading.Tasks;
 
 namespace RZData.ViewModels
 {
-    public class ViewModelLocator:ObservableObject
+    public class ViewModelLocator : ObservableObject
     {
         private static ViewModelLocator _instance;
-
-        public static ViewModelLocator Instance()
-        {
-            if (_instance == null)
-            {
-                TaskDialog.Show("提醒","请先初始化RevitDataCheckViewModel");
-            }
-            return _instance;
-        }
+        private UIDocument _uiDocument;
         public static ViewModelLocator Instance(UIDocument uiDocument)
         {
             if (_instance == null)
@@ -31,13 +25,20 @@ namespace RZData.ViewModels
         }
         public ViewModelLocator(UIDocument _uiDocument)
         {
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+            this._uiDocument = _uiDocument;
             RevitTemplateLoadViewModel = new RevitTemplateLoadViewModel(_uiDocument);
-            RevitDataCheckViewModel = new RevitDataCheckViewModel(_uiDocument);
-            RevitDataEntryViewModel = new RevitDataEntryViewModel( _uiDocument,  AllElements);
+            RevitDataCheckViewModel = new RevitDataCheckViewModel(_uiDocument, RevitTemplateLoadViewModel);
+            RevitDataEntryViewModel = new RevitDataEntryViewModel(_uiDocument, RevitTemplateLoadViewModel.AllElements);
+        }
+        public void Reset(RevitTemplateLoadViewModel revitTemplateLoadViewModel)
+        {
+            RevitDataCheckViewModel = new RevitDataCheckViewModel(_uiDocument, RevitTemplateLoadViewModel);
+            RevitDataEntryViewModel = new RevitDataEntryViewModel(_uiDocument, RevitTemplateLoadViewModel.AllElements);
         }
 
         public RevitTemplateLoadViewModel RevitTemplateLoadViewModel { get; }
-        public RevitDataEntryViewModel RevitDataEntryViewModel { get; }
-        public RevitDataCheckViewModel RevitDataCheckViewModel { get; }
+        public RevitDataEntryViewModel RevitDataEntryViewModel { get; set; }
+        public RevitDataCheckViewModel RevitDataCheckViewModel { get; set; }
     }
 }

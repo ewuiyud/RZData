@@ -25,7 +25,7 @@ namespace RZData.Views
         public RevitTemplateLoadView(UIDocument uiDocument)
         {
             InitializeComponent();
-            var revitTemplateLoadViewModel = RevitDataCheckViewModel.Instance(uiDocument).RevitTemplateLoadViewModel;
+            var revitTemplateLoadViewModel = ViewModelLocator.Instance(uiDocument).RevitTemplateLoadViewModel;
             revitTemplateLoadViewModel.SetView(this);
             DataContext = revitTemplateLoadViewModel;
         }

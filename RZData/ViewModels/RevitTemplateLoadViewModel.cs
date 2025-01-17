@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 using RZData.Helper;
 using RZData.Models;
 using RZData.Views;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -18,8 +19,13 @@ namespace RZData.ViewModels
         private UIDocument _uiDocument;
         public RevitTemplateLoadViewModel(UIDocument uiDocument)
         {
+            AllElements = new DataElementData();
+            FamilyNameCheckElements = new DataElementData();
+            ParametersCheckElements = new DataElementData();
+
             LoadDataFromExcelCommand = new RelayCommand(LoadDataFromExcel);
             OKCommand = new RelayCommand(OK);
+
             LoadFileName = string.IsNullOrEmpty(Path.GetFileName(LoadTemplatePath)) ? "未选中文件" : Path.GetFileName(LoadTemplatePath);
             CurrentFileName = string.IsNullOrEmpty(Path.GetFileName(CurrentTemplatePath)) ? "无" : Path.GetFileName(CurrentTemplatePath);
             _uiDocument = uiDocument;
@@ -63,21 +69,36 @@ namespace RZData.ViewModels
         }
         private void LoadDataFromExcel()
         {
-            string path = "";
-            records = ExcelDataProcessor.LoadDataFromExcel(ref path);
-            LoadTemplatePath = path;
-            LoadFileName = string.IsNullOrEmpty(Path.GetFileName(LoadTemplatePath)) ? "未选中文件" : Path.GetFileName(LoadTemplatePath);
+            try
+            {
+                string path = "";
+                records = ExcelDataProcessor.LoadDataFromExcel(ref path);
+                LoadTemplatePath = path;
+                LoadFileName = string.IsNullOrEmpty(Path.GetFileName(LoadTemplatePath)) ? "未选中文件" : Path.GetFileName(LoadTemplatePath);
+            }
+            catch (Exception e)
+            {
+                TaskDialog.Show("错误信息", e.Message);
+            }
         }
         private void OK()
         {
-            if (!string.IsNullOrEmpty(LoadTemplatePath))
+            try
             {
-                CurrentTemplatePath = LoadTemplatePath;
-                LoadTemplatePath = "";
-                CurrentFileName = loadFileName;
-                loadFileName = "无";
-                RevitDataCheckViewModel.Instance().CheckModel(records);
-                view.Close();
+                if (!string.IsNullOrEmpty(LoadTemplatePath))
+                {
+                    CurrentTemplatePath = LoadTemplatePath;
+                    LoadTemplatePath = "";
+                    CurrentFileName = loadFileName;
+                    loadFileName = "无";
+                    CheckModel(records);
+                    ViewModelLocator.Instance(_uiDocument).Reset(this);
+                    view.Close();
+                }
+            }
+            catch (Exception e)
+            {
+                TaskDialog.Show("错误信息", e.Message);
             }
         }
 
@@ -103,46 +124,93 @@ namespace RZData.ViewModels
                     var dataInstance = AllElements.Add(element);
                     if (element is FamilyInstance familyInstance)
                     {
-                        var typeName = element.GetFamilyType();
-                        var record = loadableFamilyDictionary.FirstOrDefault(a => typeName.StartsWith(a.TypeName.Substring(0, a.TypeName.Length - 1)));
-                        if (record == null || element.GetFamily() != record.FamilyName)
-                        {
-                            dataInstance.FamilyExtend.IsNameCorrect = false;
-                            FamilyNameCheckElements.Add(dataInstance);
-                        }
-                        else
-                        {
-                            dataInstance.FamilyExtend.IsNameCorrect = true;
-                            if (!dataInstance.CheckParameters(record, document))
-                            {
-                                ParametersCheckElements.Add(dataInstance);
-                            }
-                        }
+                        ProcessFamilyInstance(loadableFamilyDictionary, document, element, dataInstance);
                     }
                     else
                     {
-                        var extendName = element.GetExtendName();
-                        var typeNames = systemFamilyDictionary.FindAll(a => CheckRecordExtendName(a, element)).ToList();
-                        if (typeNames.Count() == 0 || !typeNames.Exists(a => a.TypeName == element.GetFamilyType()))
-                        {
-                            dataInstance.FamilyExtend.IsNameCorrect = false;
-                            FamilyNameCheckElements.Add(dataInstance);
-                        }
-                        else
-                        {
-                            var record = typeNames.First(a => a.TypeName == element.GetFamilyType());
-                            dataInstance.FamilyExtend.IsNameCorrect = true;
-                            if (!dataInstance.CheckParameters(record, document))
-                            {
-                                ParametersCheckElements.Add(dataInstance);
-                            }
-                        }
+                        ProcessNonFamilyInstance(systemFamilyDictionary, document, element, dataInstance);
                     }
                 }
             }
             AllElements.MergeParameters();
             FamilyNameCheckElements.MergeParameters();
             ParametersCheckElements.MergeParameters();
+        }
+
+        private void ProcessNonFamilyInstance(List<ExcelRecord> systemFamilyDictionary, Document document, Element element, DataInstance dataInstance)
+        {
+            var extendName = element.GetExtendName();
+            var typeNames = systemFamilyDictionary.FindAll(a => CheckRecordExtendName(a, element)).ToList();
+            if (typeNames.Count() == 0 || !typeNames.Exists(a => a.TypeName == element.GetFamilyType()))
+            {
+                dataInstance.FamilyExtend.IsNameCorrect = false;
+                FamilyNameCheckElements.Add(dataInstance);
+            }
+            else
+            {
+                var record = typeNames.First(a => a.TypeName == element.GetFamilyType());
+                dataInstance.FamilyExtend.IsNameCorrect = true;
+                if (!dataInstance.CheckParameters(record, document))
+                {
+                    ParametersCheckElements.Add(dataInstance);
+                }
+            }
+        }
+        private void ProcessFamilyInstance(List<ExcelRecord> loadableFamilyDictionary, Document document, Element element, DataInstance dataInstance)
+        {
+            var typeName = element.GetFamilyType();
+            var record = loadableFamilyDictionary.FirstOrDefault(a => typeName.StartsWith(a.TypeName.Substring(0, a.TypeName.Length - 1)));
+            if (record == null || element.GetFamily() != record.FamilyName)
+            {
+                dataInstance.FamilyExtend.IsNameCorrect = false;
+                FamilyNameCheckElements.Add(dataInstance);
+            }
+            else
+            {
+                dataInstance.FamilyExtend.IsNameCorrect = true;
+                if (!dataInstance.CheckParameters(record, document))
+                {
+                    ParametersCheckElements.Add(dataInstance);
+                }
+            }
+        }
+
+        private bool CheckRecordExtendName(ExcelRecord excelRecord, Element element)
+        {
+            const string typePrefix = "类型=";
+            var recordExtendName = excelRecord.ExtendName;
+            string incorrectMessage = $"补充属性不合理，族：{excelRecord.FamilyName} 类型：{excelRecord.TypeName} 补充属性：{excelRecord.ExtendName}";
+            if (recordExtendName.Contains("&&"))
+            {
+                var requires = recordExtendName.Split(new[] { "&&" }, StringSplitOptions.None);
+                return requires.Any(a =>
+                {
+                    if (a.StartsWith(typePrefix))
+                    {
+                        return element.GetExtendName().StartsWith(a.Substring(3, a.Length - 4));
+                    }
+                    else
+                    {
+                        var str = a.Split('=');
+                        if (str.Count() != 2)
+                            TaskDialog.Show("错误信息", incorrectMessage);
+                        var value = element.GetParameters(str[0]);
+                        if (value.Count == 0)
+                        {
+                            return false;
+                        }
+                        return value[0]?.Element?.Name == str[1];
+                    }
+                });
+            }
+            else
+            {
+                if (recordExtendName.StartsWith(typePrefix))
+                {
+                    return element.GetExtendName().StartsWith(recordExtendName.Substring(3, recordExtendName.Length - 4));
+                }
+                else { TaskDialog.Show("错误信息", incorrectMessage); return false; }
+            }
         }
     }
 }

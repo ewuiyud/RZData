@@ -1,3 +1,4 @@
+using Autodesk.Revit.UI;
 using Microsoft.Win32;
 using OfficeOpenXml;
 using System.Collections.Generic;
@@ -112,7 +113,7 @@ namespace RZData.Models
                 {
                     var file = new FileInfo(saveFileDialog.FileName);
                     package.SaveAs(file);
-                    MessageBox.Show("导出成功", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                    TaskDialog.Show("提示", "导出成功！");
                 }
             }
         }
