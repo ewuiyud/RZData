@@ -19,14 +19,13 @@ namespace RZData.ViewModels
         private string _searchKeyword;
         private RevitTemplateLoadViewModel _revitTemplateLoadViewModel;
         private RevitDataEntryViewModel _revitDataEntryViewModel;
-        private readonly UIDocument _uiDocument;
-        private DataElementData _showElements;
+
+        private DataElement _showElements;
         private object _selectedItem;
-        private UIDocument uiDocument;
 
         public RevitDataCheckViewModel(UIDocument uiDocument, RevitTemplateLoadViewModel revitTemplateLoadViewModel)
         {
-            _uiDocument = uiDocument;
+            UiDocument = uiDocument;
             AllElements = revitTemplateLoadViewModel.AllElements;
             FamilyNameCheckElements = revitTemplateLoadViewModel.FamilyNameCheckElements;
             ParametersCheckElements = revitTemplateLoadViewModel.ParametersCheckElements;
@@ -42,7 +41,7 @@ namespace RZData.ViewModels
 
         public string SearchKeyword { get => _searchKeyword; set => SetProperty(ref _searchKeyword, value); }
         public object SelectedItem { get => _selectedItem; set => SetProperty(ref _selectedItem, value); }
-        public DataElementData ShowParametersCheckElements { get => _showElements; set => SetProperty(ref _showElements, value); }
+        public DataElement ShowParametersCheckElements { get => _showElements; set => SetProperty(ref _showElements, value); }
         public RevitTemplateLoadViewModel RevitTemplateLoadViewModel { get => _revitTemplateLoadViewModel; set => SetProperty(ref _revitTemplateLoadViewModel, value); }
         public RevitDataEntryViewModel RevitDataEntryViewModel { get => _revitDataEntryViewModel; set => SetProperty(ref _revitDataEntryViewModel, value); }
         public ICommand SearchCommand { get; }
@@ -68,7 +67,7 @@ namespace RZData.ViewModels
         }
         private void SelectElementInRevit(Models.Family family)
         {
-            var uidoc = _uiDocument;
+            var uidoc = UiDocument;
             var elementIds = new List<ElementId>();
             foreach (var familyType in family.FamilyTypes)
             {
@@ -84,7 +83,7 @@ namespace RZData.ViewModels
         }
         private void SelectElementInRevit(Models.FamilyType familyType)
         {
-            var uidoc = _uiDocument;
+            var uidoc = UiDocument;
             var elementIds = new List<ElementId>();
             foreach (var familyExtend in familyType.FamilyExtends)
             {
@@ -97,7 +96,7 @@ namespace RZData.ViewModels
         }
         private void SelectElementInRevit(FamilyExtend familyExtend)
         {
-            var uidoc = _uiDocument;
+            var uidoc = UiDocument;
             var elementIds = new List<ElementId>();
             foreach (var item in familyExtend.DataInstances)
             {
@@ -120,7 +119,7 @@ namespace RZData.ViewModels
         {
             try
             {
-                ExcelDataProcessor.ExportToExcel(ShowParametersCheckElements);
+                ExcelDataHelper.ExportToExcel(ShowParametersCheckElements);
             }
             catch (Exception ex)
             {
@@ -131,7 +130,7 @@ namespace RZData.ViewModels
         {
             try
             {
-                ExcelDataProcessor.ExportToExcel(FamilyNameCheckElements);
+                ExcelDataHelper.ExportToExcel(FamilyNameCheckElements);
             }
             catch (Exception ex)
             {

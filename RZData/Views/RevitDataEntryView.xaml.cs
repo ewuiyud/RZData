@@ -1,20 +1,10 @@
 ﻿using Autodesk.Revit.UI;
 using RZData.Models;
 using RZData.ViewModels;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace RZData.Views
 {
@@ -33,7 +23,8 @@ namespace RZData.Views
         }
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
-            if (FindName("SearchTextBox") is System.Windows.Controls.TextBox textBox && string.IsNullOrEmpty(textBox.Text))
+            var textBox = this.FindName("SearchTextBox") as System.Windows.Controls.TextBox;
+            if (textBox != null && string.IsNullOrEmpty(textBox.Text))
             {
                 SetDefaultSearchText(textBox);
             }
@@ -44,6 +35,10 @@ namespace RZData.Views
             if (e.NewValue is FamilyExtend familyExtend)
             {
                 viewModel.SelectedItem = familyExtend;
+            }
+            else if (e.NewValue is DataInstance dataInstance)
+            {
+                viewModel.SelectedItem = dataInstance;
             }
         }
         private void TreeView_MouseDoubleClick(object sender, MouseButtonEventArgs e)

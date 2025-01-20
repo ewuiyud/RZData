@@ -1,0 +1,66 @@
+﻿<Window x:Class="RZData.Views.RevitListSummaryView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:RZData.Views"
+             xmlns:converters="clr-namespace:RZData.Converters"
+             mc:Ignorable="d" 
+             Title="清单计算"
+             MaxHeight="500" MinHeight="500" MaxWidth="650" MinWidth="650">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/RZData;component/Styles/Style.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <converters:RowIndexConverter x:Key="RowIndexConverter"/>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal" Grid.Row="1">
+            <Button Content="属性项" Width="100" Height="30" Margin="10,0,0,0" />
+            <ComboBox Width="100" Height="30" Margin="10,0,0,0" DisplayMemberPath="Name"/>
+            <Button Content="属性值" Width="100" Height="30" Margin="10,0,0,0" />
+            <ComboBox Width="100" Height="30" Margin="10,0,0,0" DisplayMemberPath="Name"/>
+            <Button Content="增加" Width="100" Height="30" Margin="10,0,0,0" />
+            <Button Content="清除" Width="100" Height="30" Margin="10,0,0,0" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Right">
+            <Button Content="确定" Width="100" Height="30" Margin="10,0,0,0" />
+        </StackPanel>
+        <Grid  Grid.Row="4" >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Button Content="模型中选中" Width="100" Height="30" Margin="10,0,0,0" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Column="1">
+                <Button Content="导出Excel" Width="100" Height="30" Margin="10,0,0,0" />
+                <Button Content="取消" Width="100" Height="30" Margin="10,0,0,0" />
+            </StackPanel>
+        </Grid>
+        <DataGrid ItemsSource="{Binding ShowMaterialList}" AutoGenerateColumns="False" SelectedItem="{Binding SelectedMaterialRecord}" SelectionChanged="DataGrid_SelectionChanged">
+            <DataGrid.Columns>
+                <DataGridTemplateColumn Header="行号">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}},Converter={StaticResource RowIndexConverter}}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="材料名称" Binding="{Binding MaterialName}"/>
+                <DataGridTextColumn Header="使用方式"  Binding="{Binding UsageMethod}"/>
+                <DataGridTextColumn Header="项目特征"  Binding="{Binding ProjectFeatures}"/>
+                <DataGridTextColumn Header="工程量"  Binding="{Binding ModelEngineeringQuantity}"/>
+            </DataGrid.Columns>
+        </DataGrid>
+        <DataGrid Grid.Row="3" ItemsSource="{Binding ShowAssemblyList}"/>
+    </Grid>
+</Window>

@@ -16,26 +16,25 @@ namespace RZData.ViewModels
     public class RevitTemplateLoadViewModel : BaseViewModel
     {
         private RevitTemplateLoadView view;
-        private UIDocument _uiDocument;
         public RevitTemplateLoadViewModel(UIDocument uiDocument)
         {
-            AllElements = new DataElementData();
-            FamilyNameCheckElements = new DataElementData();
-            ParametersCheckElements = new DataElementData();
+            AllElements = new DataElement();
+            FamilyNameCheckElements = new DataElement();
+            ParametersCheckElements = new DataElement();
 
             LoadDataFromExcelCommand = new RelayCommand(LoadDataFromExcel);
             OKCommand = new RelayCommand(OK);
 
             LoadFileName = string.IsNullOrEmpty(Path.GetFileName(LoadTemplatePath)) ? "未选中文件" : Path.GetFileName(LoadTemplatePath);
             CurrentFileName = string.IsNullOrEmpty(Path.GetFileName(CurrentTemplatePath)) ? "无" : Path.GetFileName(CurrentTemplatePath);
-            _uiDocument = uiDocument;
+            UiDocument = uiDocument;
         }
         private string currentTemplatePath;
         private string loadTemplatePath;
         private string currentFileName;
         private string loadFileName;
 
-        private List<ExcelRecord> records;
+        private List<ExcelFamilyRecord> records;
         public string LoadTemplatePath
         {
             get => loadTemplatePath;
@@ -46,7 +45,7 @@ namespace RZData.ViewModels
             get => currentTemplatePath;
             set => SetProperty(ref currentTemplatePath, value);
         }
-        public List<ExcelRecord> Records
+        public List<ExcelFamilyRecord> Records
         {
             get => records;
             set => SetProperty(ref records, value);
@@ -71,10 +70,12 @@ namespace RZData.ViewModels
         {
             try
             {
-                string path = "";
-                records = ExcelDataProcessor.LoadDataFromExcel(ref path);
-                LoadTemplatePath = path;
-                LoadFileName = string.IsNullOrEmpty(Path.GetFileName(LoadTemplatePath)) ? "未选中文件" : Path.GetFileName(LoadTemplatePath);
+                string path = ExcelDataHelper.LoadDataFromExcel();
+                if (path != null)
+                {
+                    LoadTemplatePath = path;
+                    LoadFileName = string.IsNullOrEmpty(Path.GetFileName(LoadTemplatePath)) ? "未选中文件" : Path.GetFileName(LoadTemplatePath);
+                }
             }
             catch (Exception e)
             {
@@ -85,14 +86,15 @@ namespace RZData.ViewModels
         {
             try
             {
-                if (!string.IsNullOrEmpty(LoadTemplatePath))
+                if (!string.IsNullOrEmpty(LoadTemplatePath)) 
                 {
+                    ExcelDataHelper.GetContent(LoadTemplatePath);
                     CurrentTemplatePath = LoadTemplatePath;
                     LoadTemplatePath = "";
                     CurrentFileName = loadFileName;
                     loadFileName = "无";
-                    CheckModel(records);
-                    ViewModelLocator.Instance(_uiDocument).Reset(this);
+                    CheckModel(ExcelDataHelper.ExcelFamilyRecords);
+                    ViewModelLocator.Instance(UiDocument).Reset(this);
                     view.Close();
                 }
             }
@@ -102,20 +104,20 @@ namespace RZData.ViewModels
             }
         }
 
-        public void CheckModel(List<ExcelRecord> records)
+        public void CheckModel(List<ExcelFamilyRecord> records)
         {
             var systemFamilyDictionary = records.FindAll(a => !a.TypeName.StartsWith("MIC"));
             var loadableFamilyDictionary = records.FindAll(a => a.TypeName.StartsWith("MIC"));
             var familyList = new List<string>();
             records.ForEach(a => { if (!familyList.Contains(a.FamilyName)) familyList.Add(a.FamilyName); });
-            var document = _uiDocument.Document;
+            var document = UiDocument.Document;
             var collector = new FilteredElementCollector(document);
             var elements = collector.WhereElementIsNotElementType();
 
             AllElements.Clear();
             FamilyNameCheckElements.Clear();
             ParametersCheckElements.Clear();
-            DataElementData revitElementData = new DataElementData();
+            DataElement revitElementData = new DataElement();
 
             foreach (var element in elements)
             {
@@ -136,8 +138,7 @@ namespace RZData.ViewModels
             FamilyNameCheckElements.MergeParameters();
             ParametersCheckElements.MergeParameters();
         }
-
-        private void ProcessNonFamilyInstance(List<ExcelRecord> systemFamilyDictionary, Document document, Element element, DataInstance dataInstance)
+        private void ProcessNonFamilyInstance(List<ExcelFamilyRecord> systemFamilyDictionary, Document document, Element element, DataInstance dataInstance)
         {
             var extendName = element.GetExtendName();
             var typeNames = systemFamilyDictionary.FindAll(a => CheckRecordExtendName(a, element)).ToList();
@@ -156,7 +157,7 @@ namespace RZData.ViewModels
                 }
             }
         }
-        private void ProcessFamilyInstance(List<ExcelRecord> loadableFamilyDictionary, Document document, Element element, DataInstance dataInstance)
+        private void ProcessFamilyInstance(List<ExcelFamilyRecord> loadableFamilyDictionary, Document document, Element element, DataInstance dataInstance)
         {
             var typeName = element.GetFamilyType();
             var record = loadableFamilyDictionary.FirstOrDefault(a => typeName.StartsWith(a.TypeName.Substring(0, a.TypeName.Length - 1)));
@@ -174,8 +175,7 @@ namespace RZData.ViewModels
                 }
             }
         }
-
-        private bool CheckRecordExtendName(ExcelRecord excelRecord, Element element)
+        private bool CheckRecordExtendName(ExcelFamilyRecord excelRecord, Element element)
         {
             const string typePrefix = "类型=";
             var recordExtendName = excelRecord.ExtendName;

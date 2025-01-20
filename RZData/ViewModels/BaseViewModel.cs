@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using Autodesk.Revit.UI;
+using CommunityToolkit.Mvvm.ComponentModel;
 using RZData.Models;
 using System;
 using System.Collections.Generic;
@@ -10,23 +11,24 @@ namespace RZData.ViewModels
 {
     public class BaseViewModel : ObservableObject
     {
-        private DataElementData _allElements;
-        private DataElementData _familyNameCheckElements;
-        private DataElementData _parametersCheckElements;
+        private DataElement _allElements;
+        private DataElement _familyNameCheckElements;
+        private DataElement _parametersCheckElements;
+        internal UIDocument UiDocument;
 
-        public DataElementData AllElements
+        public DataElement AllElements
         {
             get => _allElements;
             set => SetProperty(ref _allElements, value);
         }
 
-        public DataElementData FamilyNameCheckElements
+        public DataElement FamilyNameCheckElements
         {
             get => _familyNameCheckElements;
             set => SetProperty(ref _familyNameCheckElements, value);
         }
 
-        public DataElementData ParametersCheckElements
+        public DataElement ParametersCheckElements
         {
             get => _parametersCheckElements;
             set => SetProperty(ref _parametersCheckElements, value);

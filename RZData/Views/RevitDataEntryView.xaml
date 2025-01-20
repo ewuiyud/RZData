@@ -43,13 +43,20 @@ GotFocus="TextBox_GotFocus" LostFocus="TextBox_LostFocus" TextChanged="TextBox_T
                                     <TextBlock Text="{Binding Name}" Width="auto"/>
                                 </StackPanel>
                                 <HierarchicalDataTemplate.ItemTemplate>
-                                    <HierarchicalDataTemplate ItemsSource="{Binding FamilyExtends}">
+                                    <HierarchicalDataTemplate ItemsSource="{Binding DataInstances}">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="{Binding Name}" Width="auto"/>
                                             <TextBlock Text="("/>
                                             <TextBlock Text="{Binding DataInstances.Count}"/>
                                             <TextBlock Text=")"/>
                                         </StackPanel>
+                                        <HierarchicalDataTemplate.ItemTemplate>
+                                            <HierarchicalDataTemplate>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding Element.Id}" Width="auto"/>
+                                                </StackPanel>
+                                            </HierarchicalDataTemplate>
+                                        </HierarchicalDataTemplate.ItemTemplate>
                                     </HierarchicalDataTemplate>
                                 </HierarchicalDataTemplate.ItemTemplate>
                             </HierarchicalDataTemplate>

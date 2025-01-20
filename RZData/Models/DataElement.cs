@@ -1,4 +1,5 @@
-﻿using Autodesk.Revit.DB;
+﻿using Autodesk.Revit.Creation;
+using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using CommunityToolkit.Mvvm.ComponentModel;
 using RZData.Helper;
@@ -11,13 +12,14 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Xml.Linq;
+using static OfficeOpenXml.ExcelErrorValue;
 
 namespace RZData.Models
 {
-    public class DataElementData : ObservableObject
+    public class DataElement : ObservableObject
     {
         private ObservableCollection<Family> _families;
-        public DataElementData()
+        public DataElement()
         {
             Families = new ObservableCollection<Family>();
         }
@@ -62,9 +64,9 @@ namespace RZData.Models
             e.Parameters = dataInstance.Parameters;
         }
 
-        internal DataElementData Search(string searchKeyword)
+        internal DataElement Search(string searchKeyword)
         {
-            var result = new DataElementData();
+            var result = new DataElement();
             foreach (var family in Families)
             {
                 if (family.Name.IndexOf(searchKeyword, StringComparison.OrdinalIgnoreCase) >= 0)
@@ -162,11 +164,11 @@ namespace RZData.Models
             FamilyType = familyType;
         }
         public bool IsNameCorrect { get; set; }
-        public bool IsPropertiesCorrect { get; set; }
         public ObservableCollection<DataInstance> DataInstances { get; set; }
         public ObservableCollection<ParameterSet> Parameters { get; set; }
         internal void MergeParameters()
         {
+            Parameters.Clear();
             foreach (var dataInstance in DataInstances)
             {
                 foreach (var parameter in dataInstance.Parameters)
@@ -192,6 +194,15 @@ namespace RZData.Models
             DataInstances.Add(dataInstance);
             return dataInstance;
         }
+
+        internal void ReloadParameter(Autodesk.Revit.DB.Document document)
+        {
+            foreach (var dataInstance in DataInstances)
+            {
+                dataInstance.ReloadParameter(document);
+            }
+            MergeParameters();
+        }
     }
     public class DataInstance
     {
@@ -204,48 +215,66 @@ namespace RZData.Models
         }
         public bool IsPropertiesCorrect { get; set; }
         public Element Element { get; set; }
+        /// <summary>
+        /// 元素分类名称
+        /// </summary>
+        public string ElementName { get; set; }
         public ObservableCollection<Parameter> Parameters { get; set; }
-        public bool CheckParameters(ExcelRecord excelRecord, Document document)
+        public bool CheckParameters(ExcelFamilyRecord excelRecord, Autodesk.Revit.DB.Document document)
         {
             var familyElementID = Element.LookupParameter("族与类型")?.AsElementId();
             var familyElement = document.GetElement(familyElementID);
 
             foreach (var propertyName in excelRecord.RequiredProperties)
             {
-                var parameter = Element.LookupParameter(propertyName) ?? familyElement?.LookupParameter(propertyName);
+                var parameter = Element.LookupParameter(propertyName.Value) ?? familyElement?.LookupParameter(propertyName.Value);
                 Parameters.Add(new Parameter
                 {
-                    Name = propertyName,
+                    Name = propertyName.Value,
+                    TDCName = propertyName.Key,
                     Value = parameter != null ? GetValue(parameter) : "缺失",
                     ValueType = parameter != null ? (parameter.Element.Id == Element.Id ? "实例参数" : "类型参数") : ""
                 });
             }
-
+            ElementName = excelRecord.ElementName;
             IsPropertiesCorrect = Parameters.All(p => p.Value != "缺失");
             return IsPropertiesCorrect;
+        }
+        public void ReloadParameter(Autodesk.Revit.DB.Document document)
+        {
+            var familyElementID = Element.LookupParameter("族与类型")?.AsElementId();
+            var familyElement = document.GetElement(familyElementID);
+            foreach (var p in Parameters)
+            {
+                var parameter = Element.LookupParameter(p.Name) ?? familyElement?.LookupParameter(p.Name);
+                p.Value = parameter != null ? GetValue(parameter) : "缺失";
+                p.ValueType = parameter != null ? (parameter.Element.Id == Element.Id ? "实例参数" : "类型参数") : "";
+            }
+            IsPropertiesCorrect = Parameters.All(p => p.Value != "缺失");
         }
 
         private string GetValue(Autodesk.Revit.DB.Parameter parameter)
         {
-           switch( parameter.StorageType)
+            switch (parameter.StorageType)
             {
                 case StorageType.String:
                     return parameter.AsString();
                 case StorageType.Double:
                     return parameter.AsValueString();
                 case StorageType.Integer:
-                    return parameter.AsValueString(); 
+                    return parameter.AsValueString();
                 case StorageType.ElementId:
-                    return parameter.AsInteger().ToString(); 
+                    return parameter.AsInteger().ToString();
                 default:
                     return parameter.AsString();
             }
         }
     }
-    
+
     public class Parameter
     {
         public string Name { get; set; }
+        public string TDCName { get; set; }
         public string Value { get; set; }
         public string ValueType { get; set; }
     }

@@ -104,15 +104,21 @@
     <Compile Include="App.cs" />
     <Compile Include="Class1.cs" />
     <Compile Include="Commands\RevitDataEntryCommand.cs" />
+    <Compile Include="Commands\RevitListSummaryCommand.cs" />
     <Compile Include="Commands\RevitTemplateLoadCommand.cs" />
     <Compile Include="Controls\SearchTextBox.cs" />
+    <Compile Include="Converters\RowIndexConverter.cs" />
+    <Compile Include="ExternalEventHandlers\MyExternalEventHandler.cs" />
     <Compile Include="Helper\ElementHelper.cs" />
-    <Compile Include="Helper\ExcelDataProcessor.cs" />
+    <Compile Include="Helper\ExcelDataHelper.cs" />
     <Compile Include="Commands\RevitDataCheckCommand.cs" />
-    <Compile Include="Models\DataElementData.cs" />
-    <Compile Include="Models\ExcelRecord.cs" />
+    <Compile Include="Models\DataElement.cs" />
+    <Compile Include="Models\ExcelFamilyRecord.cs" />
+    <Compile Include="Models\ExcelMaterialBusinessRecord.cs" />
+    <Compile Include="Models\MaterialRecord.cs" />
     <Compile Include="ViewModels\BaseViewModel.cs" />
     <Compile Include="ViewModels\RevitDataEntryViewModel.cs" />
+    <Compile Include="ViewModels\RevitListSummaryViewModel.cs" />
     <Compile Include="ViewModels\RevitTemplateLoadViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Styles\Style.xaml.cs">
@@ -125,6 +131,9 @@
     </Compile>
     <Compile Include="Views\RevitDataEntryView.xaml.cs">
       <DependentUpon>RevitDataEntryView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\RevitListSummaryView.xaml.cs">
+      <DependentUpon>RevitListSummaryView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\RevitTemplateLoadView.xaml.cs">
       <DependentUpon>RevitTemplateLoadView.xaml</DependentUpon>
@@ -140,6 +149,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\RevitDataEntryView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\RevitListSummaryView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

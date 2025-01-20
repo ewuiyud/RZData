@@ -30,15 +30,18 @@ namespace RZData.ViewModels
             RevitTemplateLoadViewModel = new RevitTemplateLoadViewModel(_uiDocument);
             RevitDataCheckViewModel = new RevitDataCheckViewModel(_uiDocument, RevitTemplateLoadViewModel);
             RevitDataEntryViewModel = new RevitDataEntryViewModel(_uiDocument, RevitTemplateLoadViewModel.AllElements);
+            RevitListSummaryViewModel = new RevitListSummaryViewModel(_uiDocument, RevitTemplateLoadViewModel.AllElements);
         }
         public void Reset(RevitTemplateLoadViewModel revitTemplateLoadViewModel)
         {
             RevitDataCheckViewModel = new RevitDataCheckViewModel(_uiDocument, RevitTemplateLoadViewModel);
             RevitDataEntryViewModel = new RevitDataEntryViewModel(_uiDocument, RevitTemplateLoadViewModel.AllElements);
+            RevitListSummaryViewModel = new RevitListSummaryViewModel(_uiDocument, RevitTemplateLoadViewModel.AllElements);
         }
 
         public RevitTemplateLoadViewModel RevitTemplateLoadViewModel { get; }
         public RevitDataEntryViewModel RevitDataEntryViewModel { get; set; }
         public RevitDataCheckViewModel RevitDataCheckViewModel { get; set; }
+        public RevitListSummaryViewModel RevitListSummaryViewModel { get; set; }
     }
 }
