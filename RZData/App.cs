@@ -1,4 +1,5 @@
 using Autodesk.Revit.UI;
+using RZData.ExternalEventHandlers;
 using System;
 using System.Reflection;
 using System.Windows.Media.Imaging;
@@ -9,6 +10,7 @@ namespace RZData
     {
         public Result OnStartup(UIControlledApplication application)
         {
+            CustomHandler.Instance = new CustomHandler();
             // 创建一个新的Ribbon选项卡
             string tabName = "睿住数据";
             application.CreateRibbonTab(tabName);

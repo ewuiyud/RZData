@@ -108,7 +108,7 @@
     <Compile Include="Commands\RevitTemplateLoadCommand.cs" />
     <Compile Include="Controls\SearchTextBox.cs" />
     <Compile Include="Converters\RowIndexConverter.cs" />
-    <Compile Include="ExternalEventHandlers\MyExternalEventHandler.cs" />
+    <Compile Include="ExternalEventHandlers\CustomHandler.cs" />
     <Compile Include="Helper\ElementHelper.cs" />
     <Compile Include="Helper\ExcelDataHelper.cs" />
     <Compile Include="Commands\RevitDataCheckCommand.cs" />

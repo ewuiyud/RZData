@@ -4,7 +4,9 @@ using Autodesk.Revit.UI;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Input;
+using RZData.ExternalEventHandlers;
 using RZData.Models;
+using RZData.Views;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -65,7 +67,7 @@ namespace RZData.ViewModels
             this.ShowElements = AllElements;
             this.UiDocument = _uiDocument;
             SearchCommand = new RelayCommand(Search);
-            OKCommand = new RelayCommand(OK);
+            OKCommand = new AsyncRelayCommand(OK);
         }
 
         internal void DoubleClickAndPickObjects(object selectedValue)
@@ -138,73 +140,96 @@ namespace RZData.ViewModels
         {
             ShowElements = AllElements.Search(SearchKeyword);
         }
-        private void OK()
+        private async Task OK()
         {
-            if (SelectedItem is FamilyExtend familyExtend)
+            try
             {
-                foreach (var parameter in familyExtend.Parameters)
+                if (SelectedItem is FamilyExtend familyExtend)
                 {
-                    if (parameter.Status != "多参数")
+                    foreach (var parameter in familyExtend.Parameters)
                     {
-                        SetParameter(parameter, familyExtend.DataInstances);
+                        if ( !parameter.Value.StartsWith("["))
+                        {
+                            await CustomHandler.Run(a =>
+                            {
+                                SetParameter(a.ActiveUIDocument, parameter, familyExtend.DataInstances);
+                            });
+                        }
                     }
+                    familyExtend.ReloadParameter(UiDocument.Document);
                 }
-                familyExtend.ReloadParameter(UiDocument.Document);
-            }
-            else if (SelectedItem is DataInstance dataInstance)
-            {
-                foreach (var parameter in dataInstance.Parameters)
+                else if (SelectedItem is DataInstance dataInstance)
                 {
-                    SetParameter(parameter, dataInstance);
+                    foreach (var parameter in dataInstance.Parameters)
+                    {
+                        await CustomHandler.Run(a =>
+                        {
+                            SetParameter(a.ActiveUIDocument, parameter, dataInstance);
+                        });
+                    }
+                    dataInstance.FamilyExtend.ReloadParameter(UiDocument.Document);
                 }
-                dataInstance.FamilyExtend.ReloadParameter(UiDocument.Document);
+            }
+            catch (Exception ex)
+            {
+                TaskDialog.Show("错误信息", ex.Message);
             }
         }
 
-        private void SetParameter(Models.Parameter parameter, DataInstance dataInstance)
+        private void SetParameter(UIDocument uIDocument, Models.Parameter parameter, DataInstance dataInstance)
         {
-            if (parameter.ValueType == "实例参数")
+            using (Transaction transaction = new Transaction(uIDocument.Document, "SetParameter"))
             {
-                Element element = dataInstance.Element;
-                var p = element.LookupParameter(parameter.Name);
-                if (!p.IsReadOnly && !p.Set(parameter.Value))
-                {
-                    TaskDialog.Show("错误报告", $"输入参数的值不合法，参数 {parameter.Name} 的值 {parameter.Value}");
-                }
-            }
-            else if (parameter.ValueType == "类型参数")
-            {
-                Element element = UiDocument.Document.GetElement(dataInstance.Element.LookupParameter("族与类型")?.AsElementId());
-                var p = element.LookupParameter(parameter.Name);
-                if (!p.IsReadOnly && !p.Set(parameter.Value))
-                {
-                    TaskDialog.Show("错误报告", $"输入参数的值不合法，参数 {parameter.Name} 的值 {parameter.Value}");
-                }
-            }
-        }
-
-        private void SetParameter(Models.ParameterSet parameterSet, ObservableCollection<DataInstance> dataInstances)
-        {
-            if (parameterSet.ValueType == "实例参数")
-            {
-                foreach (var dataInstance in dataInstances)
+                transaction.Start();
+                if (parameter.ValueType == "实例参数")
                 {
                     Element element = dataInstance.Element;
+                    var p = element.LookupParameter(parameter.Name);
+                    if (!p.IsReadOnly && !p.Set(parameter.Value))
+                    {
+                        TaskDialog.Show("错误报告", $"输入参数的值不合法，参数 {parameter.Name} 的值 {parameter.Value}");
+                    }
+                }
+                else if (parameter.ValueType == "类型参数")
+                {
+                    Element element = UiDocument.Document.GetElement(dataInstance.Element.LookupParameter("族与类型")?.AsElementId());
+                    var p = element.LookupParameter(parameter.Name);
+                    if (!p.IsReadOnly && !p.Set(parameter.Value))
+                    {
+                        TaskDialog.Show("错误报告", $"输入参数的值不合法，参数 {parameter.Name} 的值 {parameter.Value}");
+                    }
+                }
+                transaction.Commit();
+            }
+        }
+
+        private void SetParameter(UIDocument uIDocument, Models.ParameterSet parameterSet, ObservableCollection<DataInstance> dataInstances)
+        {
+            using (Transaction transaction = new Transaction(uIDocument.Document, "SetParameter"))
+            {
+                transaction.Start();
+                if (parameterSet.ValueType == "实例参数")
+                {
+                    foreach (var dataInstance in dataInstances)
+                    {
+                        Element element = dataInstance.Element;
+                        var p = element.LookupParameter(parameterSet.Name);
+                        if (!p.IsReadOnly && !p.Set(parameterSet.Value))
+                        {
+                            TaskDialog.Show("错误报告", $"输入参数的值不合法，参数 {parameterSet.Name} 的值 {parameterSet.Value}");
+                        }
+                    }
+                }
+                else if (parameterSet.ValueType == "类型参数")
+                {
+                    Element element = UiDocument.Document.GetElement(dataInstances[0].Element.LookupParameter("族与类型")?.AsElementId());
                     var p = element.LookupParameter(parameterSet.Name);
                     if (!p.IsReadOnly && !p.Set(parameterSet.Value))
                     {
                         TaskDialog.Show("错误报告", $"输入参数的值不合法，参数 {parameterSet.Name} 的值 {parameterSet.Value}");
                     }
                 }
-            }
-            else if (parameterSet.ValueType == "类型参数")
-            {
-                Element element = UiDocument.Document.GetElement(dataInstances[0].Element.LookupParameter("族与类型")?.AsElementId());
-                var p = element.LookupParameter(parameterSet.Name);
-                if (!p.IsReadOnly && !p.Set(parameterSet.Value))
-                {
-                    TaskDialog.Show("错误报告", $"输入参数的值不合法，参数 {parameterSet.Name} 的值 {parameterSet.Value}");
-                }
+                transaction.Commit();
             }
         }
     }
