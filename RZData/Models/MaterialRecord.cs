@@ -10,7 +10,10 @@ namespace RZData.Models
     public class MaterialRecord
     {
         public MaterialRecord()
-        { DataInstances = new ObservableCollection<DataInstance>(); }
+        {
+            DataInstances = new ObservableCollection<DataInstance>();
+            ProjectFeaturesDetail = new Dictionary<string, string>();
+        }
         /// <summary>
         /// 材料名称
         /// </summary>
@@ -24,8 +27,24 @@ namespace RZData.Models
         /// <summary>
         /// 项目特征
         /// </summary>
-        public string ProjectFeatures { get; set; }
-
+        public string ProjectFeatures
+        {
+            get
+            {
+                string result = "";
+                int index = 1;
+                foreach (var item in ProjectFeaturesDetail)
+                {
+                    result += $"{index}、{item.Key}:{item.Value}\n";
+                    index++;
+                }
+                return result;
+            }
+        }
+        /// <summary>
+        /// 项目特征具体数据
+        /// </summary>
+        public Dictionary<string, string> ProjectFeaturesDetail { get; set; }
         /// <summary>
         /// 模型工程量
         /// </summary>

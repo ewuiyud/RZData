@@ -116,6 +116,7 @@
     <Compile Include="Models\ExcelFamilyRecord.cs" />
     <Compile Include="Models\ExcelMaterialBusinessRecord.cs" />
     <Compile Include="Models\MaterialRecord.cs" />
+    <Compile Include="Models\TreeNode.cs" />
     <Compile Include="ViewModels\BaseViewModel.cs" />
     <Compile Include="ViewModels\RevitDataEntryViewModel.cs" />
     <Compile Include="ViewModels\RevitListSummaryViewModel.cs" />

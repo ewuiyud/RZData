@@ -24,29 +24,62 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <StackPanel Orientation="Horizontal" Grid.Row="1">
-            <Button Content="属性项" Width="100" Height="30" Margin="10,0,0,0" />
-            <ComboBox Width="100" Height="30" Margin="10,0,0,0" DisplayMemberPath="Name"/>
-            <Button Content="属性值" Width="100" Height="30" Margin="10,0,0,0" />
-            <ComboBox Width="100" Height="30" Margin="10,0,0,0" DisplayMemberPath="Name"/>
-            <Button Content="增加" Width="100" Height="30" Margin="10,0,0,0" />
-            <Button Content="清除" Width="100" Height="30" Margin="10,0,0,0" />
+        <StackPanel Orientation="Horizontal" Grid.Row="1" Height="40" HorizontalAlignment="Right">
+            <Border BorderBrush="Gray" BorderThickness="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5,0">
+                <Label Content="属性项:" Width="60" Height="25" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+            </Border>
+            <ComboBox Width="175" DropDownOpened="ComboBox_DropDownOpened" ItemsSource="{Binding PropertyNames}" 
+                      Height="25" Margin="10,2.5" HorizontalAlignment="Center" VerticalAlignment="Center"
+                      SelectedItem="{Binding SelectedPropertyName}" SelectionChanged="ComboBox_SelectionChanged"/>
+            <Border BorderBrush="Gray" BorderThickness="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5,0">
+                <Label Content="属性值:" Width="60" Height="25" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+            </Border>
+            <ComboBox Width="175" Height="25" Margin="10,2.5" DropDownOpened="ComboBox_DropDownOpened_1"
+                      ItemsSource="{Binding PropertyValues}" SelectedItem="{Binding SelectedPropertyValue}"/>
+            <Button Content="增加" Width="75" Height="25" Margin="5,2.5" VerticalAlignment="Center" Command="{Binding AddRequiredPropertiesCommand}"/>
         </StackPanel>
-        <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Right">
-            <Button Content="确定" Width="100" Height="30" Margin="10,0,0,0" />
-        </StackPanel>
-        <Grid  Grid.Row="4" >
+        <Grid Grid.Row="2" Height="40" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="auto"/>
+            </Grid.ColumnDefinitions>
+            <ScrollViewer Grid.Row="3" Template="{StaticResource MyScrollViewer}" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Height="40" Focusable="True">
+                <ItemsControl d:ItemsSource="{d:SampleData}" ItemsSource="{Binding RequiredProperties}" Grid.Row="3" Margin="0" Height="40" VerticalContentAlignment="Bottom">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Top"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate >
+                        <DataTemplate>
+                            <Border BorderBrush="Gray" BorderThickness="1" Margin="5" Height="20" VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding}" Height="15"/>
+                                    <Button Content="×" Style="{StaticResource SimbleButton}" Foreground="Red" Height="25" Width="15" FontSize="7" VerticalAlignment="Top" VerticalContentAlignment="Top" Margin="0,0,2,0" Padding="0"
+                                        Command="{Binding DataContext.DeleteRequiredPropertyCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                        CommandParameter="{Binding}" />
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+            <Button Grid.Column="1" Content="确定" Width="75" Height="25" Margin="10,2.5"  Command="{Binding OKWitheRequiredPropertiesCommand}" />
+            <Button Grid.Column="2" Content="清除" Width="75" Height="25" Margin="5,2.5"  Command="{Binding DeleteRequiredPropertiesCommand}"/>
+        </Grid>
+        <Grid  Grid.Row="4"  Height="40">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="auto"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <Button Content="模型中选中" Width="100" Height="30" Margin="10,0,0,0" />
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Column="1">
-                <Button Content="导出Excel" Width="100" Height="30" Margin="10,0,0,0" />
-                <Button Content="取消" Width="100" Height="30" Margin="10,0,0,0" />
+            <Button Content="模型中选中" Width="100" Height="20" Margin="10,0,0,0"  Visibility="Collapsed"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Column="1" VerticalAlignment="Center">
+                <Button Content="导出Excel" Width="70" Height="30" Margin="10,0,0,0" />
+                <Button Content="取消" Width="70" Height="30" Margin="10,0,10,0" Command="{Binding CansoleCommand}"/>
             </StackPanel>
         </Grid>
-        <DataGrid ItemsSource="{Binding ShowMaterialList}" AutoGenerateColumns="False" SelectedItem="{Binding SelectedMaterialRecord}" SelectionChanged="DataGrid_SelectionChanged">
+        <DataGrid ItemsSource="{Binding ShowMaterialList}"  EnableRowVirtualization="False" CanUserAddRows="False" IsReadOnly="True" AutoGenerateColumns="False" SelectedItem="{Binding SelectedMaterialRecord}" SelectionChanged="DataGrid_SelectionChanged">
             <DataGrid.Columns>
                 <DataGridTemplateColumn Header="行号">
                     <DataGridTemplateColumn.CellTemplate>
@@ -61,6 +94,22 @@
                 <DataGridTextColumn Header="工程量"  Binding="{Binding ModelEngineeringQuantity}"/>
             </DataGrid.Columns>
         </DataGrid>
-        <DataGrid Grid.Row="3" ItemsSource="{Binding ShowAssemblyList}"/>
+        <DataGrid Grid.Row="3" ItemsSource="{Binding ShowAssemblyList}" 
+                  EnableRowVirtualization="False"  CanUserAddRows="False" 
+                  IsReadOnly="True" AutoGenerateColumns="False" SelectedItem="{Binding SelectedAssemblyRecord}"
+                  MouseDoubleClick="DataGrid_MouseDoubleClick">
+            <DataGrid.Columns>
+                <DataGridTemplateColumn Header="行号">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}},Converter={StaticResource RowIndexConverter}}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="构件名称" Binding="{Binding AssemblyName}"/>
+                <DataGridTextColumn Header="所属模型" Binding="{Binding Modelbelonging}"/>
+                <DataGridTextColumn Header="构件ID" Binding="{Binding AssemblyID}"/>
+            </DataGrid.Columns>
+        </DataGrid>
     </Grid>
 </Window>

@@ -16,11 +16,11 @@ namespace RZData.Models
         /// <summary>
         /// 元素编码
         /// </summary>
-        public static Dictionary<string, string> ExcelElementCode = new Dictionary<string, string>();
+        public static List<TreeNode> ExcelElementCode = new List<TreeNode>();
         /// <summary>
         /// 产品编码
         /// </summary>
-        public static Dictionary<string, string> ExcelPruductCode = new Dictionary<string, string>();
+        public static List<TreeNode> ExcelProductCode = new List<TreeNode>();
         /// <summary>
         /// 属性字典
         /// </summary>
@@ -101,7 +101,7 @@ namespace RZData.Models
 
         private static void GetExcelProductCode(ExcelPackage package)
         {
-            ExcelPruductCode.Clear();
+            ExcelProductCode.Clear();
             var worksheet = package.Workbook.Worksheets["产品分类编码表"];
             int rowCount = worksheet.Dimension.Rows;
             string key = string.Empty; string value = string.Empty;
@@ -116,10 +116,13 @@ namespace RZData.Models
                     else
                         break;
                 }
-                if (!ExcelPruductCode.ContainsKey(key))
+                TreeNode treeNode = new TreeNode(key, value);
+                var parent = ExcelProductCode.Find(x => key == x.Key.Substring(0, x.Key.Length - 3));
+                if (parent != null)
                 {
-                    ExcelPruductCode.Add(key, value);
+                    treeNode.SetParent(parent);
                 }
+                ExcelProductCode.Add(treeNode);
             }
         }
 
@@ -140,10 +143,13 @@ namespace RZData.Models
                     else
                         break;
                 }
-                if (!ExcelElementCode.ContainsKey(key))
+                TreeNode treeNode = new TreeNode(key, value);
+                var parent = ExcelProductCode.Find(x => x.Key == key.Substring(0, key.Length - 3));
+                if (parent != null)
                 {
-                    ExcelElementCode.Add(key, value);
+                    treeNode.SetParent(parent);
                 }
+                ExcelProductCode.Add(treeNode);
             }
         }
 

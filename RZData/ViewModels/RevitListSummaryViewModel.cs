@@ -1,5 +1,8 @@
-﻿using Autodesk.Revit.UI;
+﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.UI;
+using CommunityToolkit.Mvvm.Input;
 using RZData.Models;
+using RZData.Views;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,20 +12,23 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Input;
 
 namespace RZData.ViewModels
 {
     public class RevitListSummaryViewModel : BaseViewModel
     {
+        private RevitListSummaryView revitListSummaryView;
         private ObservableCollection<MaterialRecord> _allMaterialList;
         private ObservableCollection<MaterialRecord> _showMaterialList;
         private MaterialRecord _selectedMaterialRecord;
         private ObservableCollection<AssemblyRecord> _showAssemblyList;
+        private AssemblyRecord _selectedAssemblyRecord;
         private ObservableCollection<string> _propertyNames;
         private ObservableCollection<string> _propertyValues;
         private string _selectedPropertyName;
         private string _selectedPropertyValue;
-        private ObservableCollection<object> _requiredProperties;
+        private ObservableCollection<(string, string)> _requiredProperties;
 
 
         public ObservableCollection<MaterialRecord> AllMaterialList
@@ -39,6 +45,11 @@ namespace RZData.ViewModels
         {
             get => _selectedMaterialRecord;
             set => SetProperty(ref _selectedMaterialRecord, value);
+        }
+        public AssemblyRecord SelectedAssemblyRecord
+        {
+            get => _selectedAssemblyRecord;
+            set => SetProperty(ref _selectedAssemblyRecord, value);
         }
         public ObservableCollection<AssemblyRecord> ShowAssemblyList
         {
@@ -65,12 +76,17 @@ namespace RZData.ViewModels
             get => _selectedPropertyValue;
             set => SetProperty(ref _selectedPropertyValue, value);
         }
-        public ObservableCollection<object> RequiredProperties
+        public ObservableCollection<(string, string)> RequiredProperties
         {
             get => _requiredProperties;
             set => SetProperty(ref _requiredProperties, value);
         }
 
+        public ICommand CansoleCommand { get; }
+        public ICommand AddRequiredPropertiesCommand { get; }
+        public ICommand DeleteRequiredPropertiesCommand { get; }
+        public ICommand OKWitheRequiredPropertiesCommand { get; }
+        public ICommand DeleteRequiredPropertyCommand { get; }
         public RevitListSummaryViewModel(UIDocument uiDocument, DataElement allElements)
         {
             UiDocument = uiDocument;
@@ -80,14 +96,130 @@ namespace RZData.ViewModels
             ShowAssemblyList = new ObservableCollection<AssemblyRecord>();
             PropertyNames = new ObservableCollection<string>();
             PropertyValues = new ObservableCollection<string>();
-            RequiredProperties = new ObservableCollection<object>();
+            RequiredProperties = new ObservableCollection<(string, string)>();
+            AddRequiredPropertiesCommand = new RelayCommand(AddRequiredProperties);
+            DeleteRequiredPropertiesCommand = new RelayCommand(DeleteRequiredProperties);
+            OKWitheRequiredPropertiesCommand = new RelayCommand(OKWitheRequiredProperties);
+            DeleteRequiredPropertyCommand = new RelayCommand<(string, string)>(DeleteRequiredProperty);
+            CansoleCommand = new RelayCommand(Cansole);
+        }
+
+        public void SetView(RevitListSummaryView revitListSummaryView)
+        {
+            this.revitListSummaryView = revitListSummaryView;
+        }
+        private void Cansole()
+        {
+            revitListSummaryView.Close();
+        }
+
+        private void OKWitheRequiredProperties()
+        {
+            ObservableCollection<MaterialRecord> temp = new ObservableCollection<MaterialRecord>();
+            if (ShowMaterialList.Count == 0)
+            {
+                ShowMaterialList = AllMaterialList;
+            }
+            foreach (var materialRecord in AllMaterialList)
+            {
+                if (RequiredProperties.ToList().All(a => MatchRequired(a, materialRecord)))
+                    temp.Add(materialRecord);
+            }
+            ShowMaterialList = temp;
+        }
+
+        private bool MatchRequired((string, string) required, MaterialRecord materialRecord)
+        {
+            switch (required.Item1)
+            {
+                case "材料名称":
+                    return materialRecord.MaterialName == required.Item2;
+                case "使用方式":
+                    return materialRecord.UsageMethod == required.Item2;
+                default:
+                    foreach (var feature in materialRecord.ProjectFeaturesDetail)
+                    {
+                        if (required.Item1 == feature.Key)
+                            if (string.IsNullOrEmpty(required.Item2))
+                            {
+                                return true; //如果筛选项仅有名称，则只要有词条属性都可以通过筛选。
+                            }
+                        if (feature.Value == required.Item2)
+                        {
+                            return true;
+                        }
+                    }
+                    return false;
+            }
+        }
+
+        private void DeleteRequiredProperties()
+        {
+            RequiredProperties.Clear();
+        }
+
+        private void AddRequiredProperties()
+        {
+            if (string.IsNullOrEmpty(SelectedPropertyName))
+            {
+                return;
+            }
+            RequiredProperties.Add((SelectedPropertyName, SelectedPropertyValue));
         }
 
         public void GetMaterialListFromDataElement()
         {
-            AllMaterialList = new ObservableCollection<MaterialRecord>();
+            try
+            {
+                List<DataInstance> list = GetDataInstanceList(AllElements);
+                AllMaterialList = FillMaterialList(list);
+                ShowMaterialList = AllMaterialList;
+            }
+            catch (Exception ex)
+            {
+                TaskDialog.Show("错误信息", ex.Message);
+            }
+        }
+
+        private ObservableCollection<MaterialRecord> FillMaterialList(List<DataInstance> list)
+        {
+            ObservableCollection<MaterialRecord> result = new ObservableCollection<MaterialRecord>();
+            foreach (var dataInstance in list)
+            {
+                var excelMaterialBusinessRecord = SortMaterials(dataInstance);
+                if (excelMaterialBusinessRecord != null)
+                {
+                    var materialRecord = new MaterialRecord();
+                    materialRecord.MaterialName = excelMaterialBusinessRecord.Name;
+                    if (excelMaterialBusinessRecord.UsageLocation.Count() > 5)
+                    {
+                        var input = excelMaterialBusinessRecord.UsageLocation.Split('：')[1];
+                        materialRecord.UsageMethod = ExplainString(input, dataInstance) + "使用";
+                    }
+                    materialRecord.ProjectFeaturesDetail = ExplainProjectFeatures(
+                        excelMaterialBusinessRecord.ProjectCharacteristics, dataInstance);
+                    var m = result.FirstOrDefault(
+                        a => a.MaterialName == materialRecord.MaterialName
+                        && a.UsageMethod == materialRecord.UsageMethod
+                        && a.ProjectFeatures == materialRecord.ProjectFeatures);
+                    if (m != null)
+                    {
+                        m.DataInstances.Add(dataInstance);
+                    }
+                    else
+                    {
+                        materialRecord.DataInstances.Add(dataInstance);
+                        result.Add(materialRecord);
+                    }
+                }
+            }
+            return result;
+        }
+
+        private List<DataInstance> GetDataInstanceList(DataElement dataElement)
+        {
             List<DataInstance> list = new List<DataInstance>();
-            foreach (var family in AllElements.Families)
+            foreach (var family in dataElement.Families)
             {
                 foreach (var type in family.FamilyTypes)
                 {
@@ -102,36 +234,14 @@ namespace RZData.ViewModels
                     }
                 }
             }
-
-            foreach (var dataInstance in list)
-            {
-                var excelMaterialBusinessRecord = SortMaterials(dataInstance);
-                if (excelMaterialBusinessRecord != null)
-                {
-                    var materialRecord = new MaterialRecord();
-                    materialRecord.MaterialName = excelMaterialBusinessRecord.Name;
-                    materialRecord.UsageMethod = excelMaterialBusinessRecord.UsageLocation.Count() > 5 ?
-                        ExplainCodeProperty(excelMaterialBusinessRecord.UsageLocation, dataInstance).Substring(5) + "使用" : "";
-                    materialRecord.ProjectFeatures = ExplainProjectFeatures(
-                        excelMaterialBusinessRecord.ProjectCharacteristics, dataInstance);
-                    var m = AllMaterialList.FirstOrDefault(
-                        a => a.MaterialName == materialRecord.MaterialName
-                        && a.UsageMethod == materialRecord.UsageMethod
-                        && a.ProjectFeatures == materialRecord.ProjectFeatures);
-                    if (m != null)
-                    {
-                        m.DataInstances.Add(dataInstance);
-                    }
-                    else
-                    {
-                        materialRecord.DataInstances.Add(dataInstance);
-                        AllMaterialList.Add(materialRecord);
-                    }
-                }
-            }
-            ShowMaterialList = AllMaterialList;
+            return list;
         }
-
+        enum MatchedType
+        {
+            元素分类名称,
+            产品分类名称,
+            空间分类名称
+        }
         private ExcelMaterialBusinessRecord SortMaterials(DataInstance dataInstance)
         {
             foreach (var excelMaterialBusinessRecord in ExcelDataHelper.ExcelMaterialBusinessRules)
@@ -143,10 +253,11 @@ namespace RZData.ViewModels
                     continue;
                 if (!string.IsNullOrEmpty(excelMaterialBusinessRecord.ElementName))
                 {
+                    //根据元素分类名称匹配
                     var elementName = dataInstance.ElementName;
                     if (elementName == null)
                         continue;
-                    if (!IsStringMatchRule(elementName, excelMaterialBusinessRecord.ElementName))
+                    if (!IsStringMatchRule(elementName, excelMaterialBusinessRecord.ElementName, MatchedType.元素分类名称))
                         continue;
                 }
                 if (!string.IsNullOrEmpty(excelMaterialBusinessRecord.ProductName))
@@ -154,7 +265,7 @@ namespace RZData.ViewModels
                     var p = dataInstance.Parameters.FirstOrDefault(a => a.TDCName == "TDC-产品分类名称");
                     if (p == null)
                         continue;
-                    if (!IsStringMatchRule(p.Value, excelMaterialBusinessRecord.ProductName))
+                    if (!IsStringMatchRule(p.Value, excelMaterialBusinessRecord.ProductName, MatchedType.产品分类名称))
                         continue;
                 }
                 if (!string.IsNullOrEmpty(excelMaterialBusinessRecord.SpaceName))
@@ -162,7 +273,7 @@ namespace RZData.ViewModels
                     var p = dataInstance.Parameters.FirstOrDefault(a => a.TDCName == "TDC-空间分类名称");
                     if (p == null)
                         continue;
-                    if (!IsStringMatchRule(p.Value, excelMaterialBusinessRecord.SpaceName))
+                    if (!IsStringMatchRule(p.Value, excelMaterialBusinessRecord.SpaceName, MatchedType.空间分类名称))
                         continue;
                 }
                 if (!string.IsNullOrEmpty(excelMaterialBusinessRecord.ExtendRule))
@@ -174,7 +285,7 @@ namespace RZData.ViewModels
             }
             return null;
         }
-        string ExplainCodeProperty(string input, DataInstance dataInstance)
+        (string, string) ExplainCodeProperty(string input, DataInstance dataInstance)
         {
             var dictionary = ExcelDataHelper.ExcelPropertyDic;
             string temp = input;
@@ -182,31 +293,39 @@ namespace RZData.ViewModels
             string suffix = temp.Split('：')[1];
             if (!suffix.Contains("《"))
             {
+                return (prefix.Substring(2), suffix);
+            }
+            return (prefix.Substring(2), ExplainString(suffix, dataInstance));
+        }
+        string ExplainString(string input, DataInstance dataInstance)
+        {
+            var dictionary = ExcelDataHelper.ExcelPropertyDic;
+            if (!input.Contains("《"))
+            {
                 return input;
             }
-            int startIndex = suffix.IndexOf("《");
-            int endIndex = suffix.IndexOf("》");
-            string key = suffix.Substring(startIndex + 1, endIndex - startIndex - 1);
+            int startIndex = input.IndexOf("《");
+            int endIndex = input.IndexOf("》");
+            string key = input.Substring(startIndex + 1, endIndex - startIndex - 1);
             if (dictionary.Keys.Contains(key))
             {
                 var tDCName = dictionary[key];
                 if (tDCName == "TDC-元素分类名称")
                 {
-                    temp = prefix + "：" + dataInstance.ElementName;
+                    return dataInstance.ElementName;
                 }
                 else
                 {
                     var p = dataInstance.Parameters.FirstOrDefault(a => a.TDCName == tDCName);
                     if (p != null)
                     {
-                        temp = prefix + "：" + p.Value;
+                        return p.Value;
                     }
                     else
                     {
-                        temp = prefix + "：未识别属性，请检查模板对应词条";
+                        return "未识别属性，请检查模板对应词条";
                     }
                 }
-                return temp;
             }
             else
             {
@@ -214,22 +333,22 @@ namespace RZData.ViewModels
                 throw new Exception($"需要匹配的项目特征：{input}， 不合法。");
             }
         }
-        string ExplainProjectFeatures(string input, DataInstance dataInstance)
+        Dictionary<string, string> ExplainProjectFeatures(string input, DataInstance dataInstance)
         {
             if (string.IsNullOrEmpty(input))
             {
-                return "";
+                return null;
             }
             var features = input.Split('\n');
-            string result = string.Empty;
+            var result = new Dictionary<string, string>();
             foreach (var feature in features)
             {
-                string temp = ExplainCodeProperty(feature, dataInstance);
-                result += temp + "\n";
+                var temp = ExplainCodeProperty(feature, dataInstance);
+                result.Add(temp.Item1, temp.Item2);
             }
             return result;
         }
-        private bool IsStringMatchRule(string input, string rule)
+        private bool IsStringMatchRule(string input, string rule, MatchedType matchedType)
         {
             if (!rule.StartsWith("{{") || !rule.EndsWith("}}"))
             {
@@ -242,10 +361,55 @@ namespace RZData.ViewModels
                 if (condition.StartsWith("$="))
                 {
                     string value = condition.Substring(2);
-                    if (input == value)
+                    switch (matchedType)
                     {
-                        return true;
+                        case MatchedType.元素分类名称:
+                            var elementNode = ExcelDataHelper.ExcelElementCode.FirstOrDefault(a => a.Value == value);
+                            if (elementNode == null || elementNode.Children.Count == 0)
+                            {
+                                if (input == value)
+                                {
+                                    return true;
+                                }
+                            }
+                            else
+                            {
+                                foreach (var item in elementNode.GetAllChirlds())
+                                {
+                                    if (input == item.Value)
+                                    {
+                                        return true;
+                                    }
+                                }
+                            }
+                            break;
+                        case MatchedType.产品分类名称:
+                            var productNode = ExcelDataHelper.ExcelProductCode.FirstOrDefault(a => a.Value == value);
+                            if (productNode == null || productNode.Children.Count == 0)
+                            {
+                                if (input == value)
+                                {
+                                    return true;
+                                }
+                            }
+                            else
+                            {
+                                foreach (var item in productNode.GetAllChirlds())
+                                {
+                                    if (input == item.Value)
+                                    {
+                                        return true;
+                                    }
+                                }
+                            }
+                            break;
+                        case MatchedType.空间分类名称:
+                            throw new NotSupportedException("空间分类表未完成");
+                            break;
+                        default:
+                            break;
                     }
+
                 }
             }
             return false;
@@ -304,16 +468,87 @@ namespace RZData.ViewModels
         internal void GetAssemblyList()
         {
             ShowAssemblyList = new ObservableCollection<AssemblyRecord>();
-            if (SelectedMaterialRecord!=null)
-            foreach (var dataInstance in SelectedMaterialRecord.DataInstances)
-            {
-                ShowAssemblyList.Add(new AssemblyRecord()
+            if (SelectedMaterialRecord != null)
+                foreach (var dataInstance in SelectedMaterialRecord.DataInstances)
                 {
-                    AssemblyID = dataInstance.Element.Id.ToString(),
-                    AssemblyName = dataInstance.Element.LookupParameter("族与类型").AsValueString(),
-                    Modelbelonging = dataInstance.Element.Document == UiDocument.Document ? "当前模型" : "链接模型"
-                });
+                    ShowAssemblyList.Add(new AssemblyRecord()
+                    {
+                        AssemblyID = dataInstance.Element.Id.ToString(),
+                        AssemblyName = dataInstance.Element.LookupParameter("族与类型").AsValueString(),
+                        Modelbelonging = dataInstance.Element.Document == UiDocument.Document ? "当前模型" : "链接模型"
+                    });
+                }
+        }
+
+        internal void PropertyNameDroped()
+        {
+            PropertyNames = new ObservableCollection<string>();
+            foreach (var materialRecord in ShowMaterialList)
+            {
+                foreach (var feature in materialRecord.ProjectFeaturesDetail)
+                {
+                    if (!PropertyNames.Contains(feature.Key))
+                    {
+                        PropertyNames.Add(feature.Key);
+                    }
+                }
             }
+            PropertyNames.Add("材料名称");
+            PropertyNames.Add("使用方式");
+        }
+
+        internal void PropertyValueDroped()
+        {
+            PropertyValues = new ObservableCollection<string>();
+            if (string.IsNullOrEmpty(SelectedPropertyName))
+            {
+                return;
+            }
+            switch (SelectedPropertyName)
+            {
+                case "材料名称":
+                    foreach (var materialRecord in ShowMaterialList)
+                    {
+                        if (!PropertyValues.Contains(materialRecord.MaterialName))
+                        {
+                            PropertyValues.Add(materialRecord.MaterialName);
+                        }
+                    }
+                    break;
+                case "使用方式":
+                    foreach (var materialRecord in ShowMaterialList)
+                    {
+                        if (!PropertyValues.Contains(materialRecord.UsageMethod))
+                        {
+                            PropertyValues.Add(materialRecord.UsageMethod);
+                        }
+                    }
+                    break;
+                default:
+                    foreach (var materialRecord in ShowMaterialList)
+                    {
+                        foreach (var feature in materialRecord.ProjectFeaturesDetail)
+                        {
+                            if (SelectedPropertyName == feature.Key && !PropertyValues.Contains(feature.Value))
+                            {
+                                PropertyValues.Add(feature.Value);
+                            }
+                        }
+                    }
+                    break;
+            }
+        }
+        private void DeleteRequiredProperty((string, string) parameter)
+        {
+            if (RequiredProperties.Contains(parameter))
+                RequiredProperties.Remove(parameter);
+        }
+        internal void DoubleClickAndPickObjects()
+        {
+            var uidoc = UiDocument;
+            var elementIds = new List<ElementId>();
+            elementIds.Add(new ElementId(int.Parse(SelectedAssemblyRecord.AssemblyID)));
+            uidoc.Selection.SetElementIds(elementIds);
         }
     }
 }

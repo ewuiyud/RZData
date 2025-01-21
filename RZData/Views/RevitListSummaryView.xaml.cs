@@ -26,6 +26,7 @@ namespace RZData.Views
         {
             InitializeComponent();
             var revitListSummaryViewModel = ViewModelLocator.Instance(uIDocument).RevitListSummaryViewModel;
+            revitListSummaryViewModel.SetView(this);
             revitListSummaryViewModel.GetMaterialListFromDataElement();
             DataContext = revitListSummaryViewModel;
         }
@@ -34,6 +35,31 @@ namespace RZData.Views
         {
             var viewModel = DataContext as RevitListSummaryViewModel;
             viewModel.GetAssemblyList();
+        }
+
+        private void ComboBox_DropDownOpened(object sender, EventArgs e)
+        {
+            var viewModel = DataContext as RevitListSummaryViewModel;
+            viewModel.PropertyNameDroped();
+        }
+
+        private void ComboBox_DropDownOpened_1(object sender, EventArgs e)
+        {
+            var viewModel = DataContext as RevitListSummaryViewModel;
+            viewModel.PropertyValueDroped();
+        }
+
+        private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var viewModel = DataContext as RevitListSummaryViewModel;
+            viewModel.SelectedPropertyValue = null;
+        }
+
+        private void DataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            var viewModel = DataContext as RevitListSummaryViewModel;
+            viewModel.SelectedPropertyValue = null;
+            viewModel.DoubleClickAndPickObjects();
         }
     }
 }
