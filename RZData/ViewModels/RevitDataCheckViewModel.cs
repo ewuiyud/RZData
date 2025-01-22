@@ -23,12 +23,12 @@ namespace RZData.ViewModels
         private DataElement _showElements;
         private object _selectedItem;
 
-        public RevitDataCheckViewModel(UIDocument uiDocument, RevitTemplateLoadViewModel revitTemplateLoadViewModel)
+        public RevitDataCheckViewModel(UIDocument uiDocument, BaseViewModel baseViewModel)
         {
             UiDocument = uiDocument;
-            AllElements = revitTemplateLoadViewModel.AllElements;
-            FamilyNameCheckElements = revitTemplateLoadViewModel.FamilyNameCheckElements;
-            ParametersCheckElements = revitTemplateLoadViewModel.ParametersCheckElements;
+            AllElements = baseViewModel.AllElements;
+            FamilyNameCheckElements = baseViewModel.FamilyNameCheckElements;
+            ParametersCheckElements = baseViewModel.ParametersCheckElements;
             ShowParametersCheckElements = ParametersCheckElements;
             //commands
             SearchCommand = new RelayCommand(Search);

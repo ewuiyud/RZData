@@ -19,6 +19,7 @@ namespace RZData.Views
         {
             InitializeComponent();
             DataContext = ViewModelLocator.Instance(uiDocument).RevitDataCheckViewModel;
+            ViewModelLocator.Instance(uiDocument).Reset();
             Loaded += (s, e) =>
             {
                 var textBox = this.FindName("SearchTextBox") as System.Windows.Controls.TextBox;

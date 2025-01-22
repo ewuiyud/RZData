@@ -22,10 +22,11 @@ namespace RZData.Views
     /// </summary>
     public partial class RevitListSummaryView : Window
     {
-        public RevitListSummaryView(UIDocument uIDocument)
+        public RevitListSummaryView(UIDocument uiDocument)
         {
             InitializeComponent();
-            var revitListSummaryViewModel = ViewModelLocator.Instance(uIDocument).RevitListSummaryViewModel;
+            var revitListSummaryViewModel = ViewModelLocator.Instance(uiDocument).RevitListSummaryViewModel;
+            ViewModelLocator.Instance(uiDocument).Reset();
             revitListSummaryViewModel.SetView(this);
             revitListSummaryViewModel.GetMaterialListFromDataElement();
             DataContext = revitListSummaryViewModel;

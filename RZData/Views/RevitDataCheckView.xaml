@@ -6,6 +6,7 @@
              xmlns:local="clr-namespace:RZData.Views"
              mc:Ignorable="d" 
              Title="数据校验"
+             Topmost="True"
              MaxHeight="500" MinHeight="500" MaxWidth="700" MinWidth="700">
     <Window.Resources>
         <ResourceDictionary>

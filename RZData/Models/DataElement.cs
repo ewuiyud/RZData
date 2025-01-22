@@ -107,6 +107,30 @@ namespace RZData.Models
 
             return result;
         }
+
+        internal DataElement FindAllStandardElements()
+        {
+            var result = new DataElement();
+            foreach (var family in this.Families)
+            {
+                foreach (var familyType in family.FamilyTypes)
+                {
+                    foreach (var familyExtend in familyType.FamilyExtends)
+                    {
+                        if (familyExtend.IsNameCorrect)
+                            foreach (var dataInstance in familyExtend.DataInstances)
+                            {
+                                if (dataInstance.IsPropertiesCorrect)
+                                {
+                                    result.Add(dataInstance);
+                                }
+                            }
+                    }
+                }
+            }
+            result.MergeParameters();
+            return result;
+        }
     }
     public class Family
     {

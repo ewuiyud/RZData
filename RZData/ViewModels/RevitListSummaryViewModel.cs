@@ -482,7 +482,7 @@ namespace RZData.ViewModels
         internal void PropertyNameDroped()
         {
             PropertyNames = new ObservableCollection<string>();
-            foreach (var materialRecord in ShowMaterialList)
+            foreach (var materialRecord in AllMaterialList)
             {
                 foreach (var feature in materialRecord.ProjectFeaturesDetail)
                 {
@@ -506,7 +506,7 @@ namespace RZData.ViewModels
             switch (SelectedPropertyName)
             {
                 case "材料名称":
-                    foreach (var materialRecord in ShowMaterialList)
+                    foreach (var materialRecord in AllMaterialList)
                     {
                         if (!PropertyValues.Contains(materialRecord.MaterialName))
                         {
@@ -515,7 +515,7 @@ namespace RZData.ViewModels
                     }
                     break;
                 case "使用方式":
-                    foreach (var materialRecord in ShowMaterialList)
+                    foreach (var materialRecord in AllMaterialList)
                     {
                         if (!PropertyValues.Contains(materialRecord.UsageMethod))
                         {
@@ -524,7 +524,7 @@ namespace RZData.ViewModels
                     }
                     break;
                 default:
-                    foreach (var materialRecord in ShowMaterialList)
+                    foreach (var materialRecord in AllMaterialList)
                     {
                         foreach (var feature in materialRecord.ProjectFeaturesDetail)
                         {
