@@ -7,20 +7,37 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RZData", "RZData\RZData.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "测试", "测试\测试.csproj", "{13ED7108-44CA-4353-B6DC-5737F2A944D9}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "睿住数据安装包", "睿住数据安装包\睿住数据安装包.vdproj", "{45435BFE-1FA2-4A45-B2F1-3C1B8ABAEB3F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Debug|ARM64 = Debug|ARM64
 		Release|Any CPU = Release|Any CPU
+		Release|ARM64 = Release|ARM64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{E8F4747D-8B5E-4145-95C6-8DC4F7D9AE0A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E8F4747D-8B5E-4145-95C6-8DC4F7D9AE0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8F4747D-8B5E-4145-95C6-8DC4F7D9AE0A}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{E8F4747D-8B5E-4145-95C6-8DC4F7D9AE0A}.Debug|ARM64.Build.0 = Debug|ARM64
 		{E8F4747D-8B5E-4145-95C6-8DC4F7D9AE0A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E8F4747D-8B5E-4145-95C6-8DC4F7D9AE0A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E8F4747D-8B5E-4145-95C6-8DC4F7D9AE0A}.Release|ARM64.ActiveCfg = Release|ARM64
+		{E8F4747D-8B5E-4145-95C6-8DC4F7D9AE0A}.Release|ARM64.Build.0 = Release|ARM64
 		{13ED7108-44CA-4353-B6DC-5737F2A944D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{13ED7108-44CA-4353-B6DC-5737F2A944D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{13ED7108-44CA-4353-B6DC-5737F2A944D9}.Debug|ARM64.ActiveCfg = Debug|ARM64
 		{13ED7108-44CA-4353-B6DC-5737F2A944D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{13ED7108-44CA-4353-B6DC-5737F2A944D9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{13ED7108-44CA-4353-B6DC-5737F2A944D9}.Release|ARM64.ActiveCfg = Release|ARM64
+		{13ED7108-44CA-4353-B6DC-5737F2A944D9}.Release|ARM64.Build.0 = Release|ARM64
+		{45435BFE-1FA2-4A45-B2F1-3C1B8ABAEB3F}.Debug|Any CPU.ActiveCfg = Debug
+		{45435BFE-1FA2-4A45-B2F1-3C1B8ABAEB3F}.Debug|ARM64.ActiveCfg = Debug
+		{45435BFE-1FA2-4A45-B2F1-3C1B8ABAEB3F}.Debug|ARM64.Build.0 = Debug
+		{45435BFE-1FA2-4A45-B2F1-3C1B8ABAEB3F}.Release|Any CPU.ActiveCfg = Release
+		{45435BFE-1FA2-4A45-B2F1-3C1B8ABAEB3F}.Release|ARM64.ActiveCfg = Release
+		{45435BFE-1FA2-4A45-B2F1-3C1B8ABAEB3F}.Release|ARM64.Build.0 = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

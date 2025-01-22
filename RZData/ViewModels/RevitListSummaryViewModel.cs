@@ -405,7 +405,6 @@ namespace RZData.ViewModels
                             break;
                         case MatchedType.空间分类名称:
                             throw new NotSupportedException("空间分类表未完成");
-                            break;
                         default:
                             break;
                     }

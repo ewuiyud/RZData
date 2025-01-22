@@ -98,7 +98,8 @@
                 </Grid>
             </TabItem>
         </TabControl>
-        <DataGrid Grid.Column="1" ItemsSource="{Binding SelectedItem.Parameters}" AutoGenerateColumns="False" Margin="20" Width="258">
+        <DataGrid Grid.Column="1" ItemsSource="{Binding SelectedItem.Parameters}" IsReadOnly="True" CanUserAddRows="False"
+                  AutoGenerateColumns="False" Margin="20" Width="258" >
             <DataGrid.Columns>
                 <DataGridTextColumn Header="参数名称" Binding="{Binding Name}" Width="150"/>
                 <DataGridTextColumn Header="状态" Binding="{Binding ShowValue}" Width="100">

@@ -70,7 +70,8 @@ GotFocus="TextBox_GotFocus" LostFocus="TextBox_LostFocus" TextChanged="TextBox_T
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="auto"/>
             </Grid.RowDefinitions>
-            <DataGrid ItemsSource="{Binding SelectedItem.Parameters}" AutoGenerateColumns="False" Margin="20,20,20,0" Width="358">
+            <DataGrid ItemsSource="{Binding SelectedItem.Parameters}" IsReadOnly="True" CanUserAddRows="False" CanUserReorderColumns="False"
+                      AutoGenerateColumns="False" Margin="20,20,20,0" Width="358">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="参数名称" Binding="{Binding Name}" Width="100"/>
                     <DataGridTextColumn Header="参数类型" Binding="{Binding ValueType}" Width="100"/>

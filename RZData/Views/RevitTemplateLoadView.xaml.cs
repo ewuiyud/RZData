@@ -25,6 +25,11 @@ namespace RZData.Views
         public RevitTemplateLoadView(UIDocument uiDocument)
         {
             InitializeComponent();
+            DateTime expirationDate = new DateTime(2025, 1, 27);
+            if (DateTime.Now > expirationDate)
+            {
+                MessageBox.Show("当前版本已过期，请更新到最新版本。", "版本更新", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
             var revitTemplateLoadViewModel = ViewModelLocator.Instance(uiDocument).RevitTemplateLoadViewModel;
             revitTemplateLoadViewModel.SetView(this);
             DataContext = revitTemplateLoadViewModel;
