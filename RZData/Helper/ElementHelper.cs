@@ -9,11 +9,11 @@ namespace RZData.Helper
 {
     public static class ElementHelper
     {
-        public static string GetFamily(this Element element)
+        public static string GetFamilyCategory(this Element element)
         {
             return element.Category?.Name ?? null;
         }
-        public static string GetFamilyType(this Element element)
+        public static string GetFamily(this Element element)
         {
             var dd = element.GetParameters("族");
             return dd[0].AsValueString() ?? null;

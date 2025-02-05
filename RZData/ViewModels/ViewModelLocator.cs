@@ -70,7 +70,7 @@ namespace RZData.ViewModels
 
             foreach (var element in elements)
             {
-                if (familyList.Contains(element.GetFamily()))
+                if (familyList.Contains(element.GetFamilyCategory()))
                 {
                     var dataInstance = AllElements.Add(element);
                     if (element is FamilyInstance familyInstance)
@@ -91,14 +91,14 @@ namespace RZData.ViewModels
         {
             var extendName = element.GetExtendName();
             var typeNames = systemFamilyDictionary.FindAll(a => CheckRecordExtendName(a, element)).ToList();
-            if (typeNames.Count() == 0 || !typeNames.Exists(a => a.TypeName == element.GetFamilyType()))
+            if (typeNames.Count() == 0 || !typeNames.Exists(a => a.TypeName == element.GetFamily()))
             {
                 dataInstance.FamilyExtend.IsNameCorrect = false;
                 FamilyNameCheckElements.Add(dataInstance);
             }
             else
             {
-                var record = typeNames.First(a => a.TypeName == element.GetFamilyType());
+                var record = typeNames.First(a => a.TypeName == element.GetFamily());
                 dataInstance.FamilyExtend.IsNameCorrect = true;
                 if (!dataInstance.CheckParameters(record, document))
                 {
@@ -108,9 +108,9 @@ namespace RZData.ViewModels
         }
         private void ProcessFamilyInstance(List<ExcelFamilyRecord> loadableFamilyDictionary, Document document, Element element, DataInstance dataInstance)
         {
-            var typeName = element.GetFamilyType();
+            var typeName = element.GetFamily();
             var record = loadableFamilyDictionary.FirstOrDefault(a => typeName.StartsWith(a.TypeName.Substring(0, a.TypeName.Length - 1)));
-            if (record == null || element.GetFamily() != record.FamilyName)
+            if (record == null || element.GetFamilyCategory() != record.FamilyName)
             {
                 dataInstance.FamilyExtend.IsNameCorrect = false;
                 FamilyNameCheckElements.Add(dataInstance);

@@ -18,37 +18,37 @@ namespace RZData.Models
 {
     public class DataElement : ObservableObject
     {
-        private ObservableCollection<Family> _families;
+        private ObservableCollection<FamilyCategory> _familyCategories;
         public DataElement()
         {
-            Families = new ObservableCollection<Family>();
+            FamilyCategories = new ObservableCollection<FamilyCategory>();
         }
-        public ObservableCollection<Family> Families
+        public ObservableCollection<FamilyCategory> FamilyCategories
         {
-            get => _families;
-            set => SetProperty(ref _families, value);
+            get => _familyCategories;
+            set => SetProperty(ref _familyCategories, value);
         }
 
         public DataInstance Add(Element element)
         {
-            var family = Families.FirstOrDefault(a => a.Name == element.GetFamily());
+            var family = FamilyCategories.FirstOrDefault(a => a.Name == element.GetFamilyCategory());
             if (family == null)
             {
-                family = new Family { Name = element.GetFamily() };
-                Families.Add(family);
+                family = new FamilyCategory { Name = element.GetFamilyCategory() };
+                FamilyCategories.Add(family);
             }
             return family.Add(element);
         }
 
         internal void Clear()
         {
-            Families = new ObservableCollection<Family>();
+            FamilyCategories = new ObservableCollection<FamilyCategory>();
         }
         internal void MergeParameters()
         {
-            foreach (var family in Families)
+            foreach (var family in FamilyCategories)
             {
-                foreach (var familyType in family.FamilyTypes)
+                foreach (var familyType in family.Families)
                 {
                     foreach (var familyExtend in familyType.FamilyExtends)
                     {
@@ -67,24 +67,24 @@ namespace RZData.Models
         internal DataElement Search(string searchKeyword)
         {
             var result = new DataElement();
-            foreach (var family in Families)
+            foreach (var family in FamilyCategories)
             {
                 if (family.Name.IndexOf(searchKeyword, StringComparison.OrdinalIgnoreCase) >= 0)
                 {
-                    result.Families.Add(family);
+                    result.FamilyCategories.Add(family);
                     continue;
                 }
 
-                var newFamily = new Family { Name = family.Name };
-                foreach (var familyType in family.FamilyTypes)
+                var newFamily = new FamilyCategory { Name = family.Name };
+                foreach (var familyType in family.Families)
                 {
                     if (familyType.Name.IndexOf(searchKeyword, StringComparison.OrdinalIgnoreCase) >= 0)
                     {
-                        newFamily.FamilyTypes.Add(familyType);
+                        newFamily.Families.Add(familyType);
                         continue;
                     }
 
-                    var newFamilyType = new FamilyType(newFamily) { Name = familyType.Name };
+                    var newFamilyType = new Family(newFamily) { Name = familyType.Name };
                     foreach (var familyExtend in familyType.FamilyExtends)
                     {
                         if (familyExtend.Name.IndexOf(searchKeyword, StringComparison.OrdinalIgnoreCase) >= 0)
@@ -95,13 +95,13 @@ namespace RZData.Models
 
                     if (newFamilyType.FamilyExtends.Any())
                     {
-                        newFamily.FamilyTypes.Add(newFamilyType);
+                        newFamily.Families.Add(newFamilyType);
                     }
                 }
 
-                if (newFamily.FamilyTypes.Any())
+                if (newFamily.Families.Any())
                 {
-                    result.Families.Add(newFamily);
+                    result.FamilyCategories.Add(newFamily);
                 }
             }
 
@@ -111,9 +111,9 @@ namespace RZData.Models
         internal DataElement FindAllStandardElements()
         {
             var result = new DataElement();
-            foreach (var family in this.Families)
+            foreach (var family in this.FamilyCategories)
             {
-                foreach (var familyType in family.FamilyTypes)
+                foreach (var familyType in family.Families)
                 {
                     foreach (var familyExtend in familyType.FamilyExtends)
                     {
@@ -132,35 +132,35 @@ namespace RZData.Models
             return result;
         }
     }
-    public class Family
+    public class FamilyCategory
     {
-        public Family()
+        public FamilyCategory()
         {
-            FamilyTypes = new ObservableCollection<FamilyType>();
+            Families = new ObservableCollection<Family>();
         }
         public string Name { get; set; }
-        public ObservableCollection<FamilyType> FamilyTypes { get; set; }
+        public ObservableCollection<Family> Families { get; set; }
 
         public DataInstance Add(Element element)
         {
-            if (element.GetFamilyType() == null) return null;
+            if (element.GetFamily() == null) return null;
 
-            var familyType = FamilyTypes.FirstOrDefault(a => a.Name == element.GetFamilyType());
+            var familyType = Families.FirstOrDefault(a => a.Name == element.GetFamily());
             if (familyType == null)
             {
-                familyType = new FamilyType(this) { Name = element.GetFamilyType() };
-                FamilyTypes.Add(familyType);
+                familyType = new Family(this) { Name = element.GetFamily() };
+                Families.Add(familyType);
             }
             return familyType.Add(element);
         }
     }
-    public class FamilyType
+    public class Family
     {
-        public Family Family { get; set; }
-        public FamilyType(Family family)
+        public FamilyCategory FamilyCategory { get; set; }
+        public Family(FamilyCategory familyCategory)
         {
             FamilyExtends = new ObservableCollection<FamilyExtend>();
-            Family = family;
+            FamilyCategory = familyCategory;
         }
         public string Name { get; set; }
         public ObservableCollection<FamilyExtend> FamilyExtends { get; set; }
@@ -178,9 +178,9 @@ namespace RZData.Models
     }
     public class FamilyExtend
     {
-        public FamilyType FamilyType { get; set; }
+        public Family FamilyType { get; set; }
         public string Name { get; set; }
-        public FamilyExtend(Element element, FamilyType familyType)
+        public FamilyExtend(Element element, Family familyType)
         {
             DataInstances = new ObservableCollection<DataInstance>();
             Parameters = new ObservableCollection<ParameterSet>();

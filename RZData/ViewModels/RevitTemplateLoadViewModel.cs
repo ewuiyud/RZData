@@ -15,7 +15,6 @@ namespace RZData.ViewModels
 {
     public class RevitTemplateLoadViewModel : BaseViewModel
     {
-        private RevitTemplateLoadView view;
         public RevitTemplateLoadViewModel()
         {
             AllElements = new DataElement();
@@ -61,10 +60,8 @@ namespace RZData.ViewModels
         }
         public ICommand LoadDataFromExcelCommand { get; }
         public ICommand OKCommand { get; }
-        public void SetView(RevitTemplateLoadView view)
-        {
-            this.view = view;
-        }
+        public Action CloseAction { get; set; }
+
         private void LoadDataFromExcel()
         {
             try
@@ -92,7 +89,7 @@ namespace RZData.ViewModels
                     LoadTemplatePath = "";
                     CurrentFileName = loadFileName;
                     loadFileName = "无";
-                    view.Close();
+                    CloseAction?.Invoke();
                 }
             }
             catch (Exception e)

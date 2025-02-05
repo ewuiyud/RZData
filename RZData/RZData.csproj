@@ -121,7 +121,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App.cs" />
-    <Compile Include="Class1.cs" />
     <Compile Include="Commands\RevitDataEntryCommand.cs" />
     <Compile Include="Commands\RevitListSummaryCommand.cs" />
     <Compile Include="Commands\RevitTemplateLoadCommand.cs" />
@@ -134,9 +133,13 @@
     <Compile Include="Models\DataElement.cs" />
     <Compile Include="Models\ExcelFamilyRecord.cs" />
     <Compile Include="Models\ExcelMaterialBusinessRecord.cs" />
-    <Compile Include="Models\MaterialRecord.cs" />
+    <Compile Include="ViewModels\MaterialViewModel.cs" />
+    <Compile Include="Models\RevitSolidElement.cs" />
     <Compile Include="Models\TreeNode.cs" />
+    <Compile Include="ViewModels\AssemblyViewModel.cs" />
     <Compile Include="ViewModels\BaseViewModel.cs" />
+    <Compile Include="ViewModels\ElementInstanceViewModel.cs" />
+    <Compile Include="ViewModels\ElementViewModel.cs" />
     <Compile Include="ViewModels\RevitDataEntryViewModel.cs" />
     <Compile Include="ViewModels\RevitListSummaryViewModel.cs" />
     <Compile Include="ViewModels\RevitTemplateLoadViewModel.cs" />

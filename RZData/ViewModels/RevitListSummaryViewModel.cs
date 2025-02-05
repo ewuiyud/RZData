@@ -19,11 +19,11 @@ namespace RZData.ViewModels
     public class RevitListSummaryViewModel : BaseViewModel
     {
         private RevitListSummaryView revitListSummaryView;
-        private ObservableCollection<MaterialRecord> _allMaterialList;
-        private ObservableCollection<MaterialRecord> _showMaterialList;
-        private MaterialRecord _selectedMaterialRecord;
-        private ObservableCollection<AssemblyRecord> _showAssemblyList;
-        private AssemblyRecord _selectedAssemblyRecord;
+        private ObservableCollection<MaterialViewModel> _allMaterialList;
+        private ObservableCollection<MaterialViewModel> _showMaterialList;
+        private MaterialViewModel _selectedMaterialRecord;
+        private ObservableCollection<AssemblyViewModel> _showAssemblyList;
+        private AssemblyViewModel _selectedAssemblyRecord;
         private ObservableCollection<string> _propertyNames;
         private ObservableCollection<string> _propertyValues;
         private string _selectedPropertyName;
@@ -31,27 +31,27 @@ namespace RZData.ViewModels
         private ObservableCollection<(string, string)> _requiredProperties;
 
 
-        public ObservableCollection<MaterialRecord> AllMaterialList
+        public ObservableCollection<MaterialViewModel> AllMaterialList
         {
             get => _allMaterialList;
             set => SetProperty(ref _allMaterialList, value);
         }
-        public ObservableCollection<MaterialRecord> ShowMaterialList
+        public ObservableCollection<MaterialViewModel> ShowMaterialList
         {
             get => _showMaterialList;
             set => SetProperty(ref _showMaterialList, value);
         }
-        public MaterialRecord SelectedMaterialRecord
+        public MaterialViewModel SelectedMaterialRecord
         {
             get => _selectedMaterialRecord;
             set => SetProperty(ref _selectedMaterialRecord, value);
         }
-        public AssemblyRecord SelectedAssemblyRecord
+        public AssemblyViewModel SelectedAssemblyRecord
         {
             get => _selectedAssemblyRecord;
             set => SetProperty(ref _selectedAssemblyRecord, value);
         }
-        public ObservableCollection<AssemblyRecord> ShowAssemblyList
+        public ObservableCollection<AssemblyViewModel> ShowAssemblyList
         {
             get => _showAssemblyList;
             set => SetProperty(ref _showAssemblyList, value);
@@ -91,9 +91,9 @@ namespace RZData.ViewModels
         {
             UiDocument = uiDocument;
             AllElements = allElements;
-            AllMaterialList = new ObservableCollection<MaterialRecord>();
-            ShowMaterialList = new ObservableCollection<MaterialRecord>();
-            ShowAssemblyList = new ObservableCollection<AssemblyRecord>();
+            AllMaterialList = new ObservableCollection<MaterialViewModel>();
+            ShowMaterialList = new ObservableCollection<MaterialViewModel>();
+            ShowAssemblyList = new ObservableCollection<AssemblyViewModel>();
             PropertyNames = new ObservableCollection<string>();
             PropertyValues = new ObservableCollection<string>();
             RequiredProperties = new ObservableCollection<(string, string)>();
@@ -117,7 +117,7 @@ namespace RZData.ViewModels
         {
             try
             {
-                ObservableCollection<MaterialRecord> temp = new ObservableCollection<MaterialRecord>();
+                ObservableCollection<MaterialViewModel> temp = new ObservableCollection<MaterialViewModel>();
                 if (ShowMaterialList.Count == 0)
                 {
                     ShowMaterialList = AllMaterialList;
@@ -135,7 +135,7 @@ namespace RZData.ViewModels
             }
         }
 
-        private bool MatchRequired((string, string) required, MaterialRecord materialRecord)
+        private bool MatchRequired((string, string) required, MaterialViewModel materialRecord)
         {
             switch (required.Item1)
             {
@@ -202,15 +202,15 @@ namespace RZData.ViewModels
             }
         }
 
-        private ObservableCollection<MaterialRecord> FillMaterialList(List<DataInstance> list)
+        private ObservableCollection<MaterialViewModel> FillMaterialList(List<DataInstance> list)
         {
-            ObservableCollection<MaterialRecord> result = new ObservableCollection<MaterialRecord>();
+            ObservableCollection<MaterialViewModel> result = new ObservableCollection<MaterialViewModel>();
             foreach (var dataInstance in list)
             {
                 var excelMaterialBusinessRecord = SortMaterials(dataInstance);
                 if (excelMaterialBusinessRecord != null)
                 {
-                    var materialRecord = new MaterialRecord();
+                    var materialRecord = new MaterialViewModel();
                     materialRecord.MaterialName = excelMaterialBusinessRecord.Name;
                     if (excelMaterialBusinessRecord.UsageLocation.Count() > 5)
                     {
@@ -240,9 +240,9 @@ namespace RZData.ViewModels
         private List<DataInstance> GetDataInstanceList(DataElement dataElement)
         {
             List<DataInstance> list = new List<DataInstance>();
-            foreach (var family in dataElement.Families)
+            foreach (var family in dataElement.FamilyCategories)
             {
-                foreach (var type in family.FamilyTypes)
+                foreach (var type in family.Families)
                 {
                     foreach (var familyExtend in type.FamilyExtends)
                     {
@@ -489,11 +489,11 @@ namespace RZData.ViewModels
         {
             try
             {
-                ShowAssemblyList = new ObservableCollection<AssemblyRecord>();
+                ShowAssemblyList = new ObservableCollection<AssemblyViewModel>();
                 if (SelectedMaterialRecord != null)
                     foreach (var dataInstance in SelectedMaterialRecord.DataInstances)
                     {
-                        ShowAssemblyList.Add(new AssemblyRecord()
+                        ShowAssemblyList.Add(new AssemblyViewModel()
                         {
                             AssemblyID = dataInstance.Element.Id.ToString(),
                             AssemblyName = dataInstance.Element.LookupParameter("族与类型").AsValueString(),

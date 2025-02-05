@@ -1,15 +1,17 @@
-﻿using System;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using RZData.Models;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RZData.Models
+namespace RZData.ViewModels
 {
-    public class MaterialRecord
+    public class MaterialViewModel : ObservableObject
     {
-        public MaterialRecord()
+        public MaterialViewModel()
         {
             DataInstances = new ObservableCollection<DataInstance>();
             ProjectFeaturesDetail = new Dictionary<string, string>();
@@ -75,23 +77,5 @@ namespace RZData.Models
         /// </summary>
         public string MaterialUnit { get; set; }
         public ObservableCollection<DataInstance> DataInstances { get; set; }
-    }
-
-    public class AssemblyRecord
-    {
-        /// <summary>
-        /// 构件名称
-        /// </summary>
-        public string AssemblyName { get; set; }
-
-        /// <summary>
-        /// 所属模型
-        /// </summary>
-        public string Modelbelonging { get; set; }
-
-        /// <summary>
-        /// 构件ID
-        /// </summary>
-        public string AssemblyID { get; set; }
     }
 }

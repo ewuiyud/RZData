@@ -49,10 +49,10 @@ namespace RZData.ViewModels
         {
             switch (selectedValue)
             {
-                case Models.Family family:
+                case Models.FamilyCategory family:
                     SelectElementInRevit(family);
                     break;
-                case Models.FamilyType familyType:
+                case Models.Family familyType:
                     SelectElementInRevit(familyType);
                     break;
                 case FamilyExtend familyExtend:
@@ -62,11 +62,11 @@ namespace RZData.ViewModels
                     break;
             }
         }
-        private void SelectElementInRevit(Models.Family family)
+        private void SelectElementInRevit(Models.FamilyCategory family)
         {
             var uidoc = UiDocument;
             var elementIds = new List<ElementId>();
-            foreach (var familyType in family.FamilyTypes)
+            foreach (var familyType in family.Families)
             {
                 foreach (var familyExtend in familyType.FamilyExtends)
                 {
@@ -78,7 +78,7 @@ namespace RZData.ViewModels
             }
             uidoc.Selection.SetElementIds(elementIds);
         }
-        private void SelectElementInRevit(Models.FamilyType familyType)
+        private void SelectElementInRevit(Models.Family familyType)
         {
             var uidoc = UiDocument;
             var elementIds = new List<ElementId>();

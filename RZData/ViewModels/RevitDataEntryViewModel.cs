@@ -25,24 +25,24 @@ namespace RZData.ViewModels
         private object _selectedItem;
         private string _searchKeyword;
         private DataElement _showElements;
-        private Models.Family _selectedElement;
+        private Models.FamilyCategory _selectedElement;
         public ICommand SearchCommand { get; }
         public ICommand OKCommand { get; }
         public object SelectedItem { get => _selectedItem; set => SetProperty(ref _selectedItem, value); }
         public string SearchKeyword { get => _searchKeyword; set => SetProperty(ref _searchKeyword, value); }
         public DataElement ShowElements { get => _showElements; set => SetProperty(ref _showElements, value); }
-        public ObservableCollection<Models.Family> Families
+        public ObservableCollection<Models.FamilyCategory> Families
         {
             get
             {
-                var fs = new ObservableCollection<Models.Family>();
-                fs.Add(new Models.Family() { Name = "所有" });
+                var fs = new ObservableCollection<Models.FamilyCategory>();
+                fs.Add(new Models.FamilyCategory() { Name = "所有" });
                 var elements = AllElements;
-                elements.Families.ToList().ForEach(a => fs.Add(a));
+                elements.FamilyCategories.ToList().ForEach(a => fs.Add(a));
                 return fs;
             }
         }
-        public Models.Family SelectedElement
+        public Models.FamilyCategory SelectedElement
         {
             get => _selectedElement;
             set
@@ -58,7 +58,7 @@ namespace RZData.ViewModels
                     }
                     else
                     {
-                        ShowElements = new DataElement() { Families = new ObservableCollection<Models.Family> { _selectedElement } };
+                        ShowElements = new DataElement() { FamilyCategories = new ObservableCollection<Models.FamilyCategory> { _selectedElement } };
                     }
                 }
             }
@@ -76,10 +76,10 @@ namespace RZData.ViewModels
         {
             switch (selectedValue)
             {
-                case Models.Family family:
+                case Models.FamilyCategory family:
                     SelectElementInRevit(family);
                     break;
-                case Models.FamilyType familyType:
+                case Models.Family familyType:
                     SelectElementInRevit(familyType);
                     break;
                 case FamilyExtend familyExtend:
@@ -99,11 +99,11 @@ namespace RZData.ViewModels
             elementIds.Add(dataInstance.Element.Id);
             uidoc.Selection.SetElementIds(elementIds);
         }
-        private void SelectElementInRevit(Models.Family family)
+        private void SelectElementInRevit(Models.FamilyCategory family)
         {
             var uidoc = UiDocument;
             var elementIds = new List<ElementId>();
-            foreach (var familyType in family.FamilyTypes)
+            foreach (var familyType in family.Families)
             {
                 foreach (var familyExtend in familyType.FamilyExtends)
                 {
@@ -115,7 +115,7 @@ namespace RZData.ViewModels
             }
             uidoc.Selection.SetElementIds(elementIds);
         }
-        private void SelectElementInRevit(Models.FamilyType familyType)
+        private void SelectElementInRevit(Models.Family familyType)
         {
             var uidoc = UiDocument;
             var elementIds = new List<ElementId>();

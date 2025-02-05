@@ -30,7 +30,7 @@
             <TextBlock Grid.Row="1" Text="当前模板：" Margin="30,0,0,0" FontSize="11" Foreground="#4F4F4F" />
             <TextBlock Grid.Row="1" Text="{Binding CurrentFileName}"  FontSize="11" VerticalAlignment="Center" Foreground="#4F4F4F" />
         </StackPanel>
-        <Button Grid.Row="2" Content="确定" FontSize="15"
+        <Button Grid.Row="2" Content="确定" FontSize="15" 
                 Command="{Binding OKCommand}" Width="80" Height="30" HorizontalAlignment="Right" Margin="20,10"/>
     </Grid>
 </Window>

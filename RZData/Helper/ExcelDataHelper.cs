@@ -211,9 +211,9 @@ namespace RZData.Models
                 worksheet.Cells[row, 3].Value = "≤π≥‰ Ù–‘";
                 worksheet.Cells[row, 4].Value = "ID";
                 row++;
-                foreach (var family in dataElementData.Families)
+                foreach (var family in dataElementData.FamilyCategories)
                 {
-                    foreach (var familyType in family.FamilyTypes)
+                    foreach (var familyType in family.Families)
                     {
                         foreach (var familyExtend in familyType.FamilyExtends)
                         {
