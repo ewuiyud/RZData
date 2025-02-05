@@ -34,9 +34,6 @@ namespace RZData.ViewModels
             SearchCommand = new RelayCommand(Search);
             ParameterExportCommand = new RelayCommand(ParameterExport);
             FamilyExportCommand = new RelayCommand(FamilyExport);
-            //other viewModels
-            RevitTemplateLoadViewModel = new RevitTemplateLoadViewModel(uiDocument);
-            RevitDataEntryViewModel = new RevitDataEntryViewModel(uiDocument, AllElements);
         }
 
         public string SearchKeyword { get => _searchKeyword; set => SetProperty(ref _searchKeyword, value); }

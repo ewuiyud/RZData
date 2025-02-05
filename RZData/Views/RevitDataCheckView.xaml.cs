@@ -3,6 +3,7 @@ using Autodesk.Revit.UI;
 using RZData.Models;
 using RZData.ViewModels;
 using System;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -19,7 +20,6 @@ namespace RZData.Views
         {
             InitializeComponent();
             DataContext = ViewModelLocator.Instance(uiDocument).RevitDataCheckViewModel;
-            ViewModelLocator.Instance(uiDocument).Reset();
             Loaded += (s, e) =>
             {
                 var textBox = this.FindName("SearchTextBox") as System.Windows.Controls.TextBox;
@@ -28,6 +28,10 @@ namespace RZData.Views
                     textBox.Text = "请输入关键词搜索";
                     textBox.Foreground = System.Windows.Media.Brushes.Gray;
                 }
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    ViewModelLocator.Instance(uiDocument).Reset();
+                }));
             };
         }
 

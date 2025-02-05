@@ -16,13 +16,13 @@ namespace RZData.ViewModels
     public class ViewModelLocator : BaseViewModel
     {
         private static ViewModelLocator _instance;
-        private UIDocument _uiDocument;
         public static ViewModelLocator Instance(UIDocument uiDocument)
         {
             if (_instance == null)
             {
                 _instance = new ViewModelLocator(uiDocument);
             }
+            _instance.UiDocument = uiDocument;
             return _instance;
         }
         public ViewModelLocator(UIDocument _uiDocument)
@@ -31,8 +31,8 @@ namespace RZData.ViewModels
             FamilyNameCheckElements = new DataElement();
             ParametersCheckElements = new DataElement();
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-            this._uiDocument = _uiDocument;
-            RevitTemplateLoadViewModel = new RevitTemplateLoadViewModel(_uiDocument);
+            this.UiDocument = _uiDocument;
+            RevitTemplateLoadViewModel = new RevitTemplateLoadViewModel();
             LoadAllRevitElements();
             RevitDataCheckViewModel = new RevitDataCheckViewModel(_uiDocument, this);
             RevitDataEntryViewModel = new RevitDataEntryViewModel(_uiDocument, AllElements);
@@ -47,9 +47,9 @@ namespace RZData.ViewModels
         public void Reset()
         {
             LoadAllRevitElements();
-            RevitDataCheckViewModel = new RevitDataCheckViewModel(_uiDocument, this);
-            RevitDataEntryViewModel = new RevitDataEntryViewModel(_uiDocument, AllElements);
-            RevitListSummaryViewModel = new RevitListSummaryViewModel(_uiDocument, AllElements);
+            RevitDataCheckViewModel = new RevitDataCheckViewModel(UiDocument, this);
+            RevitDataEntryViewModel = new RevitDataEntryViewModel(UiDocument, AllElements);
+            RevitListSummaryViewModel = new RevitListSummaryViewModel(UiDocument, AllElements);
         }
 
         public void LoadAllRevitElements()
@@ -59,7 +59,7 @@ namespace RZData.ViewModels
             var loadableFamilyDictionary = records.FindAll(a => a.TypeName.StartsWith("MIC"));
             var familyList = new List<string>();
             records.ForEach(a => { if (!familyList.Contains(a.FamilyName)) familyList.Add(a.FamilyName); });
-            var document = _uiDocument.Document;
+            var document = UiDocument.Document;
             var collector = new FilteredElementCollector(document);
             var elements = collector.WhereElementIsNotElementType();
 

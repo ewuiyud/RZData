@@ -19,6 +19,7 @@ using System.Xml.Linq;
 
 namespace RZData.ViewModels
 {
+    
     public class RevitDataEntryViewModel : BaseViewModel
     {
         private object _selectedItem;
@@ -36,7 +37,8 @@ namespace RZData.ViewModels
             {
                 var fs = new ObservableCollection<Models.Family>();
                 fs.Add(new Models.Family() { Name = "所有" });
-                AllElements.Families.ToList().ForEach(a => fs.Add(a));
+                var elements = AllElements;
+                elements.Families.ToList().ForEach(a => fs.Add(a));
                 return fs;
             }
         }
@@ -69,7 +71,7 @@ namespace RZData.ViewModels
             SearchCommand = new RelayCommand(Search);
             OKCommand = new AsyncRelayCommand(OK);
         }
-
+        
         internal void DoubleClickAndPickObjects(object selectedValue)
         {
             switch (selectedValue)

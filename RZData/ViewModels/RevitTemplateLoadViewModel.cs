@@ -16,7 +16,7 @@ namespace RZData.ViewModels
     public class RevitTemplateLoadViewModel : BaseViewModel
     {
         private RevitTemplateLoadView view;
-        public RevitTemplateLoadViewModel(UIDocument uiDocument)
+        public RevitTemplateLoadViewModel()
         {
             AllElements = new DataElement();
             FamilyNameCheckElements = new DataElement();
@@ -27,7 +27,6 @@ namespace RZData.ViewModels
 
             LoadFileName = string.IsNullOrEmpty(Path.GetFileName(LoadTemplatePath)) ? "未选中文件" : Path.GetFileName(LoadTemplatePath);
             CurrentFileName = string.IsNullOrEmpty(Path.GetFileName(CurrentTemplatePath)) ? "无" : Path.GetFileName(CurrentTemplatePath);
-            UiDocument = uiDocument;
         }
         private string currentTemplatePath;
         private string loadTemplatePath;

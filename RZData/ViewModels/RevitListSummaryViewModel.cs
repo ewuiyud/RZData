@@ -115,17 +115,24 @@ namespace RZData.ViewModels
 
         private void OKWitheRequiredProperties()
         {
-            ObservableCollection<MaterialRecord> temp = new ObservableCollection<MaterialRecord>();
-            if (ShowMaterialList.Count == 0)
+            try
             {
-                ShowMaterialList = AllMaterialList;
+                ObservableCollection<MaterialRecord> temp = new ObservableCollection<MaterialRecord>();
+                if (ShowMaterialList.Count == 0)
+                {
+                    ShowMaterialList = AllMaterialList;
+                }
+                foreach (var materialRecord in AllMaterialList)
+                {
+                    if (RequiredProperties.ToList().All(a => MatchRequired(a, materialRecord)))
+                        temp.Add(materialRecord);
+                }
+                ShowMaterialList = temp;
             }
-            foreach (var materialRecord in AllMaterialList)
+            catch (Exception ex)
             {
-                if (RequiredProperties.ToList().All(a => MatchRequired(a, materialRecord)))
-                    temp.Add(materialRecord);
+                TaskDialog.Show("错误信息", ex.Message);
             }
-            ShowMaterialList = temp;
         }
 
         private bool MatchRequired((string, string) required, MaterialRecord materialRecord)
@@ -155,16 +162,30 @@ namespace RZData.ViewModels
 
         private void DeleteRequiredProperties()
         {
-            RequiredProperties.Clear();
+            try
+            {
+                RequiredProperties.Clear();
+            }
+            catch (Exception ex)
+            {
+                TaskDialog.Show("错误信息", ex.Message);
+            }
         }
 
         private void AddRequiredProperties()
         {
-            if (string.IsNullOrEmpty(SelectedPropertyName))
+            try
             {
-                return;
+                if (string.IsNullOrEmpty(SelectedPropertyName))
+                {
+                    return;
+                }
+                RequiredProperties.Add((SelectedPropertyName, SelectedPropertyValue));
             }
-            RequiredProperties.Add((SelectedPropertyName, SelectedPropertyValue));
+            catch (Exception ex)
+            {
+                TaskDialog.Show("错误信息", ex.Message);
+            }
         }
 
         public void GetMaterialListFromDataElement()
@@ -335,12 +356,12 @@ namespace RZData.ViewModels
         }
         Dictionary<string, string> ExplainProjectFeatures(string input, DataInstance dataInstance)
         {
+            var result = new Dictionary<string, string>();
             if (string.IsNullOrEmpty(input))
             {
-                return null;
+                return result;
             }
             var features = input.Split('\n');
-            var result = new Dictionary<string, string>();
             foreach (var feature in features)
             {
                 var temp = ExplainCodeProperty(feature, dataInstance);
@@ -350,17 +371,17 @@ namespace RZData.ViewModels
         }
         private bool IsStringMatchRule(string input, string rule, MatchedType matchedType)
         {
-            if (!rule.StartsWith("{{") || !rule.EndsWith("}}"))
+            //if (!rule.StartsWith("{{") || !rule.EndsWith("}}"))
+            //{
+            //    return input == rule;
+            //}
+            //string ruleContent = rule.Substring(2, rule.Length - 4);
+            string[] conditions = rule.Split(new[] { "||" }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (string value in conditions)
             {
-                return input == rule;
-            }
-            string ruleContent = rule.Substring(2, rule.Length - 4);
-            string[] conditions = ruleContent.Split(new[] { "||" }, StringSplitOptions.RemoveEmptyEntries);
-            foreach (string condition in conditions)
-            {
-                if (condition.StartsWith("$="))
-                {
-                    string value = condition.Substring(2);
+                //if (condition.StartsWith("$="))
+                //{
+                //    string value = condition.Substring(2);
                     switch (matchedType)
                     {
                         case MatchedType.元素分类名称:
@@ -409,7 +430,7 @@ namespace RZData.ViewModels
                             break;
                     }
 
-                }
+                //}
             }
             return false;
         }
@@ -466,75 +487,96 @@ namespace RZData.ViewModels
 
         internal void GetAssemblyList()
         {
-            ShowAssemblyList = new ObservableCollection<AssemblyRecord>();
-            if (SelectedMaterialRecord != null)
-                foreach (var dataInstance in SelectedMaterialRecord.DataInstances)
-                {
-                    ShowAssemblyList.Add(new AssemblyRecord()
+            try
+            {
+                ShowAssemblyList = new ObservableCollection<AssemblyRecord>();
+                if (SelectedMaterialRecord != null)
+                    foreach (var dataInstance in SelectedMaterialRecord.DataInstances)
                     {
-                        AssemblyID = dataInstance.Element.Id.ToString(),
-                        AssemblyName = dataInstance.Element.LookupParameter("族与类型").AsValueString(),
-                        Modelbelonging = dataInstance.Element.Document == UiDocument.Document ? "当前模型" : "链接模型"
-                    });
-                }
+                        ShowAssemblyList.Add(new AssemblyRecord()
+                        {
+                            AssemblyID = dataInstance.Element.Id.ToString(),
+                            AssemblyName = dataInstance.Element.LookupParameter("族与类型").AsValueString(),
+                            Modelbelonging = dataInstance.Element.Document == UiDocument.Document ? "当前模型" : "链接模型"
+                        });
+                    }
+            }
+            catch (Exception ex)
+            {
+                TaskDialog.Show("错误信息", ex.Message);
+            }
         }
 
         internal void PropertyNameDroped()
         {
-            PropertyNames = new ObservableCollection<string>();
-            foreach (var materialRecord in AllMaterialList)
+            try
             {
-                foreach (var feature in materialRecord.ProjectFeaturesDetail)
+                PropertyNames = new ObservableCollection<string>();
+                foreach (var materialRecord in AllMaterialList)
                 {
-                    if (!PropertyNames.Contains(feature.Key))
+                    foreach (var feature in materialRecord.ProjectFeaturesDetail)
                     {
-                        PropertyNames.Add(feature.Key);
+                        if (!PropertyNames.Contains(feature.Key))
+                        {
+                            PropertyNames.Add(feature.Key);
+                        }
                     }
                 }
+                PropertyNames.Add("材料名称");
+                PropertyNames.Add("使用方式");
             }
-            PropertyNames.Add("材料名称");
-            PropertyNames.Add("使用方式");
+            catch (Exception ex)
+            {
+                TaskDialog.Show("错误信息", ex.Message);
+            }
         }
 
         internal void PropertyValueDroped()
         {
-            PropertyValues = new ObservableCollection<string>();
-            if (string.IsNullOrEmpty(SelectedPropertyName))
+            try
             {
-                return;
-            }
-            switch (SelectedPropertyName)
-            {
-                case "材料名称":
-                    foreach (var materialRecord in AllMaterialList)
-                    {
-                        if (!PropertyValues.Contains(materialRecord.MaterialName))
+                PropertyValues = new ObservableCollection<string>();
+                if (string.IsNullOrEmpty(SelectedPropertyName))
+                {
+                    return;
+                }
+                switch (SelectedPropertyName)
+                {
+                    case "材料名称":
+                        foreach (var materialRecord in AllMaterialList)
                         {
-                            PropertyValues.Add(materialRecord.MaterialName);
-                        }
-                    }
-                    break;
-                case "使用方式":
-                    foreach (var materialRecord in AllMaterialList)
-                    {
-                        if (!PropertyValues.Contains(materialRecord.UsageMethod))
-                        {
-                            PropertyValues.Add(materialRecord.UsageMethod);
-                        }
-                    }
-                    break;
-                default:
-                    foreach (var materialRecord in AllMaterialList)
-                    {
-                        foreach (var feature in materialRecord.ProjectFeaturesDetail)
-                        {
-                            if (SelectedPropertyName == feature.Key && !PropertyValues.Contains(feature.Value))
+                            if (!PropertyValues.Contains(materialRecord.MaterialName))
                             {
-                                PropertyValues.Add(feature.Value);
+                                PropertyValues.Add(materialRecord.MaterialName);
                             }
                         }
-                    }
-                    break;
+                        break;
+                    case "使用方式":
+                        foreach (var materialRecord in AllMaterialList)
+                        {
+                            if (!PropertyValues.Contains(materialRecord.UsageMethod))
+                            {
+                                PropertyValues.Add(materialRecord.UsageMethod);
+                            }
+                        }
+                        break;
+                    default:
+                        foreach (var materialRecord in AllMaterialList)
+                        {
+                            foreach (var feature in materialRecord.ProjectFeaturesDetail)
+                            {
+                                if (SelectedPropertyName == feature.Key && !PropertyValues.Contains(feature.Value))
+                                {
+                                    PropertyValues.Add(feature.Value);
+                                }
+                            }
+                        }
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                TaskDialog.Show("错误信息", ex.Message);
             }
         }
         private void DeleteRequiredProperty((string, string) parameter)
@@ -544,10 +586,17 @@ namespace RZData.ViewModels
         }
         internal void DoubleClickAndPickObjects()
         {
-            var uidoc = UiDocument;
-            var elementIds = new List<ElementId>();
-            elementIds.Add(new ElementId(int.Parse(SelectedAssemblyRecord.AssemblyID)));
-            uidoc.Selection.SetElementIds(elementIds);
+            try
+            {
+                var uidoc = UiDocument;
+                var elementIds = new List<ElementId>();
+                elementIds.Add(new ElementId(int.Parse(SelectedAssemblyRecord.AssemblyID)));
+                uidoc.Selection.SetElementIds(elementIds);
+            }
+            catch (Exception ex)
+            {
+                TaskDialog.Show("错误信息", ex.Message);
+            }
         }
     }
 }
