@@ -2,7 +2,10 @@
 using RZData.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -25,11 +28,15 @@ namespace RZData.Views
         public RevitTemplateLoadView(UIDocument uiDocument)
         {
             InitializeComponent();
-            DateTime expirationDate = new DateTime(2025, 3, 31);
-            if (DateTime.Now > expirationDate)
-            {
-                MessageBox.Show("当前版本已过期，请更新到最新版本。", "版本更新", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
+//#if DEBUG
+//            string executablePath = Assembly.GetExecutingAssembly().Location;
+//            DateTime creationTime = File.GetCreationTime(executablePath);
+//            DateTime expirationDate = creationTime/*.AddMonths(1)*/;
+//            if (DateTime.Now >= expirationDate)
+//            {
+//                MessageBox.Show($"当前测试版本于{creationTime.ToShortDateString()}过期，请及时更新。", "版本更新", MessageBoxButton.OK, MessageBoxImage.Warning);
+//            }
+//#endif
             var revitTemplateLoadViewModel = ViewModelLocator.Instance(uiDocument).RevitTemplateLoadViewModel;
             DataContext = revitTemplateLoadViewModel;
             if (revitTemplateLoadViewModel != null)

@@ -2,6 +2,7 @@
 using Autodesk.Revit.UI;
 using RZData.Models;
 using RZData.ViewModels;
+using RZData.ViewModels.RevitDataCheckViewModel;
 using System;
 using System.Threading.Tasks;
 using System.Windows;

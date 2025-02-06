@@ -1,0 +1,262 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="RZData.App" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="9.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAIAAAAA=</HashCode>
+      <FileName>App.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="RZData.Commands.RevitDataCheckCommand" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="18.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Commands\RevitDataCheckCommand.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="RZData.Commands.RevitDataEntryCommand" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="11.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Commands\RevitDataEntryCommand.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="RZData.Commands.RevitListSummaryCommand" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="15" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Commands\RevitListSummaryCommand.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="RZData.Commands.RevitTemplateLoadCommand" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="9.75" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Commands\RevitTemplateLoadCommand.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="RZData.Controls.SearchTextBox" Collapsed="true">
+    <Position X="16.75" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IABAAAAAoAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAQA=</HashCode>
+      <FileName>Controls\SearchTextBox.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RZData.ExternalEventHandlers.CustomHandler" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="13.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAABAAAAAAAAAQAAAAAAAAAAAAAAABQQAAAAAAABAI=</HashCode>
+      <FileName>ExternalEventHandlers\CustomHandler.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="RZData.Helper.ElementHelper" Collapsed="true">
+    <Position X="18.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAGAAAAAAAAA=</HashCode>
+      <FileName>Helper\ElementHelper.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RZData.Models.ExcelDataHelper" Collapsed="true">
+    <Position X="13.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAAAEAIAAAAIAAAQICQAIAAAAICACAAAAAwA=</HashCode>
+      <FileName>Helper\ExcelDataHelper.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RZData.Models.DataElement" Collapsed="true">
+    <Position X="15" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAICAEAAAAAAAAAAAAACAAAAAAAAAAAAAAABAABgAAA=</HashCode>
+      <FileName>Models\DataElement.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RZData.Models.FamilyCategory" Collapsed="true">
+    <Position X="9.75" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAYAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Models\DataElement.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RZData.Models.Family" Collapsed="true">
+    <Position X="18.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAAAAAAAAAgAAAAAAAAAQAAAAAAAAAAAAAAACAAAA=</HashCode>
+      <FileName>Models\DataElement.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RZData.Models.FamilyExtend" Collapsed="true">
+    <Position X="11.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAIAAEAAAAAAAAAACAABAAQAAQAAAAAAAIAAAAAAAAA=</HashCode>
+      <FileName>Models\DataElement.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RZData.Models.DataInstance" Collapsed="true">
+    <Position X="16.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAAAAAEAIAAAAAAAAAggAAAAAAgAAAAAAIIAAAAAAAA=</HashCode>
+      <FileName>Models\DataElement.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RZData.Models.Parameter" Collapsed="true">
+    <Position X="15" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAQAAgAAAAEAA=</HashCode>
+      <FileName>Models\DataElement.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RZData.Models.ParameterSet" Collapsed="true">
+    <Position X="16.75" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABAAAAAEAAAAAAAAAAAIAAQAAAAAAAAAAAAgAAAAEAA=</HashCode>
+      <FileName>Models\DataElement.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RZData.Models.ExcelMaterialBusinessRecord" Collapsed="true">
+    <Position X="16.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAgAAAAAAAgAgAAQAAQgAAAAAAAIAAAAIAAA=</HashCode>
+      <FileName>Models\ExcelMaterialBusinessRecord.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RZData.Models.RevitSolidElement" Collapsed="true">
+    <Position X="18.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAACABEA=</HashCode>
+      <FileName>Models\RevitSolidElement.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RZData.Models.TreeNode">
+    <Position X="9.75" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AABAAAAAAAAAEAQAAACEUAAAAAIAAAAAAUAgAAAAAAA=</HashCode>
+      <FileName>Models\TreeNode.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ExcelFamilyRecord" Collapsed="true">
+    <Position X="15" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAQAAAAAEAAAAAAAAEAAAAAAAAAAAAAAIAAACAAAA=</HashCode>
+      <FileName>Models\ExcelFamilyRecord.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RZData.ViewModels.AssemblyViewModel" Collapsed="true">
+    <Position X="11.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAABAAgAAA=</HashCode>
+      <FileName>ViewModels\AssemblyViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RZData.ViewModels.BaseViewModel" Collapsed="true">
+    <Position X="3.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAAAACAAAAAAAAAAAAAAAAAAEACAAACACAAAAAAAE=</HashCode>
+      <FileName>ViewModels\BaseViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RZData.ViewModels.ElementInstanceViewModel" Collapsed="true">
+    <Position X="9.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ViewModels\ElementInstanceViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RZData.ViewModels.ElementViewModel" Collapsed="true">
+    <Position X="11.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ViewModels\ElementViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RZData.ViewModels.MaterialViewModel" Collapsed="true">
+    <Position X="13.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AABAAAAAAAAAAAAAIIAAIAAAAQAABBCAAEAEAAEAAAA=</HashCode>
+      <FileName>ViewModels\MaterialViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RZData.ViewModels.RevitListSummaryViewModel">
+    <Position X="2.75" Y="2" Width="2" />
+    <NestedTypes>
+      <Enum Name="RZData.ViewModels.RevitListSummaryViewModel.MatchedType" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>ViewModels\RevitListSummaryViewModel.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Enum>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>lSQKSCgISACgYCIACEAAgAABEgaBAIAwCYAJCgAoAAA=</HashCode>
+      <FileName>ViewModels\RevitListSummaryViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RZData.ViewModels.ViewModelLocator" Collapsed="true">
+    <Position X="5" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQAEAAAAAAAIhgAAEAAAQAAAAAAAAAAAQAAAAAgAAAg=</HashCode>
+      <FileName>ViewModels\ViewModelLocator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RZData.ViewModels.RevitDataCheckViewModel.RevitDataCheckViewModel" Collapsed="true">
+    <Position X="7.25" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EQAAAAAABABAgACAAAAAAAABAQAAAAAAABYAAAAkAAE=</HashCode>
+      <FileName>ViewModels\RevitDataCheckViewModel\RevitDataCheckViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RZData.ViewModels.RevitDataEntryViewModel.RevitDataEntryViewModel">
+    <Position X="0.5" Y="2" Width="2" />
+    <TypeIdentifier>
+      <HashCode>EQQACAAABAAAgACAIgAAAAAAAQABAAAAABIBAAAgAAI=</HashCode>
+      <FileName>ViewModels\RevitDataEntryViewModel\RevitDataEntryViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RZData.ViewModels.RevitTemplateLoadViewModel.RevitTemplateLoadViewModel">
+    <Position X="13.5" Y="4.5" Width="2.75" />
+    <Members>
+      <Method Name="RevitTemplateLoadViewModel" Hidden="true" />
+    </Members>
+    <TypeIdentifier>
+      <HashCode>IQEACAAAAAAAEBAAgBAQAAAAAAABAQAAAAADACABAAA=</HashCode>
+      <FileName>ViewModels\RevitTemplateLoadViewModel\RevitTemplateLoadViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RZData.Views.RevitDataCheckView" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="9.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQAAEAgAAAAAAAAAAAAACAAAAAAACAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Views\RevitDataCheckView.xaml.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="RZData.Views.RevitDataEntryView" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="13.25" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQAAEAgAoAAAAAAAQAAACAAAAAAACAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Views\RevitDataEntryView.xaml.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="RZData.Views.RevitListSummaryView" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="16.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQAAAAAAAAAAAAAAAIAAAAAAABAQAAAAAAAAAAACAAA=</HashCode>
+      <FileName>Views\RevitListSummaryView.xaml.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="RZData.Views.RevitTemplateLoadView" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="11.5" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Views\RevitTemplateLoadView.xaml.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Font Name="Microsoft YaHei UI" Size="9" />
+</ClassDiagram>

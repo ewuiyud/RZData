@@ -175,8 +175,8 @@ namespace RZData.Models
             {
                 ExcelFamilyRecord excelRecord = new ExcelFamilyRecord
                 {
-                    FamilyName = worksheet.Cells[row, 2].Text, // B列
-                    TypeName = worksheet.Cells[row, 3].Text, // C列
+                    FamilyCategory = worksheet.Cells[row, 2].Text, // B列
+                    FamilyName = worksheet.Cells[row, 3].Text, // C列
                     ExtendName = worksheet.Cells[row, 4].Text,// D列
                     ElementName = worksheet.Cells[row, 6].Text // F列
                 };

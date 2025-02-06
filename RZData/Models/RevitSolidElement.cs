@@ -11,6 +11,6 @@ namespace RZData.Models
         public string FamilyCategory { get; set; }
         public string Family { get; set; }
         public string ExtendProperty { get; set; }
-        public Dictionary<string, string> Parameters { get; set; }
+        public int ID { get; set; }
     }
 }

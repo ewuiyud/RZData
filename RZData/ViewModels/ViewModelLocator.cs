@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using RZData.ViewModels.RevitDataCheckViewModel;
 
 namespace RZData.ViewModels
 {
@@ -32,33 +33,34 @@ namespace RZData.ViewModels
             ParametersCheckElements = new DataElement();
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
             this.UiDocument = _uiDocument;
-            RevitTemplateLoadViewModel = new RevitTemplateLoadViewModel();
+            RevitTemplateLoadViewModel = new RevitTemplateLoadViewModel.RevitTemplateLoadViewModel();
             LoadAllRevitElements();
-            RevitDataCheckViewModel = new RevitDataCheckViewModel(_uiDocument, this);
-            RevitDataEntryViewModel = new RevitDataEntryViewModel(_uiDocument, AllElements);
+            RevitDataCheckViewModel = new RevitDataCheckViewModel.RevitDataCheckViewModel(_uiDocument, this);
+            RevitDataEntryViewModel = new RevitDataEntryViewModel.RevitDataEntryViewModel(_uiDocument, AllElements);
             RevitListSummaryViewModel = new RevitListSummaryViewModel(_uiDocument, AllElements);
         }
 
-        public RevitTemplateLoadViewModel RevitTemplateLoadViewModel { get; }
-        public RevitDataEntryViewModel RevitDataEntryViewModel { get; set; }
-        public RevitDataCheckViewModel RevitDataCheckViewModel { get; set; }
+        public RevitTemplateLoadViewModel.RevitTemplateLoadViewModel RevitTemplateLoadViewModel { get; }
+        public RevitDataEntryViewModel.RevitDataEntryViewModel RevitDataEntryViewModel { get; set; }
+        public RevitDataCheckViewModel.RevitDataCheckViewModel RevitDataCheckViewModel { get; set; }
         public RevitListSummaryViewModel RevitListSummaryViewModel { get; set; }
 
         public void Reset()
         {
             LoadAllRevitElements();
-            RevitDataCheckViewModel = new RevitDataCheckViewModel(UiDocument, this);
-            RevitDataEntryViewModel = new RevitDataEntryViewModel(UiDocument, AllElements);
+            RevitDataCheckViewModel = new RevitDataCheckViewModel.RevitDataCheckViewModel(UiDocument, this);
+            RevitDataEntryViewModel = new RevitDataEntryViewModel.RevitDataEntryViewModel(UiDocument, AllElements);
             RevitListSummaryViewModel = new RevitListSummaryViewModel(UiDocument, AllElements);
         }
 
         public void LoadAllRevitElements()
         {
             List<ExcelFamilyRecord> records = ExcelDataHelper.ExcelFamilyRecords;
-            var systemFamilyDictionary = records.FindAll(a => !a.TypeName.StartsWith("MIC"));
-            var loadableFamilyDictionary = records.FindAll(a => a.TypeName.StartsWith("MIC"));
+            //表格中以MIC开头的族为可加载族，其他为系统族
+            var systemFamilyDictionary = records.FindAll(a => !a.FamilyName.StartsWith("MIC"));
+            var loadableFamilyDictionary = records.FindAll(a => a.FamilyName.StartsWith("MIC"));
             var familyList = new List<string>();
-            records.ForEach(a => { if (!familyList.Contains(a.FamilyName)) familyList.Add(a.FamilyName); });
+            records.ForEach(a => { if (!familyList.Contains(a.FamilyCategory)) familyList.Add(a.FamilyCategory); });
             var document = UiDocument.Document;
             var collector = new FilteredElementCollector(document);
             var elements = collector.WhereElementIsNotElementType();
@@ -91,14 +93,14 @@ namespace RZData.ViewModels
         {
             var extendName = element.GetExtendName();
             var typeNames = systemFamilyDictionary.FindAll(a => CheckRecordExtendName(a, element)).ToList();
-            if (typeNames.Count() == 0 || !typeNames.Exists(a => a.TypeName == element.GetFamily()))
+            if (typeNames.Count() == 0 || !typeNames.Exists(a => a.FamilyName == element.GetFamily()))
             {
                 dataInstance.FamilyExtend.IsNameCorrect = false;
                 FamilyNameCheckElements.Add(dataInstance);
             }
             else
             {
-                var record = typeNames.First(a => a.TypeName == element.GetFamily());
+                var record = typeNames.First(a => a.FamilyName == element.GetFamily());
                 dataInstance.FamilyExtend.IsNameCorrect = true;
                 if (!dataInstance.CheckParameters(record, document))
                 {
@@ -109,8 +111,8 @@ namespace RZData.ViewModels
         private void ProcessFamilyInstance(List<ExcelFamilyRecord> loadableFamilyDictionary, Document document, Element element, DataInstance dataInstance)
         {
             var typeName = element.GetFamily();
-            var record = loadableFamilyDictionary.FirstOrDefault(a => typeName.StartsWith(a.TypeName.Substring(0, a.TypeName.Length - 1)));
-            if (record == null || element.GetFamilyCategory() != record.FamilyName)
+            var record = loadableFamilyDictionary.FirstOrDefault(a => typeName.StartsWith(a.FamilyName.Substring(0, a.FamilyName.Length - 1)));
+            if (record == null || element.GetFamilyCategory() != record.FamilyCategory)
             {
                 dataInstance.FamilyExtend.IsNameCorrect = false;
                 FamilyNameCheckElements.Add(dataInstance);
@@ -128,7 +130,7 @@ namespace RZData.ViewModels
         {
             const string typePrefix = "类型=";
             var recordExtendName = excelRecord.ExtendName;
-            string incorrectMessage = $"补充属性不合理，族：{excelRecord.FamilyName} 类型：{excelRecord.TypeName} 补充属性：{excelRecord.ExtendName}";
+            string incorrectMessage = $"补充属性不合理，族：{excelRecord.FamilyCategory} 类型：{excelRecord.FamilyName} 补充属性：{excelRecord.ExtendName}";
             if (recordExtendName.Contains("&&"))
             {
                 var requires = recordExtendName.Split(new[] { "&&" }, StringSplitOptions.None);

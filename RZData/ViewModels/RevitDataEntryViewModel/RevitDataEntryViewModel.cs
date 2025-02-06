@@ -17,7 +17,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Xml.Linq;
 
-namespace RZData.ViewModels
+namespace RZData.ViewModels.RevitDataEntryViewModel
 {
     
     public class RevitDataEntryViewModel : BaseViewModel

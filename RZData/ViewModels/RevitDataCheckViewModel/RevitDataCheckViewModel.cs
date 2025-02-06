@@ -8,17 +8,13 @@ using System.Collections.Generic;
 using System.Linq;
 using OfficeOpenXml;
 using RZData.Models;
-using RZData.Helper;
 using System;
-using System.Windows;
 
-namespace RZData.ViewModels
+namespace RZData.ViewModels.RevitDataCheckViewModel
 {
     public class RevitDataCheckViewModel : BaseViewModel
     {
         private string _searchKeyword;
-        private RevitTemplateLoadViewModel _revitTemplateLoadViewModel;
-        private RevitDataEntryViewModel _revitDataEntryViewModel;
 
         private DataElement _showElements;
         private object _selectedItem;
@@ -39,8 +35,6 @@ namespace RZData.ViewModels
         public string SearchKeyword { get => _searchKeyword; set => SetProperty(ref _searchKeyword, value); }
         public object SelectedItem { get => _selectedItem; set => SetProperty(ref _selectedItem, value); }
         public DataElement ShowParametersCheckElements { get => _showElements; set => SetProperty(ref _showElements, value); }
-        public RevitTemplateLoadViewModel RevitTemplateLoadViewModel { get => _revitTemplateLoadViewModel; set => SetProperty(ref _revitTemplateLoadViewModel, value); }
-        public RevitDataEntryViewModel RevitDataEntryViewModel { get => _revitDataEntryViewModel; set => SetProperty(ref _revitDataEntryViewModel, value); }
         public ICommand SearchCommand { get; }
         public ICommand ParameterExportCommand { get; }
         public ICommand FamilyExportCommand { get; }
@@ -49,11 +43,11 @@ namespace RZData.ViewModels
         {
             switch (selectedValue)
             {
-                case Models.FamilyCategory family:
-                    SelectElementInRevit(family);
+                case Models.FamilyCategory familyCategory:
+                    SelectElementInRevit(familyCategory);
                     break;
-                case Models.Family familyType:
-                    SelectElementInRevit(familyType);
+                case Models.Family family:
+                    SelectElementInRevit(family);
                     break;
                 case FamilyExtend familyExtend:
                     SelectElementInRevit(familyExtend);

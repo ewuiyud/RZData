@@ -140,14 +140,14 @@
     <Compile Include="ViewModels\BaseViewModel.cs" />
     <Compile Include="ViewModels\ElementInstanceViewModel.cs" />
     <Compile Include="ViewModels\ElementViewModel.cs" />
-    <Compile Include="ViewModels\RevitDataEntryViewModel.cs" />
+    <Compile Include="ViewModels\RevitDataEntryViewModel\RevitDataEntryViewModel.cs" />
     <Compile Include="ViewModels\RevitListSummaryViewModel.cs" />
-    <Compile Include="ViewModels\RevitTemplateLoadViewModel.cs" />
+    <Compile Include="ViewModels\RevitTemplateLoadViewModel\RevitTemplateLoadViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Styles\Style.xaml.cs">
       <DependentUpon>Style.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ViewModels\RevitDataCheckViewModel.cs" />
+    <Compile Include="ViewModels\RevitDataCheckViewModel\RevitDataCheckViewModel.cs" />
     <Compile Include="ViewModels\ViewModelLocator.cs" />
     <Compile Include="Views\RevitDataCheckView.xaml.cs">
       <DependentUpon>RevitDataCheckView.xaml</DependentUpon>
@@ -186,6 +186,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="ClassDiagram1.cd" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

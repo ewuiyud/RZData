@@ -11,19 +11,14 @@ using System.IO;
 using System.Linq;
 using System.Windows.Input;
 
-namespace RZData.ViewModels
+namespace RZData.ViewModels.RevitTemplateLoadViewModel
 {
-    public class RevitTemplateLoadViewModel : BaseViewModel
+    public class RevitTemplateLoadViewModel : ObservableObject
     {
         public RevitTemplateLoadViewModel()
         {
-            AllElements = new DataElement();
-            FamilyNameCheckElements = new DataElement();
-            ParametersCheckElements = new DataElement();
-
             LoadDataFromExcelCommand = new RelayCommand(LoadDataFromExcel);
             OKCommand = new RelayCommand(OK);
-
             LoadFileName = string.IsNullOrEmpty(Path.GetFileName(LoadTemplatePath)) ? "未选中文件" : Path.GetFileName(LoadTemplatePath);
             CurrentFileName = string.IsNullOrEmpty(Path.GetFileName(CurrentTemplatePath)) ? "无" : Path.GetFileName(CurrentTemplatePath);
         }
@@ -31,8 +26,6 @@ namespace RZData.ViewModels
         private string loadTemplatePath;
         private string currentFileName;
         private string loadFileName;
-
-        private List<ExcelFamilyRecord> records;
         public string LoadTemplatePath
         {
             get => loadTemplatePath;
@@ -43,16 +36,17 @@ namespace RZData.ViewModels
             get => currentTemplatePath;
             set => SetProperty(ref currentTemplatePath, value);
         }
-        public List<ExcelFamilyRecord> Records
-        {
-            get => records;
-            set => SetProperty(ref records, value);
-        }
+        /// <summary>
+        /// View中绑定的属性
+        /// </summary>
         public string CurrentFileName
         {
             get => currentFileName;
             set => SetProperty(ref currentFileName, value);
         }
+        /// <summary>
+        /// View中绑定的属性
+        /// </summary>
         public string LoadFileName
         {
             get => loadFileName;
