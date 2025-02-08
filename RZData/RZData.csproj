@@ -127,12 +127,13 @@
     <Compile Include="Controls\SearchTextBox.cs" />
     <Compile Include="Converters\RowIndexConverter.cs" />
     <Compile Include="ExternalEventHandlers\CustomHandler.cs" />
-    <Compile Include="Helper\ElementHelper.cs" />
-    <Compile Include="Helper\ExcelDataHelper.cs" />
+    <Compile Include="Extensions\RevitElementInfoExtensions.cs" />
+    <Compile Include="Services\ExcelDataService.cs" />
     <Compile Include="Commands\RevitDataCheckCommand.cs" />
     <Compile Include="Models\DataElement.cs" />
     <Compile Include="Models\ExcelFamilyRecord.cs" />
     <Compile Include="Models\ExcelMaterialBusinessRecord.cs" />
+    <Compile Include="Services\RevitElementService.cs" />
     <Compile Include="ViewModels\MaterialViewModel.cs" />
     <Compile Include="Models\RevitSolidElement.cs" />
     <Compile Include="Models\TreeNode.cs" />

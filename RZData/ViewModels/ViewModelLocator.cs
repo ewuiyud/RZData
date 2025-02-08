@@ -1,16 +1,13 @@
 ﻿using Autodesk.Revit.DB;
-using Autodesk.Revit.DB.Structure;
 using Autodesk.Revit.UI;
-using CommunityToolkit.Mvvm.ComponentModel;
 using OfficeOpenXml;
-using RZData.Helper;
 using RZData.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using RZData.ViewModels.RevitDataCheckViewModel;
+using System.Collections.ObjectModel;
+using RZData.Services;
+using RZData.Extensions;
 
 namespace RZData.ViewModels
 {
@@ -26,8 +23,20 @@ namespace RZData.ViewModels
             _instance.UiDocument = uiDocument;
             return _instance;
         }
+        public ObservableCollection<RevitSolidElement> AllSolidElements { get; set; }    
+        /// <summary>
+        /// 族名称错误的元素
+        /// </summary>
+        public ObservableCollection<RevitSolidElement> FamilyNameErrorElements { get; set; }
+        /// <summary>
+        /// 参数错误的元素
+        /// </summary>
+        public ObservableCollection<RevitSolidElement> ParametersErrorElements { get; set; }     
         public ViewModelLocator(UIDocument _uiDocument)
         {
+            AllSolidElements = new ObservableCollection<RevitSolidElement>();
+            FamilyNameErrorElements = new ObservableCollection<RevitSolidElement>();
+            ParametersErrorElements = new ObservableCollection<RevitSolidElement>();
             AllElements = new DataElement();
             FamilyNameCheckElements = new DataElement();
             ParametersCheckElements = new DataElement();
@@ -55,7 +64,7 @@ namespace RZData.ViewModels
 
         public void LoadAllRevitElements()
         {
-            List<ExcelFamilyRecord> records = ExcelDataHelper.ExcelFamilyRecords;
+            List<ExcelFamilyRecord> records = ExcelDataService.ExcelFamilyRecords;
             //表格中以MIC开头的族为可加载族，其他为系统族
             var systemFamilyDictionary = records.FindAll(a => !a.FamilyName.StartsWith("MIC"));
             var loadableFamilyDictionary = records.FindAll(a => a.FamilyName.StartsWith("MIC"));
@@ -93,14 +102,14 @@ namespace RZData.ViewModels
         {
             var extendName = element.GetExtendName();
             var typeNames = systemFamilyDictionary.FindAll(a => CheckRecordExtendName(a, element)).ToList();
-            if (typeNames.Count() == 0 || !typeNames.Exists(a => a.FamilyName == element.GetFamily()))
+            if (typeNames.Count() == 0 || !typeNames.Exists(a => a.FamilyName == element.GetFamilyName()))
             {
                 dataInstance.FamilyExtend.IsNameCorrect = false;
                 FamilyNameCheckElements.Add(dataInstance);
             }
             else
             {
-                var record = typeNames.First(a => a.FamilyName == element.GetFamily());
+                var record = typeNames.First(a => a.FamilyName == element.GetFamilyName());
                 dataInstance.FamilyExtend.IsNameCorrect = true;
                 if (!dataInstance.CheckParameters(record, document))
                 {
@@ -110,7 +119,7 @@ namespace RZData.ViewModels
         }
         private void ProcessFamilyInstance(List<ExcelFamilyRecord> loadableFamilyDictionary, Document document, Element element, DataInstance dataInstance)
         {
-            var typeName = element.GetFamily();
+            var typeName = element.GetFamilyName();
             var record = loadableFamilyDictionary.FirstOrDefault(a => typeName.StartsWith(a.FamilyName.Substring(0, a.FamilyName.Length - 1)));
             if (record == null || element.GetFamilyCategory() != record.FamilyCategory)
             {

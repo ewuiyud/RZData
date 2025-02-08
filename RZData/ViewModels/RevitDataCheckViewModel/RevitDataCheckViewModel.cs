@@ -9,6 +9,7 @@ using System.Linq;
 using OfficeOpenXml;
 using RZData.Models;
 using System;
+using RZData.Services;
 
 namespace RZData.ViewModels.RevitDataCheckViewModel
 {
@@ -110,7 +111,7 @@ namespace RZData.ViewModels.RevitDataCheckViewModel
         {
             try
             {
-                ExcelDataHelper.ExportToExcel(ShowParametersCheckElements);
+                ExcelDataService.ExportToExcel(ShowParametersCheckElements);
             }
             catch (Exception ex)
             {
@@ -121,7 +122,7 @@ namespace RZData.ViewModels.RevitDataCheckViewModel
         {
             try
             {
-                ExcelDataHelper.ExportToExcel(FamilyNameCheckElements);
+                ExcelDataService.ExportToExcel(FamilyNameCheckElements);
             }
             catch (Exception ex)
             {

@@ -2,6 +2,7 @@
 using Autodesk.Revit.UI;
 using CommunityToolkit.Mvvm.Input;
 using RZData.Models;
+using RZData.Services;
 using RZData.Views;
 using System;
 using System.Collections;
@@ -265,7 +266,7 @@ namespace RZData.ViewModels
         }
         private ExcelMaterialBusinessRecord SortMaterials(DataInstance dataInstance)
         {
-            foreach (var excelMaterialBusinessRecord in ExcelDataHelper.ExcelMaterialBusinessRules)
+            foreach (var excelMaterialBusinessRecord in ExcelDataService.ExcelMaterialBusinessRules)
             {
                 //如果三项都为空，则认为是父级分类
                 if (string.IsNullOrEmpty(excelMaterialBusinessRecord.ElementName)
@@ -308,7 +309,7 @@ namespace RZData.ViewModels
         }
         (string, string) ExplainCodeProperty(string input, DataInstance dataInstance)
         {
-            var dictionary = ExcelDataHelper.ExcelPropertyDic;
+            var dictionary = ExcelDataService.ExcelPropertyDic;
             string temp = input;
             string prefix = temp.Split('：')[0];
             string suffix = temp.Split('：')[1];
@@ -320,7 +321,7 @@ namespace RZData.ViewModels
         }
         string ExplainString(string input, DataInstance dataInstance)
         {
-            var dictionary = ExcelDataHelper.ExcelPropertyDic;
+            var dictionary = ExcelDataService.ExcelPropertyDic;
             if (!input.Contains("《"))
             {
                 return input;
@@ -382,53 +383,53 @@ namespace RZData.ViewModels
                 //if (condition.StartsWith("$="))
                 //{
                 //    string value = condition.Substring(2);
-                    switch (matchedType)
-                    {
-                        case MatchedType.元素分类名称:
-                            var elementNode = ExcelDataHelper.ExcelElementCode.FirstOrDefault(a => a.Value == value);
-                            if (elementNode == null || elementNode.Children.Count == 0)
+                switch (matchedType)
+                {
+                    case MatchedType.元素分类名称:
+                        var elementNode = ExcelDataService.ExcelElementCode.FirstOrDefault(a => a.Value == value);
+                        if (elementNode == null || elementNode.Children.Count == 0)
+                        {
+                            if (input == value)
                             {
-                                if (input == value)
+                                return true;
+                            }
+                        }
+                        else
+                        {
+                            foreach (var item in elementNode.GetAllChirlds())
+                            {
+                                if (input == item.Value)
                                 {
                                     return true;
                                 }
                             }
-                            else
+                        }
+                        break;
+                    case MatchedType.产品分类名称:
+                        var productNode = ExcelDataService.ExcelProductCode.FirstOrDefault(a => a.Value == value);
+                        if (productNode == null || productNode.Children.Count == 0)
+                        {
+                            if (input == value)
                             {
-                                foreach (var item in elementNode.GetAllChirlds())
-                                {
-                                    if (input == item.Value)
-                                    {
-                                        return true;
-                                    }
-                                }
+                                return true;
                             }
-                            break;
-                        case MatchedType.产品分类名称:
-                            var productNode = ExcelDataHelper.ExcelProductCode.FirstOrDefault(a => a.Value == value);
-                            if (productNode == null || productNode.Children.Count == 0)
+                        }
+                        else
+                        {
+                            foreach (var item in productNode.GetAllChirlds())
                             {
-                                if (input == value)
+                                if (input == item.Value)
                                 {
                                     return true;
                                 }
                             }
-                            else
-                            {
-                                foreach (var item in productNode.GetAllChirlds())
-                                {
-                                    if (input == item.Value)
-                                    {
-                                        return true;
-                                    }
-                                }
-                            }
-                            break;
-                        case MatchedType.空间分类名称:
-                            throw new NotSupportedException("空间分类表未完成");
-                        default:
-                            break;
-                    }
+                        }
+                        break;
+                    case MatchedType.空间分类名称:
+                        throw new NotSupportedException("空间分类表未完成");
+                    default:
+                        break;
+                }
 
                 //}
             }

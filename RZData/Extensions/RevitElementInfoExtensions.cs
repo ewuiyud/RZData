@@ -5,15 +5,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RZData.Helper
+namespace RZData.Extensions
 {
-    public static class ElementHelper
+    public static class RevitElementInfoExtensions
     {
         public static string GetFamilyCategory(this Element element)
         {
             return element.Category?.Name ?? null;
         }
-        public static string GetFamily(this Element element)
+        public static string GetFamilyName(this Element element)
         {
             var dd = element.GetParameters("族");
             return dd[0].AsValueString() ?? null;

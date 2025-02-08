@@ -1,13 +1,14 @@
 using Autodesk.Revit.UI;
 using Microsoft.Win32;
 using OfficeOpenXml;
+using RZData.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace RZData.Models
+namespace RZData.Services
 {
-    public static class ExcelDataHelper
+    public static class ExcelDataService
     {
         /// <summary>
         /// ×åÆ¥Åä±í

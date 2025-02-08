@@ -1,16 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Autodesk.Revit.DB;
+using RZData.Extensions;
+using RZData.Services;
 
 namespace RZData.Models
 {
     public class RevitSolidElement
     {
+        public RevitSolidElement(Element element)
+        {
+            ID = element.Id.IntegerValue;
+            FamilyCategory = element.GetFamilyCategory();
+            FamilyName = element.GetFamilyName();
+            ExtendName = element.GetExtendName();
+        }
         public string FamilyCategory { get; set; }
-        public string Family { get; set; }
-        public string ExtendProperty { get; set; }
+        public string FamilyName { get; set; }
+        public string ExtendName { get; set; }
         public int ID { get; set; }
     }
 }

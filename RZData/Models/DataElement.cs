@@ -1,18 +1,10 @@
-﻿using Autodesk.Revit.Creation;
-using Autodesk.Revit.DB;
-using Autodesk.Revit.UI;
+﻿using Autodesk.Revit.DB;
 using CommunityToolkit.Mvvm.ComponentModel;
-using RZData.Helper;
+using RZData.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Xml.Linq;
-using static OfficeOpenXml.ExcelErrorValue;
 
 namespace RZData.Models
 {
@@ -143,12 +135,12 @@ namespace RZData.Models
 
         public DataInstance Add(Element element)
         {
-            if (element.GetFamily() == null) return null;
+            if (element.GetFamilyName() == null) return null;
 
-            var familyType = Families.FirstOrDefault(a => a.Name == element.GetFamily());
+            var familyType = Families.FirstOrDefault(a => a.Name == element.GetFamilyName());
             if (familyType == null)
             {
-                familyType = new Family(this) { Name = element.GetFamily() };
+                familyType = new Family(this) { Name = element.GetFamilyName() };
                 Families.Add(familyType);
             }
             return familyType.Add(element);

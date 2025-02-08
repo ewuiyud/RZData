@@ -1,14 +1,9 @@
-﻿using Autodesk.Revit.DB;
-using Autodesk.Revit.UI;
+﻿using Autodesk.Revit.UI;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using RZData.Helper;
-using RZData.Models;
-using RZData.Views;
+using RZData.Services;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Windows.Input;
 
 namespace RZData.ViewModels.RevitTemplateLoadViewModel
@@ -60,7 +55,7 @@ namespace RZData.ViewModels.RevitTemplateLoadViewModel
         {
             try
             {
-                string path = ExcelDataHelper.LoadDataFromExcel();
+                string path = ExcelDataService.LoadDataFromExcel();
                 if (path != null)
                 {
                     LoadTemplatePath = path;
@@ -78,7 +73,7 @@ namespace RZData.ViewModels.RevitTemplateLoadViewModel
             {
                 if (!string.IsNullOrEmpty(LoadTemplatePath))
                 {
-                    ExcelDataHelper.GetContent(LoadTemplatePath);
+                    ExcelDataService.GetContent(LoadTemplatePath);
                     CurrentTemplatePath = LoadTemplatePath;
                     LoadTemplatePath = "";
                     CurrentFileName = loadFileName;
