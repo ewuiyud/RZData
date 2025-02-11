@@ -11,7 +11,7 @@ using RZData.Models;
 using System;
 using RZData.Services;
 
-namespace RZData.ViewModels.RevitDataCheckViewModel
+namespace RZData.ViewModels
 {
     public class RevitDataCheckViewModel : BaseViewModel
     {
@@ -31,6 +31,7 @@ namespace RZData.ViewModels.RevitDataCheckViewModel
             SearchCommand = new RelayCommand(Search);
             ParameterExportCommand = new RelayCommand(ParameterExport);
             FamilyExportCommand = new RelayCommand(FamilyExport);
+            PickObjectsCommand = new RelayCommand(PickObjects);
         }
 
         public string SearchKeyword
@@ -50,27 +51,28 @@ namespace RZData.ViewModels.RevitDataCheckViewModel
         public ICommand SearchCommand { get; }
         public ICommand ParameterExportCommand { get; }
         public ICommand FamilyExportCommand { get; }
+        public ICommand PickObjectsCommand { get; }
 
-        internal void DoubleClickAndPickObjects(object selectedValue)
+        internal void PickObjects()
         {
-            switch (selectedValue)
+            switch (SelectedItem)
             {
-                case FamilyCategory familyCategory:
+                case FamilyCategoryViewModel familyCategory:
                     break;
-                case Family family:
+                case FamilyViewModel family:
                     SelectElementInRevit(family);
                     break;
-                case FamilyExtend familyExtend:
+                case FamilyExtendViewModel familyExtend:
                     SelectElementInRevit(familyExtend);
                     break;
-                case ElementInstance elementInstance:
+                case ElementInstanceViewModel elementInstance:
                     SelectElementInRevit(elementInstance);
                     break;
                 default:
                     break;
             }
         }
-        private void SelectElementInRevit(Family family)
+        private void SelectElementInRevit(FamilyViewModel family)
         {
             var uidoc = UiDocument;
             var elementIds = new List<ElementId>();
@@ -81,7 +83,7 @@ namespace RZData.ViewModels.RevitDataCheckViewModel
             }
             uidoc.Selection.SetElementIds(elementIds);
         }
-        private void SelectElementInRevit(FamilyExtend familyExtend)
+        private void SelectElementInRevit(FamilyExtendViewModel familyExtend)
         {
             var uidoc = UiDocument;
             var elementIds = new List<ElementId>();
@@ -91,11 +93,11 @@ namespace RZData.ViewModels.RevitDataCheckViewModel
             }
             uidoc.Selection.SetElementIds(elementIds);
         }
-        private void SelectElementInRevit(ElementInstance elementInstance)
+        private void SelectElementInRevit(ElementInstanceViewModel elementInstance)
         {
             var uidoc = UiDocument;
             var elementIds = new List<ElementId>();
-            elementIds.Add(new ElementId(elementInstance.ID));
+            elementIds.Add(new ElementId(elementInstance.Name));
             uidoc.Selection.SetElementIds(elementIds);
         }
         public void Search()

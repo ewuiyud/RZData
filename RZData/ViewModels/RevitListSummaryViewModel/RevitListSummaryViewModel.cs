@@ -251,27 +251,6 @@ namespace RZData.ViewModels
             }
             return result;
         }
-
-        private List<DataInstance> GetDataInstanceList(DataElement dataElement)
-        {
-            List<DataInstance> list = new List<DataInstance>();
-            foreach (var family in dataElement.FamilyCategories)
-            {
-                foreach (var type in family.Families)
-                {
-                    foreach (var familyExtend in type.FamilyExtends)
-                    {
-                        if (familyExtend.IsNameCorrect)
-                            foreach (var dataInstance in familyExtend.DataInstances)
-                            {
-                                if (dataInstance.IsPropertiesCorrect)
-                                    list.Add(dataInstance);
-                            }
-                    }
-                }
-            }
-            return list;
-        }
         enum MatchedType
         {
             元素分类名称,

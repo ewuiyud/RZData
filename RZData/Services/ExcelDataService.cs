@@ -204,52 +204,6 @@ namespace RZData.Services
                 records.Add(excelRecord);
             }
         }
-
-        public static void ExportToExcelFromDataElement(DataElement dataElementData)
-        {
-            using (var package = new ExcelPackage())
-            {
-                var worksheet = package.Workbook.Worksheets.Add("睿住数据");
-                int row = 1;
-                worksheet.Cells[row, 1].Value = "族类别";
-                worksheet.Cells[row, 2].Value = "族";
-                worksheet.Cells[row, 3].Value = "补充属性";
-                worksheet.Cells[row, 4].Value = "ID";
-                row++;
-                foreach (var family in dataElementData.FamilyCategories)
-                {
-                    foreach (var familyType in family.Families)
-                    {
-                        foreach (var familyExtend in familyType.FamilyExtends)
-                        {
-                            foreach (var dataInstance in familyExtend.DataInstances)
-                            {
-                                worksheet.Cells[row, 1].Value = family.Name;
-                                worksheet.Cells[row, 2].Value = familyType.Name;
-                                worksheet.Cells[row, 3].Value = familyExtend.Name;
-                                worksheet.Cells[row, 4].Value = dataInstance.Element.Id;
-                                row++;
-                            }
-                        }
-                    }
-                }
-
-                // 保存文件
-                SaveFileDialog saveFileDialog = new SaveFileDialog
-                {
-                    Filter = "Excel files (*.xlsx)|*.xlsx",
-                    FilterIndex = 2,
-                    RestoreDirectory = true
-                };
-
-                if (saveFileDialog.ShowDialog() == true)
-                {
-                    var file = new FileInfo(saveFileDialog.FileName);
-                    package.SaveAs(file);
-                    TaskDialog.Show("提示", "导出成功！");
-                }
-            }
-        }
         public static void ExportToExcelFromMaterialList(ObservableCollection<MaterialViewModel> materialViewModels)
         {
             using (var package = new ExcelPackage())

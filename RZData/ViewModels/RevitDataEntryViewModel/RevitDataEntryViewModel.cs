@@ -1,23 +1,16 @@
-﻿using Autodesk.Revit.Creation;
-using Autodesk.Revit.DB;
+﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Input;
 using RZData.ExternalEventHandlers;
 using RZData.Models;
-using RZData.Views;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Controls;
 using System.Windows.Input;
-using System.Xml.Linq;
 
-namespace RZData.ViewModels.RevitDataEntryViewModel
+namespace RZData.ViewModels
 {
 
     public class RevitDataEntryViewModel : BaseViewModel
@@ -25,9 +18,10 @@ namespace RZData.ViewModels.RevitDataEntryViewModel
         private object _selectedItem;
         private string _searchKeyword;
         private ElementViewModel _showElements;
-        private Models.FamilyCategory _selectedElement;
+        private FamilyCategoryViewModel _selectedElement;
         public ICommand SearchCommand { get; }
         public ICommand OKCommand { get; }
+        public ICommand PickObjectsCommand { get; }
         public object SelectedItem { get => _selectedItem; set => SetProperty(ref _selectedItem, value); }
         public string SearchKeyword
         {
@@ -42,18 +36,18 @@ namespace RZData.ViewModels.RevitDataEntryViewModel
             }
         }
         public ElementViewModel ShowElements { get => _showElements; set => SetProperty(ref _showElements, value); }
-        public ObservableCollection<FamilyCategory> Families
+        public ObservableCollection<FamilyCategoryViewModel> Families
         {
             get
             {
-                var fs = new ObservableCollection<FamilyCategory>();
-                fs.Add(new FamilyCategory() { Name = "所有" });
+                var fs = new ObservableCollection<FamilyCategoryViewModel>();
+                fs.Add(new FamilyCategoryViewModel() { Name = "所有" });
                 var elements = AllElements;
                 elements.FamilyCategories.ToList().ForEach(a => fs.Add(a));
                 return fs;
             }
         }
-        public Models.FamilyCategory SelectedElement
+        public FamilyCategoryViewModel SelectedElement
         {
             get => _selectedElement;
             set
@@ -72,6 +66,7 @@ namespace RZData.ViewModels.RevitDataEntryViewModel
                         var revitSolidElements = AllElements.RevitSolidElements.ToList().FindAll(a => a.FamilyCategory == _selectedElement.Name);
                         ShowElements = new ElementViewModel(revitSolidElements);
                     }
+                    SearchKeyword = "请输入关键词搜索";
                 }
             }
         }
@@ -82,28 +77,29 @@ namespace RZData.ViewModels.RevitDataEntryViewModel
             this.UiDocument = _uiDocument;
             SearchCommand = new RelayCommand(Search);
             OKCommand = new AsyncRelayCommand(OK);
+            PickObjectsCommand = new RelayCommand(PickObjects);
         }
 
-        internal void DoubleClickAndPickObjects(object selectedValue)
+        internal void PickObjects()
         {
-            switch (selectedValue)
+            switch (SelectedItem)
             {
-                case FamilyCategory familyCategory:
+                case FamilyCategoryViewModel familyCategory:
                     break;
-                case Family family:
+                case FamilyViewModel family:
                     SelectElementInRevit(family);
                     break;
-                case FamilyExtend familyExtend:
+                case FamilyExtendViewModel familyExtend:
                     SelectElementInRevit(familyExtend);
                     break;
-                case ElementInstance elementInstance:
+                case ElementInstanceViewModel elementInstance:
                     SelectElementInRevit(elementInstance);
                     break;
                 default:
                     break;
             }
         }
-        private void SelectElementInRevit(Family family)
+        private void SelectElementInRevit(FamilyViewModel family)
         {
             var uidoc = UiDocument;
             var elementIds = new List<ElementId>();
@@ -114,7 +110,7 @@ namespace RZData.ViewModels.RevitDataEntryViewModel
             }
             uidoc.Selection.SetElementIds(elementIds);
         }
-        private void SelectElementInRevit(FamilyExtend familyExtend)
+        private void SelectElementInRevit(FamilyExtendViewModel familyExtend)
         {
             var uidoc = UiDocument;
             var elementIds = new List<ElementId>();
@@ -124,11 +120,11 @@ namespace RZData.ViewModels.RevitDataEntryViewModel
             }
             uidoc.Selection.SetElementIds(elementIds);
         }
-        private void SelectElementInRevit(ElementInstance elementInstance)
+        private void SelectElementInRevit(ElementInstanceViewModel elementInstance)
         {
             var uidoc = UiDocument;
             var elementIds = new List<ElementId>();
-            elementIds.Add(new ElementId(elementInstance.ID));
+            elementIds.Add(new ElementId(elementInstance.Name));
             uidoc.Selection.SetElementIds(elementIds);
         }
         private void Search()
@@ -159,11 +155,11 @@ namespace RZData.ViewModels.RevitDataEntryViewModel
         {
             try
             {
-                if (SelectedItem is FamilyExtend familyExtend)
+                if (SelectedItem is FamilyExtendViewModel familyExtend)
                 {
                     foreach (var parameter in familyExtend.Parameters)
                     {
-                        if (!parameter.Value.StartsWith("["))
+                        if (parameter.Value != null && !parameter.Value.StartsWith("["))
                         {
                             await CustomHandler.Run(a =>
                             {
@@ -173,13 +169,13 @@ namespace RZData.ViewModels.RevitDataEntryViewModel
                     }
                     //familyExtend.ReloadParameter(UiDocument.Document);
                 }
-                else if (SelectedItem is ElementInstance elementInstance)
+                else if (SelectedItem is ElementInstanceViewModel elementInstance)
                 {
                     foreach (var parameter in elementInstance.Parameters)
                     {
                         await CustomHandler.Run(a =>
                         {
-                            SetParameter(a.ActiveUIDocument, parameter, elementInstance.ID);
+                            SetParameter(a.ActiveUIDocument, parameter, elementInstance.Name);
                         });
                     }
                     //elementInstance.FamilyExtend.ReloadParameter(UiDocument.Document);

@@ -1,11 +1,6 @@
-﻿using Autodesk.Revit.DB;
-using Autodesk.Revit.UI;
-using RZData.Models;
+﻿using Autodesk.Revit.UI;
 using RZData.ViewModels;
-using RZData.ViewModels.RevitDataCheckViewModel;
 using System;
-using System.Drawing;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -48,15 +43,15 @@ namespace RZData.Views
             try
             {
                 var viewModel = DataContext as RevitDataCheckViewModel;
-                if (e.NewValue is ViewModels.FamilyExtend familyExtend)
+                if (e.NewValue is ViewModels.FamilyExtendViewModel familyExtend)
                 {
                     viewModel.SelectedItem = familyExtend;
                 }
-                else if (e.NewValue is ViewModels.Family family)
+                else if (e.NewValue is ViewModels.FamilyViewModel family)
                 {
                     viewModel.SelectedItem = family;
                 }
-                viewModel.DoubleClickAndPickObjects(viewModel.SelectedItem);
+                viewModel.PickObjectsCommand.Execute(null);
             }
             catch (Exception ex)
             {

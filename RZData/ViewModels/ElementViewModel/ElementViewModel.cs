@@ -14,7 +14,7 @@ namespace RZData.ViewModels
     {
         public ElementViewModel(List<RevitSolidElement> revitSolidElements)
         {
-            familyCategories = new ObservableCollection<FamilyCategory>();
+            familyCategories = new ObservableCollection<FamilyCategoryViewModel>();
             RevitSolidElements = revitSolidElements;
             foreach (var item in RevitSolidElements)
             {
@@ -22,14 +22,14 @@ namespace RZData.ViewModels
             }
         }
         public List<RevitSolidElement> RevitSolidElements { get; set; }
-        private ObservableCollection<FamilyCategory> familyCategories;
-        public ObservableCollection<FamilyCategory> FamilyCategories { get => familyCategories; set => SetProperty(ref familyCategories, value); }
+        private ObservableCollection<FamilyCategoryViewModel> familyCategories;
+        public ObservableCollection<FamilyCategoryViewModel> FamilyCategories { get => familyCategories; set => SetProperty(ref familyCategories, value); }
         private void Add(RevitSolidElement revitSolidElement)
         {
             var existingCategory = familyCategories.FirstOrDefault(a => a.Name == revitSolidElement.FamilyCategory);
             if (existingCategory == null)
             {
-                var newCategory = new FamilyCategory { Name = revitSolidElement.FamilyCategory };
+                var newCategory = new FamilyCategoryViewModel { Name = revitSolidElement.FamilyCategory };
                 familyCategories.Add(newCategory);
                 existingCategory = newCategory;
             }
@@ -38,16 +38,16 @@ namespace RZData.ViewModels
             var existingFamily = existingCategory.Families.FirstOrDefault(f => f.Name == revitSolidElement.FamilyName);
             if (existingFamily == null)
             {
-                var newFamily = new Family { Name = revitSolidElement.FamilyName };
+                var newFamily = new FamilyViewModel { Name = revitSolidElement.FamilyName };
                 existingCategory.Families.Add(newFamily);
                 existingFamily = newFamily;
             }
             if (!existingFamily.IDs.Contains(revitSolidElement.ID)) existingFamily.IDs.Add(revitSolidElement.ID);
             //将族中的实例添加到族中
-            var existingElementInstance = existingFamily.ElementInstances.FirstOrDefault(e => e.ID == revitSolidElement.ID);
+            var existingElementInstance = existingFamily.ElementInstances.FirstOrDefault(e => e.Name == revitSolidElement.ID);
             if (existingElementInstance == null)
             {
-                var newElementInstance = new ElementInstance { ID = revitSolidElement.ID, Parameters = revitSolidElement.Parameters };
+                var newElementInstance = new ElementInstanceViewModel { Name = revitSolidElement.ID, Parameters = revitSolidElement.Parameters };
                 existingFamily.ElementInstances.Add(newElementInstance);
                 existingElementInstance = newElementInstance;
             }
@@ -59,10 +59,11 @@ namespace RZData.ViewModels
                     FirstOrDefault(e => e.Name == revitSolidElement.ExtendName);
                 if (existingExtend == null)
                 {
-                    var newExtend = new FamilyExtend { Name = revitSolidElement.ExtendName };
+                    var newExtend = new FamilyExtendViewModel { Name = revitSolidElement.ExtendName };
                     existingFamily.FamilyExtends.Add(newExtend);
                     existingExtend = newExtend;
                 }
+                if (!existingExtend.ElementInstances.Contains(existingElementInstance)) existingExtend.ElementInstances.Add(existingElementInstance);
                 if (!existingExtend.IDs.Contains(revitSolidElement.ID)) existingExtend.IDs.Add(revitSolidElement.ID);
 
                 //将族中的参数添加到族中
@@ -71,7 +72,7 @@ namespace RZData.ViewModels
                     var existingParameter = existingExtend.Parameters.FirstOrDefault(p => p.Name == item.Name);
                     if (existingParameter == null)
                     {
-                        var newParameter = new Models.ParameterSet { Name = item.Name, Values = new List<string> { item.Value }, ValueType = item.ValueType };
+                        var newParameter = new Models.ParameterSet { Name = item.Name, Values = new ObservableCollection<string> { item.Value }, ValueType = item.ValueType };
                         existingExtend.Parameters.Add(newParameter);
                     }
                     else
@@ -89,7 +90,7 @@ namespace RZData.ViewModels
                     var existingParameter = existingFamily.Parameters.FirstOrDefault(p => p.Name == item.Name);
                     if (existingParameter == null)
                     {
-                        var newParameter = new Models.ParameterSet { Name = item.Name, Values = new List<string> { item.Value }, ValueType = item.ValueType };
+                        var newParameter = new Models.ParameterSet { Name = item.Name, Values = new ObservableCollection<string> { item.Value }, ValueType = item.ValueType };
                         existingFamily.Parameters.Add(newParameter);
                     }
                     else
@@ -101,55 +102,5 @@ namespace RZData.ViewModels
                 }
             }
         }
-    }
-    public class FamilyCategory : ObservableObject
-    {
-        public FamilyCategory()
-        {
-            families = new ObservableCollection<Family>();
-            IDs = new List<int>();
-        }
-        public List<int> IDs { get; set; }
-        public string Name { get; set; }
-        private ObservableCollection<Family> families;
-        public ObservableCollection<Family> Families { get => families; set => SetProperty(ref families, value); }
-    }
-    public class Family : ObservableObject
-    {
-        public Family()
-        {
-            familyExtends = new ObservableCollection<FamilyExtend>();
-            IDs = new List<int>();
-            ElementInstances = new ObservableCollection<ElementInstance>();
-            Parameters = new List<Models.ParameterSet>();
-        }
-        public string Name { get; set; }
-        public List<int> IDs { get; set; }
-        public ObservableCollection<ElementInstance> ElementInstances { get; set; }
-        public List<Models.ParameterSet> Parameters { get; set; }
-        private ObservableCollection<FamilyExtend> familyExtends;
-        public ObservableCollection<FamilyExtend> FamilyExtends { get => familyExtends; set => SetProperty(ref familyExtends, value); }
-    }
-    public class FamilyExtend : ObservableObject
-    {
-        public FamilyExtend()
-        {
-            IDs = new List<int>();
-            ElementInstances = new ObservableCollection<ElementInstance>();
-            Parameters = new List<Models.ParameterSet>();
-        }
-        public string Name { get; set; }
-        public List<int> IDs { get; set; }
-        public ObservableCollection<ElementInstance> ElementInstances { get; set; }
-        public List<Models.ParameterSet> Parameters { get; set; }
-    }
-    public class ElementInstance : ObservableObject
-    {
-        public ElementInstance()
-        {
-            Parameters = new List<Models.Parameter>();
-        }
-        public int ID { get; set; }
-        public List<Models.Parameter> Parameters { get; set; }
     }
 }

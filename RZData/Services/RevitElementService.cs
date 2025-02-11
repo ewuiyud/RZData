@@ -28,7 +28,6 @@ namespace RZData.Services
             var elements = collector.WhereElementIsNotElementType();
 
             ObservableCollection<RevitSolidElement> AllSolidElements = new ObservableCollection<RevitSolidElement>();
-            DataElement revitElementData = new DataElement();
 
             foreach (var element in elements)
             {

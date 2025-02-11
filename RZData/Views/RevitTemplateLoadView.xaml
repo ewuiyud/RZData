@@ -7,7 +7,7 @@
              mc:Ignorable="d" 
              Title="模板载入"
              Topmost="True"
-             MaxHeight="170" MinHeight="170" MaxWidth="360" MinWidth="360">
+             MaxHeight="270" MinHeight="270" MaxWidth="550" MinWidth="550">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -21,16 +21,23 @@
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto"/>
+            <ColumnDefinition Width="auto"/>
+        </Grid.ColumnDefinitions>
         <StackPanel Orientation="Horizontal">
-            <Button Content="选择文件"  
-                    Command="{Binding LoadDataFromExcelCommand}" Width="80" Height="25" HorizontalAlignment="Left" Margin="20,15,0,20"/>
-            <TextBlock Text="{Binding LoadFileName}" Margin="10,0" FontSize="11" VerticalAlignment="Center" Foreground="#4F4F4F"/>
+            <TextBlock Text="选中文件：" Margin="30,50,10,30" FontFamily="微软雅黑 light" FontSize="15" VerticalAlignment="Center" />
+            <TextBox Width="230" Height="30" IsReadOnly="True" VerticalContentAlignment="Center" Text="{Binding LoadFileName}"
+                     Margin="0,50,30,30" FontFamily="微软雅黑 light" FontSize="15" VerticalAlignment="Center"/>
         </StackPanel>
         <StackPanel Grid.Row="1"  Orientation="Horizontal">
-            <TextBlock Grid.Row="1" Text="当前模板：" Margin="30,0,0,0" FontSize="11" Foreground="#4F4F4F" />
-            <TextBlock Grid.Row="1" Text="{Binding CurrentFileName}"  FontSize="11" VerticalAlignment="Center" Foreground="#4F4F4F" />
+            <TextBlock Text="当前模板：" Margin="30,10,10,30" FontFamily="微软雅黑 light" FontSize="15" VerticalAlignment="Center" />
+            <TextBox Width="230" Height="30" IsReadOnly="True" Text="{Binding CurrentFileName}"
+                     Margin="0,20,0,40" VerticalContentAlignment="Center"  FontFamily="微软雅黑 light" FontSize="15" VerticalAlignment="Center"/>
         </StackPanel>
-        <Button Grid.Row="2" Content="确定" FontSize="15" 
-                Command="{Binding OKCommand}" Width="80" Height="30" HorizontalAlignment="Right" Margin="20,10"/>
+        <Button Content="选择文件"   Grid.Column="1"
+                    Command="{Binding LoadDataFromExcelCommand}" Width="120" FontSize="15" Height="35" HorizontalAlignment="Left" Margin="10,50,30,30"/>
+        <Button Grid.Row="1" Grid.Column="1" Content="确定" FontSize="15" 
+                Command="{Binding OKCommand}" Width="120" Height="35" HorizontalAlignment="Right" Margin="10,15,30,15"/>
     </Grid>
 </Window>

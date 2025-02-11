@@ -6,7 +6,7 @@ using System;
 using System.IO;
 using System.Windows.Input;
 
-namespace RZData.ViewModels.RevitTemplateLoadViewModel
+namespace RZData.ViewModels
 {
     public class RevitTemplateLoadViewModel : ObservableObject
     {

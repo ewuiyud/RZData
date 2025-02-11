@@ -1,6 +1,9 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using Autodesk.Revit.DB;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,8 +14,19 @@ namespace RZData.Models
     {
         private string _value;
         public string Name { get; set; }
-        public List<string> Values { get; set; }
+        public ObservableCollection<string> Values { get; set; }
         public string ValueType { get; set; }
+        public ParameterSet()
+        {
+            Values = new ObservableCollection<string>();
+            Values.CollectionChanged += Values_CollectionChanged;
+        }
+        private void Values_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            OnPropertyChanged(nameof(Status));
+            OnPropertyChanged(nameof(Value));
+            OnPropertyChanged(nameof(ShowValue));
+        }
         public string Status
         {
             get
@@ -31,7 +45,8 @@ namespace RZData.Models
         {
             get
             {
-                if (_value == null)
+                if (string.IsNullOrEmpty(_value))
+                {
                     if (Values.Count == 1)
                     {
                         return Values[0];
@@ -40,9 +55,10 @@ namespace RZData.Models
                     {
                         return $"[{string.Join(", ", Values)}]";
                     }
+                }
                 return _value;
             }
-            set => SetProperty(ref _value, value);
+            set { _value = value; }
         }
         public string ShowValue
         {

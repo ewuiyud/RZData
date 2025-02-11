@@ -7,7 +7,7 @@
              mc:Ignorable="d" 
              Title="数据批量录入"
              Topmost="True"
-             MaxHeight="500" MinHeight="500" MaxWidth="800" MinWidth="800">
+             MaxHeight="750" MinHeight="750" MaxWidth="900" MinWidth="900">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -15,25 +15,31 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
-    <Grid>
+    <Grid Background="#F9F5EB">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="auto"/>
         </Grid.ColumnDefinitions>
-        <Grid Margin="20">
+        <Grid Margin="20" >
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto"/>
                 <RowDefinition Height="auto"/>
                 <RowDefinition Height="auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <TextBlock Text="根据族筛选" FontSize="12" Margin="2" Foreground="#4F4F4F"/>
             <TextBox Style="{StaticResource SeachBox}" Grid.Row="1" x:Name="SearchTextBox" Text="{Binding SearchKeyword,UpdateSourceTrigger=PropertyChanged}" 
                      Margin="2,5" FontSize="14"
                      GotFocus="TextBox_GotFocus" LostFocus="TextBox_LostFocus"/>
-            <ComboBox Grid.Row="2"  Margin="2,0,2,5" ItemsSource="{Binding Families}" DisplayMemberPath="Name" SelectedItem="{Binding SelectedElement}"  />
+            <ComboBox Style="{StaticResource cmbstyle}" Grid.Row="2"  Margin="2,0,2,5" FontFamily="微软雅黑 Light" FontSize="14"
+                      ItemsSource="{Binding Families}" DisplayMemberPath="Name" SelectedItem="{Binding SelectedElement}"  />
             <TreeView Grid.Row="3" ItemsSource="{Binding ShowElements.FamilyCategories}" Margin="2,0,2,0" HorizontalAlignment="Stretch" 
+                      FontSize="14" FontFamily="微软雅黑 Light" Background="#F5F8FA"
                       SelectedItemChanged="TreeView_SelectedItemChanged">
+                <TreeView.ItemContainerStyle>
+                    <Style TargetType="{x:Type TreeViewItem}">
+                        <EventSetter Event="Loaded" Handler="TreeViewItem_Loaded"/>
+                    </Style>
+                </TreeView.ItemContainerStyle>
                 <TreeView.ItemTemplate>
                     <HierarchicalDataTemplate ItemsSource="{Binding Families}">
                         <StackPanel Orientation="Horizontal">
@@ -42,23 +48,20 @@
                         <HierarchicalDataTemplate.ItemTemplate>
                             <HierarchicalDataTemplate ItemsSource="{Binding FamilyExtends}">
                                 <StackPanel Orientation="Horizontal">
+                                    <CheckBox VerticalAlignment="Center" IsChecked="{Binding RelativeSource={RelativeSource AncestorType={x:Type TreeViewItem}},
+                                        Path=IsSelected}"/>
                                     <TextBlock Text="{Binding Name}" Width="auto"/>
                                 </StackPanel>
                                 <HierarchicalDataTemplate.ItemTemplate>
-                                    <HierarchicalDataTemplate ItemsSource="{Binding DataInstances}">
+                                    <HierarchicalDataTemplate>
                                         <StackPanel Orientation="Horizontal">
+                                            <CheckBox VerticalAlignment="Center" IsChecked="{Binding RelativeSource={RelativeSource AncestorType={x:Type TreeViewItem}},
+                                        Path=IsSelected}"/>
                                             <TextBlock Text="{Binding Name}" Width="auto"/>
                                             <TextBlock Text="("/>
-                                            <TextBlock Text="{Binding DataInstances.Count}"/>
+                                            <TextBlock Text="{Binding IDs.Count}"/>
                                             <TextBlock Text=")"/>
                                         </StackPanel>
-                                        <HierarchicalDataTemplate.ItemTemplate>
-                                            <HierarchicalDataTemplate>
-                                                <StackPanel Orientation="Horizontal">
-                                                    <TextBlock Text="{Binding Element.Id}" Width="auto"/>
-                                                </StackPanel>
-                                            </HierarchicalDataTemplate>
-                                        </HierarchicalDataTemplate.ItemTemplate>
                                     </HierarchicalDataTemplate>
                                 </HierarchicalDataTemplate.ItemTemplate>
                             </HierarchicalDataTemplate>
@@ -67,13 +70,16 @@
                 </TreeView.ItemTemplate>
             </TreeView>
         </Grid>
-        <Grid Grid.Column="1">
+        <Border Grid.Column="1" BorderThickness="1" BorderBrush="#acacac" Margin="20">
+            <Grid Background="#F5F8FA">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="auto"/>
             </Grid.RowDefinitions>
-            <DataGrid ItemsSource="{Binding SelectedItem.Parameters}" IsReadOnly="True" CanUserAddRows="False" CanUserReorderColumns="False"
-                      AutoGenerateColumns="False" Margin="20,20,20,0" Width="358">
+                <DataGrid ItemsSource="{Binding SelectedItem.Parameters}" IsReadOnly="True" CanUserAddRows="False" FontSize="14"
+                       FontFamily="微软雅黑 Light" Background="White" RowHeight="28" 
+                      HorizontalScrollBarVisibility="Disabled" CanUserResizeColumns="False"
+                  AutoGenerateColumns="False" Margin="20" Width="auto" CanUserSortColumns="False" ColumnHeaderHeight="40" RowHeaderWidth="0">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="参数名称" Binding="{Binding Name}" Width="100"/>
                     <DataGridTextColumn Header="参数类型" Binding="{Binding ValueType}" Width="100"/>
@@ -95,5 +101,6 @@
             </DataGrid>
             <Button Grid.Row="1" Content="确定" Margin="20" HorizontalAlignment="Right" Width="80" Height="30" FontSize="18" Command="{Binding OKCommand}"/>
         </Grid>
+        </Border>
     </Grid>
 </Window>
