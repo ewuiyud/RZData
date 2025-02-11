@@ -31,11 +31,6 @@ namespace RZData.Models
             }
             return family.Add(element);
         }
-
-        internal void Clear()
-        {
-            FamilyCategories = new ObservableCollection<FamilyCategory>();
-        }
         internal void MergeParameters()
         {
             foreach (var family in FamilyCategories)
@@ -283,66 +278,6 @@ namespace RZData.Models
                     return parameter.AsInteger().ToString();
                 default:
                     return parameter.AsString();
-            }
-        }
-    }
-
-    public class Parameter
-    {
-        public string Name { get; set; }
-        public string TDCName { get; set; }
-        public string Value { get; set; }
-        public string ValueType { get; set; }
-    }
-    public class ParameterSet : ObservableObject
-    {
-        private string _value;
-        public string Name { get; set; }
-        public List<string> Values { get; set; }
-        public string ValueType { get; set; }
-        public string Status
-        {
-            get
-            {
-                if (Values.Count == 1)
-                {
-                    return "";
-                }
-                else
-                {
-                    return "多参数";
-                }
-            }
-        }
-        public string Value
-        {
-            get
-            {
-                if (_value == null)
-                    if (Values.Count == 1)
-                    {
-                        return Values[0];
-                    }
-                    else
-                    {
-                        return $"[{string.Join(", ", Values)}]";
-                    }
-                return _value;
-            }
-            set => SetProperty(ref _value, value);
-        }
-        public string ShowValue
-        {
-            get
-            {
-                if (Value == "缺失")
-                {
-                    return "缺失";
-                }
-                else
-                {
-                    return "正常";
-                }
             }
         }
     }

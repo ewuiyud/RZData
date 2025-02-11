@@ -88,10 +88,11 @@ namespace RZData.ViewModels
         public ICommand DeleteRequiredPropertiesCommand { get; }
         public ICommand OKWitheRequiredPropertiesCommand { get; }
         public ICommand DeleteRequiredPropertyCommand { get; }
-        public RevitListSummaryViewModel(UIDocument uiDocument, DataElement allElements)
+        public ICommand ExportExcelCommand { get; }
+        public RevitListSummaryViewModel(UIDocument uiDocument, ObservableCollection<RevitSolidElement> solidElements)
         {
             UiDocument = uiDocument;
-            AllElements = allElements;
+            AllElements = new ElementViewModel(solidElements.ToList());
             AllMaterialList = new ObservableCollection<MaterialViewModel>();
             ShowMaterialList = new ObservableCollection<MaterialViewModel>();
             ShowAssemblyList = new ObservableCollection<AssemblyViewModel>();
@@ -102,7 +103,20 @@ namespace RZData.ViewModels
             DeleteRequiredPropertiesCommand = new RelayCommand(DeleteRequiredProperties);
             OKWitheRequiredPropertiesCommand = new RelayCommand(OKWitheRequiredProperties);
             DeleteRequiredPropertyCommand = new RelayCommand<(string, string)>(DeleteRequiredProperty);
+            ExportExcelCommand = new RelayCommand(ExportExcel);
             CansoleCommand = new RelayCommand(Cansole);
+        }
+
+        private void ExportExcel()
+        {
+            try
+            {
+                ExcelDataService.ExportToExcelFromMaterialList(ShowMaterialList);
+            }
+            catch (Exception ex)
+            {
+                TaskDialog.Show("错误信息", ex.Message);
+            }
         }
 
         public void SetView(RevitListSummaryView revitListSummaryView)
@@ -193,7 +207,7 @@ namespace RZData.ViewModels
         {
             try
             {
-                List<DataInstance> list = GetDataInstanceList(AllElements);
+                var list = AllElements.RevitSolidElements;
                 AllMaterialList = FillMaterialList(list);
                 ShowMaterialList = AllMaterialList;
             }
@@ -203,12 +217,12 @@ namespace RZData.ViewModels
             }
         }
 
-        private ObservableCollection<MaterialViewModel> FillMaterialList(List<DataInstance> list)
+        private ObservableCollection<MaterialViewModel> FillMaterialList(List<RevitSolidElement> list)
         {
             ObservableCollection<MaterialViewModel> result = new ObservableCollection<MaterialViewModel>();
-            foreach (var dataInstance in list)
+            foreach (var revitSolidElement in list)
             {
-                var excelMaterialBusinessRecord = SortMaterials(dataInstance);
+                var excelMaterialBusinessRecord = SortMaterials(revitSolidElement);
                 if (excelMaterialBusinessRecord != null)
                 {
                     var materialRecord = new MaterialViewModel();
@@ -216,21 +230,21 @@ namespace RZData.ViewModels
                     if (excelMaterialBusinessRecord.UsageLocation.Count() > 5)
                     {
                         var input = excelMaterialBusinessRecord.UsageLocation.Split('：')[1];
-                        materialRecord.UsageMethod = ExplainString(input, dataInstance) + "使用";
+                        materialRecord.UsageMethod = ExplainString(input, revitSolidElement) + "使用";
                     }
                     materialRecord.ProjectFeaturesDetail = ExplainProjectFeatures(
-                        excelMaterialBusinessRecord.ProjectCharacteristics, dataInstance);
+                        excelMaterialBusinessRecord.ProjectCharacteristics, revitSolidElement);
                     var m = result.FirstOrDefault(
                         a => a.MaterialName == materialRecord.MaterialName
                         && a.UsageMethod == materialRecord.UsageMethod
                         && a.ProjectFeatures == materialRecord.ProjectFeatures);
                     if (m != null)
                     {
-                        m.DataInstances.Add(dataInstance);
+                        m.RevitSolidElements.Add(revitSolidElement);
                     }
                     else
                     {
-                        materialRecord.DataInstances.Add(dataInstance);
+                        materialRecord.RevitSolidElements.Add(revitSolidElement);
                         result.Add(materialRecord);
                     }
                 }
@@ -264,7 +278,7 @@ namespace RZData.ViewModels
             产品分类名称,
             空间分类名称
         }
-        private ExcelMaterialBusinessRecord SortMaterials(DataInstance dataInstance)
+        private ExcelMaterialBusinessRecord SortMaterials(RevitSolidElement revitSolidElement)
         {
             foreach (var excelMaterialBusinessRecord in ExcelDataService.ExcelMaterialBusinessRules)
             {
@@ -276,7 +290,7 @@ namespace RZData.ViewModels
                 if (!string.IsNullOrEmpty(excelMaterialBusinessRecord.ElementName))
                 {
                     //根据元素分类名称匹配
-                    var elementName = dataInstance.ElementName;
+                    var elementName = revitSolidElement.ElementName;
                     if (elementName == null)
                         continue;
                     if (!IsStringMatchRule(elementName, excelMaterialBusinessRecord.ElementName, MatchedType.元素分类名称))
@@ -284,7 +298,7 @@ namespace RZData.ViewModels
                 }
                 if (!string.IsNullOrEmpty(excelMaterialBusinessRecord.ProductName))
                 {
-                    var p = dataInstance.Parameters.FirstOrDefault(a => a.TDCName == "TDC-产品分类名称");
+                    var p = revitSolidElement.Parameters.FirstOrDefault(a => a.TDCName == "TDC-产品分类名称");
                     if (p == null)
                         continue;
                     if (!IsStringMatchRule(p.Value, excelMaterialBusinessRecord.ProductName, MatchedType.产品分类名称))
@@ -292,7 +306,7 @@ namespace RZData.ViewModels
                 }
                 if (!string.IsNullOrEmpty(excelMaterialBusinessRecord.SpaceName))
                 {
-                    var p = dataInstance.Parameters.FirstOrDefault(a => a.TDCName == "TDC-空间分类名称");
+                    var p = revitSolidElement.Parameters.FirstOrDefault(a => a.TDCName == "TDC-空间分类名称");
                     if (p == null)
                         continue;
                     if (!IsStringMatchRule(p.Value, excelMaterialBusinessRecord.SpaceName, MatchedType.空间分类名称))
@@ -300,14 +314,14 @@ namespace RZData.ViewModels
                 }
                 if (!string.IsNullOrEmpty(excelMaterialBusinessRecord.ExtendRule))
                 {
-                    if (!IsDatainstanceMatchExtendRule(dataInstance, excelMaterialBusinessRecord.ExtendRule))
+                    if (!IsDatainstanceMatchExtendRule(revitSolidElement, excelMaterialBusinessRecord.ExtendRule))
                         continue;
                 }
                 return excelMaterialBusinessRecord;
             }
             return null;
         }
-        (string, string) ExplainCodeProperty(string input, DataInstance dataInstance)
+        (string, string) ExplainCodeProperty(string input, RevitSolidElement revitSolidElement)
         {
             var dictionary = ExcelDataService.ExcelPropertyDic;
             string temp = input;
@@ -317,9 +331,9 @@ namespace RZData.ViewModels
             {
                 return (prefix.Substring(2), suffix);
             }
-            return (prefix.Substring(2), ExplainString(suffix, dataInstance));
+            return (prefix.Substring(2), ExplainString(suffix, revitSolidElement));
         }
-        string ExplainString(string input, DataInstance dataInstance)
+        string ExplainString(string input, RevitSolidElement revitSolidElement)
         {
             var dictionary = ExcelDataService.ExcelPropertyDic;
             if (!input.Contains("《"))
@@ -334,11 +348,11 @@ namespace RZData.ViewModels
                 var tDCName = dictionary[key];
                 if (tDCName == "TDC-元素分类名称")
                 {
-                    return dataInstance.ElementName;
+                    return revitSolidElement.ElementName;
                 }
                 else
                 {
-                    var p = dataInstance.Parameters.FirstOrDefault(a => a.TDCName == tDCName);
+                    var p = revitSolidElement.Parameters.FirstOrDefault(a => a.TDCName == tDCName);
                     if (p != null)
                     {
                         return p.Value;
@@ -355,7 +369,7 @@ namespace RZData.ViewModels
                 throw new Exception($"需要匹配的项目特征：{input}， 不合法。");
             }
         }
-        Dictionary<string, string> ExplainProjectFeatures(string input, DataInstance dataInstance)
+        Dictionary<string, string> ExplainProjectFeatures(string input, RevitSolidElement revitSolidElement)
         {
             var result = new Dictionary<string, string>();
             if (string.IsNullOrEmpty(input))
@@ -365,7 +379,7 @@ namespace RZData.ViewModels
             var features = input.Split('\n');
             foreach (var feature in features)
             {
-                var temp = ExplainCodeProperty(feature, dataInstance);
+                var temp = ExplainCodeProperty(feature, revitSolidElement);
                 result.Add(temp.Item1, temp.Item2);
             }
             return result;
@@ -435,7 +449,7 @@ namespace RZData.ViewModels
             }
             return false;
         }
-        private bool IsDatainstanceMatchExtendRule(DataInstance dataInstance, string rule)
+        private bool IsDatainstanceMatchExtendRule(RevitSolidElement revitSolidElement, string rule)
         {
             string[] parts = rule.Split(new[] { "||" }, StringSplitOptions.RemoveEmptyEntries);
 
@@ -452,7 +466,7 @@ namespace RZData.ViewModels
                 string propertyName = trimmedPart.Substring(0, operatorIndex).Trim();
                 string propertyValue = trimmedPart.Substring(operatorIndex + 2).Trim();
                 bool isEqual = trimmedPart[operatorIndex] == '=';
-                var p = dataInstance.Parameters.FirstOrDefault(a => a.TDCName == propertyName);
+                var p = revitSolidElement.Parameters.FirstOrDefault(a => a.TDCName == propertyName);
                 if (p != null)
                 {
                     if (isEqual)
@@ -492,13 +506,14 @@ namespace RZData.ViewModels
             {
                 ShowAssemblyList = new ObservableCollection<AssemblyViewModel>();
                 if (SelectedMaterialRecord != null)
-                    foreach (var dataInstance in SelectedMaterialRecord.DataInstances)
+                    foreach (var revitSolidElement in SelectedMaterialRecord.RevitSolidElements)
                     {
+                        var element = UiDocument.Document.GetElement(new ElementId(revitSolidElement.ID));
                         ShowAssemblyList.Add(new AssemblyViewModel()
                         {
-                            AssemblyID = dataInstance.Element.Id.ToString(),
-                            AssemblyName = dataInstance.Element.LookupParameter("族与类型").AsValueString(),
-                            Modelbelonging = dataInstance.Element.Document == UiDocument.Document ? "当前模型" : "链接模型"
+                            AssemblyID = element.Id.ToString(),
+                            AssemblyName = element.LookupParameter("族与类型").AsValueString(),
+                            Modelbelonging = element.Document == UiDocument.Document ? "当前模型" : "链接模型"
                         });
                     }
             }

@@ -13,7 +13,7 @@ namespace RZData.ViewModels
     {
         public MaterialViewModel()
         {
-            DataInstances = new ObservableCollection<DataInstance>();
+            RevitSolidElements = new ObservableCollection<RevitSolidElement>();
             ProjectFeaturesDetail = new Dictionary<string, string>();
         }
         /// <summary>
@@ -76,6 +76,6 @@ namespace RZData.ViewModels
         /// 材料单位
         /// </summary>
         public string MaterialUnit { get; set; }
-        public ObservableCollection<DataInstance> DataInstances { get; set; }
+        public ObservableCollection<RevitSolidElement> RevitSolidElements { get; set; }
     }
 }

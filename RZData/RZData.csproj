@@ -128,6 +128,8 @@
     <Compile Include="Converters\RowIndexConverter.cs" />
     <Compile Include="ExternalEventHandlers\CustomHandler.cs" />
     <Compile Include="Extensions\RevitElementInfoExtensions.cs" />
+    <Compile Include="Models\Parameter.cs" />
+    <Compile Include="Models\ParameterSet.cs" />
     <Compile Include="Services\ExcelDataService.cs" />
     <Compile Include="Commands\RevitDataCheckCommand.cs" />
     <Compile Include="Models\DataElement.cs" />
@@ -189,6 +191,8 @@
     <None Include="app.config" />
     <None Include="ClassDiagram1.cd" />
     <None Include="packages.config" />
+    <EmbeddedResource Include="Resources\Templates\族匹配校验模板.xlsx" />
+    <EmbeddedResource Include="Resources\Templates\参数项错误表模板xlsx.xlsx" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\data_Entry.png" />

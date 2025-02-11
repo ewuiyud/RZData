@@ -2,9 +2,13 @@ using Autodesk.Revit.UI;
 using Microsoft.Win32;
 using OfficeOpenXml;
 using RZData.Models;
+using RZData.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 
 namespace RZData.Services
 {
@@ -201,7 +205,7 @@ namespace RZData.Services
             }
         }
 
-        public static void ExportToExcel(DataElement dataElementData)
+        public static void ExportToExcelFromDataElement(DataElement dataElementData)
         {
             using (var package = new ExcelPackage())
             {
@@ -243,6 +247,107 @@ namespace RZData.Services
                     var file = new FileInfo(saveFileDialog.FileName);
                     package.SaveAs(file);
                     TaskDialog.Show("提示", "导出成功！");
+                }
+            }
+        }
+        public static void ExportToExcelFromMaterialList(ObservableCollection<MaterialViewModel> materialViewModels)
+        {
+            using (var package = new ExcelPackage())
+            {
+                var worksheet = package.Workbook.Worksheets.Add("睿住数据");
+                int row = 1;
+                worksheet.Cells[row, 1].Value = "行号";
+                worksheet.Cells[row, 2].Value = "材料名称";
+                worksheet.Cells[row, 3].Value = "使用方式";
+                worksheet.Cells[row, 4].Value = "项目特征";
+                worksheet.Cells[row, 5].Value = "工程量";
+                row++;
+                foreach (var material in materialViewModels)
+                {
+                    worksheet.Cells[row, 1].Value = row - 1;
+                    worksheet.Cells[row, 2].Value = material.MaterialName;
+                    worksheet.Cells[row, 3].Value = material.UsageMethod;
+                    string projectFeatures = "";
+                    foreach (var item in material.ProjectFeaturesDetail)
+                    {
+                        projectFeatures += $"{item.Key}:{item.Value}\n";
+                    }
+                    worksheet.Cells[row, 4].Value = projectFeatures;
+                    worksheet.Cells[row, 5].Value = material.ModelEngineeringQuantity;
+                    row++;
+                }
+
+                // 保存文件
+                SaveFileDialog saveFileDialog = new SaveFileDialog
+                {
+                    Filter = "Excel files (*.xlsx)|*.xlsx",
+                    FilterIndex = 2,
+                    RestoreDirectory = true
+                };
+
+                if (saveFileDialog.ShowDialog() == true)
+                {
+                    var file = new FileInfo(saveFileDialog.FileName);
+                    package.SaveAs(file);
+                    TaskDialog.Show("提示", "导出成功！");
+                }
+            }
+        }
+
+        /// <summary>
+        /// 默认输出未匹配族库表
+        /// </summary>
+        /// <param name="elementViewModel"></param>
+        /// <param name="IsFamilyNameFalse"></param>
+        internal static void ExportToExcelFromElement(ElementViewModel elementViewModel, bool IsFamilyNameFalse = true)
+        {
+            // 从 Resources 中加载模板文件
+            var assembly = Assembly.GetExecutingAssembly();
+            var resourceName = IsFamilyNameFalse ? "RZData.Resources.Templates.族匹配校验模板.xlsx" : "RZData.Resources.Templates.参数项错误表模板xlsx.xlsx";
+            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+            {
+                using (var package = new ExcelPackage(stream))
+                {
+                    var worksheet = package.Workbook.Worksheets[0]; // 假设模板文件中有一个工作表
+                    List<(string FamilyCategory, string FamilyName, string ExtendName, string Parameters)> list =
+                        new List<(string FamilyCategory, string FamilyName, string ExtendName, string Parameters)>();
+                    foreach (var revitSolidElement in elementViewModel.RevitSolidElements)
+                    {
+                        var parameters = revitSolidElement.Parameters.FindAll(a => a.Value == "缺失").ToList();
+                        string strPar = "";
+                        foreach (var paramter in parameters)
+                        {
+                            strPar += paramter.Name + "\n";
+                        }
+                        list.Add((revitSolidElement.FamilyCategory, revitSolidElement.FamilyName, revitSolidElement.ExtendName, strPar));
+                        //list去重
+                        list = list.Distinct().ToList();
+                    }
+                    int row = 2;
+                    foreach (var item in list)
+                    {
+                        worksheet.Cells[row, 1].Value = item.FamilyCategory;
+                        worksheet.Cells[row, 2].Value = item.FamilyName;
+                        worksheet.Cells[row, 3].Value = item.ExtendName;
+                        if (!IsFamilyNameFalse)
+                            worksheet.Cells[row, 4].Value = item.Parameters;
+                        row++;
+                    }
+
+                    // 保存文件
+                    SaveFileDialog saveFileDialog = new SaveFileDialog
+                    {
+                        Filter = "Excel files (*.xlsx)|*.xlsx",
+                        FilterIndex = 2,
+                        RestoreDirectory = true
+                    };
+
+                    if (saveFileDialog.ShowDialog() == true)
+                    {
+                        var file = new FileInfo(saveFileDialog.FileName);
+                        package.SaveAs(file);
+                        TaskDialog.Show("提示", "导出成功！");
+                    }
                 }
             }
         }

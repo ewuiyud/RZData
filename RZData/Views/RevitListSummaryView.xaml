@@ -76,7 +76,7 @@
             </Grid.ColumnDefinitions>
             <Button Content="模型中选中" Width="100" Height="20" Margin="10,0,0,0"  Visibility="Collapsed"/>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Column="1" VerticalAlignment="Center">
-                <Button Content="导出Excel" Width="70" Height="30" Margin="10,0,0,0" />
+                <Button Content="导出Excel" Width="70" Height="30" Margin="10,0,0,0" Command="{Binding ExportExcelCommand}"/>
                 <Button Content="取消" Width="70" Height="30" Margin="10,0,10,0" Command="{Binding CansoleCommand}"/>
             </StackPanel>
         </Grid>

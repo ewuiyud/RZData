@@ -11,24 +11,24 @@ namespace RZData.ViewModels
 {
     public class BaseViewModel : ObservableObject
     {
-        private DataElement _allElements;
-        private DataElement _familyNameCheckElements;
-        private DataElement _parametersCheckElements;
+        private ElementViewModel _allElements;
+        private ElementViewModel _familyNameCheckElements;
+        private ElementViewModel _parametersCheckElements;
         internal UIDocument UiDocument;
 
-        public DataElement AllElements
+        public ElementViewModel AllElements
         {
             get => _allElements;
             set => SetProperty(ref _allElements, value);
         }
 
-        public DataElement FamilyNameCheckElements
+        public ElementViewModel FamilyNameCheckElements
         {
             get => _familyNameCheckElements;
             set => SetProperty(ref _familyNameCheckElements, value);
         }
 
-        public DataElement ParametersCheckElements
+        public ElementViewModel ParametersCheckElements
         {
             get => _parametersCheckElements;
             set => SetProperty(ref _parametersCheckElements, value);

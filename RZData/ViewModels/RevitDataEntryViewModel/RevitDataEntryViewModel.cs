@@ -19,24 +19,35 @@ using System.Xml.Linq;
 
 namespace RZData.ViewModels.RevitDataEntryViewModel
 {
-    
+
     public class RevitDataEntryViewModel : BaseViewModel
     {
         private object _selectedItem;
         private string _searchKeyword;
-        private DataElement _showElements;
+        private ElementViewModel _showElements;
         private Models.FamilyCategory _selectedElement;
         public ICommand SearchCommand { get; }
         public ICommand OKCommand { get; }
         public object SelectedItem { get => _selectedItem; set => SetProperty(ref _selectedItem, value); }
-        public string SearchKeyword { get => _searchKeyword; set => SetProperty(ref _searchKeyword, value); }
-        public DataElement ShowElements { get => _showElements; set => SetProperty(ref _showElements, value); }
-        public ObservableCollection<Models.FamilyCategory> Families
+        public string SearchKeyword
+        {
+            get => _searchKeyword;
+            set
+            {
+                SetProperty(ref _searchKeyword, value);
+                if (_searchKeyword != "请输入关键词搜索")
+                {
+                    SearchCommand.Execute(null);
+                }
+            }
+        }
+        public ElementViewModel ShowElements { get => _showElements; set => SetProperty(ref _showElements, value); }
+        public ObservableCollection<FamilyCategory> Families
         {
             get
             {
-                var fs = new ObservableCollection<Models.FamilyCategory>();
-                fs.Add(new Models.FamilyCategory() { Name = "所有" });
+                var fs = new ObservableCollection<FamilyCategory>();
+                fs.Add(new FamilyCategory() { Name = "所有" });
                 var elements = AllElements;
                 elements.FamilyCategories.ToList().ForEach(a => fs.Add(a));
                 return fs;
@@ -58,73 +69,48 @@ namespace RZData.ViewModels.RevitDataEntryViewModel
                     }
                     else
                     {
-                        ShowElements = new DataElement() { FamilyCategories = new ObservableCollection<Models.FamilyCategory> { _selectedElement } };
+                        var revitSolidElements = AllElements.RevitSolidElements.ToList().FindAll(a => a.FamilyCategory == _selectedElement.Name);
+                        ShowElements = new ElementViewModel(revitSolidElements);
                     }
                 }
             }
         }
-        public RevitDataEntryViewModel(UIDocument _uiDocument, DataElement AllElements)
+        public RevitDataEntryViewModel(UIDocument _uiDocument, ObservableCollection<RevitSolidElement> revitSolidElements)
         {
-            this.AllElements = AllElements;
+            this.AllElements = new ElementViewModel(revitSolidElements.ToList());
             this.ShowElements = AllElements;
             this.UiDocument = _uiDocument;
             SearchCommand = new RelayCommand(Search);
             OKCommand = new AsyncRelayCommand(OK);
         }
-        
+
         internal void DoubleClickAndPickObjects(object selectedValue)
         {
             switch (selectedValue)
             {
-                case Models.FamilyCategory family:
-                    SelectElementInRevit(family);
+                case FamilyCategory familyCategory:
                     break;
-                case Models.Family familyType:
-                    SelectElementInRevit(familyType);
+                case Family family:
+                    SelectElementInRevit(family);
                     break;
                 case FamilyExtend familyExtend:
                     SelectElementInRevit(familyExtend);
                     break;
-                case DataInstance dataInstance:
-                    SelectElementInRevit(dataInstance);
+                case ElementInstance elementInstance:
+                    SelectElementInRevit(elementInstance);
                     break;
                 default:
                     break;
             }
         }
-        private void SelectElementInRevit(DataInstance dataInstance)
+        private void SelectElementInRevit(Family family)
         {
             var uidoc = UiDocument;
             var elementIds = new List<ElementId>();
-            elementIds.Add(dataInstance.Element.Id);
-            uidoc.Selection.SetElementIds(elementIds);
-        }
-        private void SelectElementInRevit(Models.FamilyCategory family)
-        {
-            var uidoc = UiDocument;
-            var elementIds = new List<ElementId>();
-            foreach (var familyType in family.Families)
+            foreach (var id in family.IDs)
             {
-                foreach (var familyExtend in familyType.FamilyExtends)
-                {
-                    foreach (var item in familyExtend.DataInstances)
-                    {
-                        elementIds.Add(item.Element.Id);
-                    }
-                }
-            }
-            uidoc.Selection.SetElementIds(elementIds);
-        }
-        private void SelectElementInRevit(Models.Family familyType)
-        {
-            var uidoc = UiDocument;
-            var elementIds = new List<ElementId>();
-            foreach (var familyExtend in familyType.FamilyExtends)
-            {
-                foreach (var item in familyExtend.DataInstances)
-                {
-                    elementIds.Add(item.Element.Id);
-                }
+
+                elementIds.Add(new ElementId(id));
             }
             uidoc.Selection.SetElementIds(elementIds);
         }
@@ -132,15 +118,42 @@ namespace RZData.ViewModels.RevitDataEntryViewModel
         {
             var uidoc = UiDocument;
             var elementIds = new List<ElementId>();
-            foreach (var item in familyExtend.DataInstances)
+            foreach (var id in familyExtend.IDs)
             {
-                elementIds.Add(item.Element.Id);
+                elementIds.Add(new ElementId(id));
             }
+            uidoc.Selection.SetElementIds(elementIds);
+        }
+        private void SelectElementInRevit(ElementInstance elementInstance)
+        {
+            var uidoc = UiDocument;
+            var elementIds = new List<ElementId>();
+            elementIds.Add(new ElementId(elementInstance.ID));
             uidoc.Selection.SetElementIds(elementIds);
         }
         private void Search()
         {
-            ShowElements = AllElements.Search(SearchKeyword);
+            if (_selectedElement == null)
+            {
+                var revitSolidElements = AllElements.RevitSolidElements.FindAll(a =>
+                    a.FamilyName.Contains(SearchKeyword) || a.FamilyCategory.Contains(SearchKeyword) || a.ExtendName.Contains(SearchKeyword));
+                ShowElements = new ElementViewModel(revitSolidElements);
+            }
+            else
+            {
+                var revitSolidElements = new List<RevitSolidElement>();
+                if (_selectedElement.Name == "所有")
+                {
+                    revitSolidElements = AllElements.RevitSolidElements;
+                }
+                else
+                {
+                    revitSolidElements = AllElements.RevitSolidElements.ToList().FindAll(a => a.FamilyCategory == _selectedElement.Name);
+                }
+                revitSolidElements = revitSolidElements.FindAll(a =>
+                    a.FamilyName.Contains(SearchKeyword) || a.FamilyCategory.Contains(SearchKeyword) || a.ExtendName.Contains(SearchKeyword));
+                ShowElements = new ElementViewModel(revitSolidElements);
+            }
         }
         private async Task OK()
         {
@@ -150,26 +163,26 @@ namespace RZData.ViewModels.RevitDataEntryViewModel
                 {
                     foreach (var parameter in familyExtend.Parameters)
                     {
-                        if ( !parameter.Value.StartsWith("["))
+                        if (!parameter.Value.StartsWith("["))
                         {
                             await CustomHandler.Run(a =>
                             {
-                                SetParameter(a.ActiveUIDocument, parameter, familyExtend.DataInstances);
+                                SetParameter(a.ActiveUIDocument, parameter, familyExtend.IDs);
                             });
                         }
                     }
-                    familyExtend.ReloadParameter(UiDocument.Document);
+                    //familyExtend.ReloadParameter(UiDocument.Document);
                 }
-                else if (SelectedItem is DataInstance dataInstance)
+                else if (SelectedItem is ElementInstance elementInstance)
                 {
-                    foreach (var parameter in dataInstance.Parameters)
+                    foreach (var parameter in elementInstance.Parameters)
                     {
                         await CustomHandler.Run(a =>
                         {
-                            SetParameter(a.ActiveUIDocument, parameter, dataInstance);
+                            SetParameter(a.ActiveUIDocument, parameter, elementInstance.ID);
                         });
                     }
-                    dataInstance.FamilyExtend.ReloadParameter(UiDocument.Document);
+                    //elementInstance.FamilyExtend.ReloadParameter(UiDocument.Document);
                 }
             }
             catch (Exception ex)
@@ -178,14 +191,14 @@ namespace RZData.ViewModels.RevitDataEntryViewModel
             }
         }
 
-        private void SetParameter(UIDocument uIDocument, Models.Parameter parameter, DataInstance dataInstance)
+        private void SetParameter(UIDocument uIDocument, Models.Parameter parameter, int elementId)
         {
             using (Transaction transaction = new Transaction(uIDocument.Document, "SetParameter"))
             {
+                var element = uIDocument.Document.GetElement(new ElementId(elementId));
                 transaction.Start();
                 if (parameter.ValueType == "实例参数")
                 {
-                    Element element = dataInstance.Element;
                     var p = element.LookupParameter(parameter.Name);
                     if (!p.IsReadOnly && !p.Set(parameter.Value))
                     {
@@ -194,8 +207,8 @@ namespace RZData.ViewModels.RevitDataEntryViewModel
                 }
                 else if (parameter.ValueType == "类型参数")
                 {
-                    Element element = UiDocument.Document.GetElement(dataInstance.Element.LookupParameter("族与类型")?.AsElementId());
-                    var p = element.LookupParameter(parameter.Name);
+                    Element fatherElement = UiDocument.Document.GetElement(element.LookupParameter("族与类型")?.AsElementId());
+                    var p = fatherElement.LookupParameter(parameter.Name);
                     if (!p.IsReadOnly && !p.Set(parameter.Value))
                     {
                         TaskDialog.Show("错误报告", $"输入参数的值不合法，参数 {parameter.Name} 的值 {parameter.Value}");
@@ -205,16 +218,16 @@ namespace RZData.ViewModels.RevitDataEntryViewModel
             }
         }
 
-        private void SetParameter(UIDocument uIDocument, Models.ParameterSet parameterSet, ObservableCollection<DataInstance> dataInstances)
+        private void SetParameter(UIDocument uIDocument, Models.ParameterSet parameterSet, List<int> IDs)
         {
             using (Transaction transaction = new Transaction(uIDocument.Document, "SetParameter"))
             {
                 transaction.Start();
                 if (parameterSet.ValueType == "实例参数")
                 {
-                    foreach (var dataInstance in dataInstances)
+                    foreach (var id in IDs)
                     {
-                        Element element = dataInstance.Element;
+                        Element element = uIDocument.Document.GetElement(new ElementId(id));
                         var p = element.LookupParameter(parameterSet.Name);
                         if (!p.IsReadOnly && !p.Set(parameterSet.Value))
                         {
@@ -224,7 +237,9 @@ namespace RZData.ViewModels.RevitDataEntryViewModel
                 }
                 else if (parameterSet.ValueType == "类型参数")
                 {
-                    Element element = UiDocument.Document.GetElement(dataInstances[0].Element.LookupParameter("族与类型")?.AsElementId());
+                    Element element = UiDocument.Document.GetElement(
+                        UiDocument.Document.GetElement(new ElementId(IDs[0])
+                        ).LookupParameter("族与类型")?.AsElementId());
                     var p = element.LookupParameter(parameterSet.Name);
                     if (!p.IsReadOnly && !p.Set(parameterSet.Value))
                     {

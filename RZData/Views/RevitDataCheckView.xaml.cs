@@ -4,10 +4,12 @@ using RZData.Models;
 using RZData.ViewModels;
 using RZData.ViewModels.RevitDataCheckViewModel;
 using System;
+using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 
 
 namespace RZData.Views
@@ -17,23 +19,28 @@ namespace RZData.Views
     /// </summary>
     public partial class RevitDataCheckView : Window
     {
+        private const string DefaultSearchText = "请输入关键词搜索";
         public RevitDataCheckView(UIDocument uiDocument)
         {
+            ViewModelLocator.Instance(uiDocument).Reset();
             InitializeComponent();
             DataContext = ViewModelLocator.Instance(uiDocument).RevitDataCheckViewModel;
-            Loaded += (s, e) =>
+            Loaded += OnLoaded;
+        }
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            try
             {
                 var textBox = this.FindName("SearchTextBox") as System.Windows.Controls.TextBox;
                 if (textBox != null && string.IsNullOrEmpty(textBox.Text))
                 {
-                    textBox.Text = "请输入关键词搜索";
-                    textBox.Foreground = System.Windows.Media.Brushes.Gray;
+                    SetDefaultSearchText(textBox);
                 }
-                Dispatcher.BeginInvoke(new Action(() =>
-                {
-                    ViewModelLocator.Instance(uiDocument).Reset();
-                }));
-            };
+            }
+            catch (System.Exception ex)
+            {
+                TaskDialog.Show("错误信息", ex.Message);
+            }
         }
 
         private void TreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
@@ -41,37 +48,15 @@ namespace RZData.Views
             try
             {
                 var viewModel = DataContext as RevitDataCheckViewModel;
-                if (e.NewValue is FamilyExtend familyExtend)
+                if (e.NewValue is ViewModels.FamilyExtend familyExtend)
                 {
                     viewModel.SelectedItem = familyExtend;
                 }
-            }
-            catch (Exception ex)
-            {
-                TaskDialog.Show("错误信息", ex.Message);
-            }
-        }
-
-        private void TreeView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            try
-            {
-                var viewModel = DataContext as RevitDataCheckViewModel;
-                viewModel.DoubleClickAndPickObjects((sender as TreeView).SelectedValue);
-            }
-            catch (Exception ex)
-            {
-                TaskDialog.Show("错误信息", ex.Message);
-            }
-        }
-
-        private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            try
-            {
-                var viewModel = DataContext as RevitDataCheckViewModel;
-                if (viewModel.SearchKeyword != null && viewModel.SearchKeyword != "请输入关键词搜索")
-                    viewModel.SearchCommand.Execute(null);
+                else if (e.NewValue is ViewModels.Family family)
+                {
+                    viewModel.SelectedItem = family;
+                }
+                viewModel.DoubleClickAndPickObjects(viewModel.SelectedItem);
             }
             catch (Exception ex)
             {
@@ -84,7 +69,7 @@ namespace RZData.Views
             try
             {
                 var textBox = sender as System.Windows.Controls.TextBox;
-                if (textBox.Text == "请输入关键词搜索")
+                if (textBox.Text == DefaultSearchText)
                 {
                     textBox.Text = string.Empty;
                     textBox.Foreground = System.Windows.Media.Brushes.Black;
@@ -103,14 +88,45 @@ namespace RZData.Views
                 var textBox = sender as System.Windows.Controls.TextBox;
                 if (string.IsNullOrEmpty(textBox.Text))
                 {
-                    textBox.Text = "请输入关键词搜索";
-                    textBox.Foreground = System.Windows.Media.Brushes.Gray;
+                    SetDefaultSearchText(textBox);
                 }
             }
             catch (Exception ex)
             {
                 TaskDialog.Show("错误信息", ex.Message);
             }
+        }
+        private void SetDefaultSearchText(System.Windows.Controls.TextBox textBox)
+        {
+            try
+            {
+                textBox.Text = DefaultSearchText;
+                textBox.Foreground = System.Windows.Media.Brushes.Gray;
+            }
+            catch (System.Exception e)
+            {
+                TaskDialog.Show("错误信息", e.Message);
+            }
+        }
+
+        private void TextBox_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            System.Windows.Controls.TextBox textBox = sender as System.Windows.Controls.TextBox;
+            TreeViewItem treeViewItem = FindVisualParent<TreeViewItem>(textBox);
+            if (treeViewItem != null)
+            {
+                treeViewItem.IsSelected = true;
+            }
+        }
+        private T FindVisualParent<T>(DependencyObject child) where T : DependencyObject
+        {
+            DependencyObject parentObject = VisualTreeHelper.GetParent(child);
+            if (parentObject == null) return null;
+            T parent = parentObject as T;
+            if (parent != null)
+                return parent;
+            else
+                return FindVisualParent<T>(parentObject);
         }
     }
 }

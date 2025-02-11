@@ -80,10 +80,14 @@ namespace RZData.ViewModels.RevitTemplateLoadViewModel
                     loadFileName = "无";
                     CloseAction?.Invoke();
                 }
+                else
+                {
+                    TaskDialog.Show("提示", "请选择模板!");
+                }
             }
             catch (Exception e)
             {
-                TaskDialog.Show("错误信息", e.Message);
+                TaskDialog.Show("错误信息", "表格加载失败，错误信息：" + e.Message);
             }
         }
     }

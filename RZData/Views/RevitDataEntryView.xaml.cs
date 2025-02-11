@@ -17,9 +17,9 @@ namespace RZData.Views
         private const string DefaultSearchText = "请输入关键词搜索";
         public RevitDataEntryView(UIDocument uiDocument)
         {
+            ViewModelLocator.Instance(uiDocument).Reset();
             InitializeComponent();
             var revitDataEntryViewModel = ViewModelLocator.Instance(uiDocument).RevitDataEntryViewModel;
-            ViewModelLocator.Instance(uiDocument).Reset();
             DataContext = revitDataEntryViewModel;
             Loaded += OnLoaded;
         }
@@ -43,7 +43,7 @@ namespace RZData.Views
             try
             {
                 var viewModel = DataContext as RevitDataEntryViewModel;
-                if (e.NewValue is FamilyExtend familyExtend)
+                if (e.NewValue is ViewModels.FamilyExtend familyExtend)
                 {
                     viewModel.SelectedItem = familyExtend;
                 }
@@ -51,31 +51,6 @@ namespace RZData.Views
                 {
                     viewModel.SelectedItem = dataInstance;
                 }
-            }
-            catch (System.Exception ex)
-            {
-                TaskDialog.Show("错误信息", ex.Message);
-            }
-        }
-        private void TreeView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            try
-            {
-                var viewModel = DataContext as RevitDataEntryViewModel;
-                viewModel.DoubleClickAndPickObjects((sender as TreeView).SelectedValue);
-            }
-            catch (System.Exception ex)
-            {
-                TaskDialog.Show("错误信息", ex.Message);
-            }
-        }
-        private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            try
-            {
-                var viewModel = DataContext as RevitDataEntryViewModel;
-                if (viewModel.SearchKeyword != null && viewModel.SearchKeyword != DefaultSearchText)
-                    viewModel.SearchCommand.Execute(null);
             }
             catch (System.Exception ex)
             {
