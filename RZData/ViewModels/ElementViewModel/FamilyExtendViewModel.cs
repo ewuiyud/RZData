@@ -1,10 +1,9 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using Autodesk.Revit.DB;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RZData.ViewModels
 {
@@ -20,5 +19,36 @@ namespace RZData.ViewModels
         public List<int> IDs { get; set; }
         public ObservableCollection<ElementInstanceViewModel> ElementInstances { get; set; }
         public List<Models.ParameterSet> Parameters { get; set; }
+
+        internal void ReloadParameter(Document document)
+        {
+            foreach (var ElementInstance in ElementInstances)
+            {
+                ElementInstance.ReloadParameter(document);
+            }
+            MergeParameters();
+        }
+        internal void MergeParameters()
+        {
+            Parameters.Clear();
+            foreach (var ElementInstance in ElementInstances)
+            {
+                foreach (var parameter in ElementInstance.Parameters)
+                {
+                    var currentP = Parameters.FirstOrDefault(a => a.Name == parameter.Name);
+                    if (currentP != null)
+                    {
+                        if (!currentP.Parameters.Contains(parameter))
+                        {
+                            currentP.Parameters.Add(parameter);
+                        }
+                    }
+                    else
+                    {
+                        Parameters.Add(new Models.ParameterSet(parameter));
+                    }
+                }
+            }
+        }
     }
 }

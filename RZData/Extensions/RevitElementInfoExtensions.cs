@@ -9,6 +9,22 @@ namespace RZData.Extensions
 {
     public static class RevitElementInfoExtensions
     {
+        public static string GetValue(this Autodesk.Revit.DB.Parameter parameter)
+        {
+            switch (parameter.StorageType)
+            {
+                case StorageType.String:
+                    return parameter.AsString();
+                case StorageType.Double:
+                    return parameter.AsValueString();
+                case StorageType.Integer:
+                    return parameter.AsValueString();
+                case StorageType.ElementId:
+                    return parameter.AsInteger().ToString();
+                default:
+                    return parameter.AsString();
+            }
+        }
         public static string GetFamilyCategory(this Element element)
         {
             return element.Category?.Name ?? null;

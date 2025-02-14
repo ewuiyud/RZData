@@ -72,14 +72,14 @@ namespace RZData.ViewModels
                     var existingParameter = existingExtend.Parameters.FirstOrDefault(p => p.Name == item.Name);
                     if (existingParameter == null)
                     {
-                        var newParameter = new Models.ParameterSet { Name = item.Name, Values = new ObservableCollection<string> { item.Value }, ValueType = item.ValueType };
+                        var newParameter = new Models.ParameterSet(item);
                         existingExtend.Parameters.Add(newParameter);
                     }
                     else
                     {
                         //如果已经存在，需要判断是否已经添加过
-                        if (!existingParameter.Values.Contains(item.Value))
-                            existingParameter.Values.Add(item.Value);
+                        if (!existingParameter.Parameters.Contains(item))
+                            existingParameter.Parameters.Add(item);
                     }
                 }
             }
@@ -90,14 +90,14 @@ namespace RZData.ViewModels
                     var existingParameter = existingFamily.Parameters.FirstOrDefault(p => p.Name == item.Name);
                     if (existingParameter == null)
                     {
-                        var newParameter = new Models.ParameterSet { Name = item.Name, Values = new ObservableCollection<string> { item.Value }, ValueType = item.ValueType };
+                        var newParameter = new Models.ParameterSet (item);
                         existingFamily.Parameters.Add(newParameter);
                     }
                     else
                     {
                         //如果已经存在，需要判断是否已经添加过
-                        if (!existingParameter.Values.Contains(item.Value))
-                            existingParameter.Values.Add(item.Value);
+                        if (!existingParameter.Parameters.Contains(item))
+                            existingParameter.Parameters.Add(item);
                     }
                 }
             }

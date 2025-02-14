@@ -167,7 +167,21 @@ namespace RZData.ViewModels
                             });
                         }
                     }
-                    //familyExtend.ReloadParameter(UiDocument.Document);
+                    familyExtend.ReloadParameter(UiDocument.Document);
+                }
+                else if (SelectedItem is FamilyViewModel family)
+                {
+                    foreach (var parameter in family.Parameters)
+                    {
+                        if (parameter.Value != null && !parameter.Value.StartsWith("["))
+                        {
+                            await CustomHandler.Run(a =>
+                            {
+                                SetParameter(a.ActiveUIDocument, parameter, family.IDs);
+                            });
+                        }
+                    }
+                    family.ReloadParameter(UiDocument.Document);
                 }
                 else if (SelectedItem is ElementInstanceViewModel elementInstance)
                 {
@@ -178,7 +192,7 @@ namespace RZData.ViewModels
                             SetParameter(a.ActiveUIDocument, parameter, elementInstance.Name);
                         });
                     }
-                    //elementInstance.FamilyExtend.ReloadParameter(UiDocument.Document);
+                    elementInstance.ReloadParameter(UiDocument.Document);
                 }
             }
             catch (Exception ex)

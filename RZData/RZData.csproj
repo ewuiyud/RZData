@@ -52,6 +52,10 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AdWindows">
+      <HintPath>..\..\..\..\..\..\Program Files\Autodesk\AutoCAD 2020\AdWindows.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="CommunityToolkit.Mvvm, Version=7.1.0.0, Culture=neutral, PublicKeyToken=4aff67a105548ee2, processorArchitecture=MSIL">
       <HintPath>..\packages\CommunityToolkit.Mvvm.7.1.2\lib\netstandard2.0\CommunityToolkit.Mvvm.dll</HintPath>
     </Reference>
@@ -124,7 +128,6 @@
     <Compile Include="Commands\RevitDataEntryCommand.cs" />
     <Compile Include="Commands\RevitListSummaryCommand.cs" />
     <Compile Include="Commands\RevitTemplateLoadCommand.cs" />
-    <Compile Include="Controls\SearchTextBox.cs" />
     <Compile Include="Converters\RowIndexConverter.cs" />
     <Compile Include="ExternalEventHandlers\CustomHandler.cs" />
     <Compile Include="Extensions\RevitElementInfoExtensions.cs" />
@@ -192,6 +195,7 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="ClassDiagram1.cd" />
+    <None Include="ClassDiagram2.cd" />
     <None Include="packages.config" />
     <EmbeddedResource Include="Resources\Templates\族匹配校验模板.xlsx" />
     <EmbeddedResource Include="Resources\Templates\参数项错误表模板xlsx.xlsx" />

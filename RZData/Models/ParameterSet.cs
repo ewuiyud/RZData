@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -13,53 +14,79 @@ namespace RZData.Models
     public class ParameterSet : ObservableObject
     {
         private string _value;
+        private string _status;
         public string Name { get; set; }
-        public ObservableCollection<string> Values { get; set; }
+        private ObservableCollection<string> Values { get; set; }
+        public ObservableCollection<Parameter> Parameters { get; set; }
         public string ValueType { get; set; }
         public ParameterSet()
         {
             Values = new ObservableCollection<string>();
-            Values.CollectionChanged += Values_CollectionChanged;
+            Parameters = new ObservableCollection<Parameter>();
+            Parameters.CollectionChanged += Parameters_CollectionChanged;
         }
-        private void Values_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+
+        public ParameterSet(Parameter parameter)
         {
-            OnPropertyChanged(nameof(Status));
-            OnPropertyChanged(nameof(Value));
-            OnPropertyChanged(nameof(ShowValue));
+            Values = new ObservableCollection<string>();
+            Parameters = new ObservableCollection<Parameter>();
+            Parameters.Add(parameter);
+            Name = parameter.Name;
+            ValueType = parameter.ValueType;
+            Parameters.CollectionChanged += Parameters_CollectionChanged;
         }
-        public string Status
+
+        private void Parameters_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            get
+            if (e.NewItems != null)
             {
-                if (Values.Count == 1)
+                foreach (Parameter newItem in e.NewItems)
                 {
-                    return "";
-                }
-                else
-                {
-                    return "多参数";
+                    newItem.PropertyChanged += Parameter_PropertyChanged;
                 }
             }
-        }
-        public string Value
-        {
-            get
+
+            if (e.OldItems != null)
             {
-                if (string.IsNullOrEmpty(_value))
+                foreach (Parameter oldItem in e.OldItems)
                 {
-                    if (Values.Count == 1)
-                    {
-                        return Values[0];
-                    }
-                    else
-                    {
-                        return $"[{string.Join(", ", Values)}]";
-                    }
+                    oldItem.PropertyChanged -= Parameter_PropertyChanged;
                 }
-                return _value;
             }
-            set { _value = value; }
+
+            UpdateValues();
         }
+        private void Parameter_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Parameter.Value))
+            {
+                UpdateValues();
+            }
+        }
+
+        private void UpdateValues()
+        {
+            Values.Clear();
+            foreach (var parameter in Parameters)
+            {
+                if (!Values.Contains(parameter.Value))
+                {
+                    Values.Add(parameter.Value);
+                }
+            }
+            if (Values.Count > 1)
+            {
+                Status = "多参数";
+                Value = $"[{string.Join(", ", Values)}]";
+            }
+            else
+            {
+                Status = "";
+                Value = Values[0];
+            }
+        }
+        public string Status { get => _status; set => SetProperty(ref _status, value); }
+        public string Value { get => _value; set => SetProperty(ref _value, value); }
         public string ShowValue
         {
             get
@@ -74,5 +101,7 @@ namespace RZData.Models
                 }
             }
         }
+
+        public Parameter Parameter { get; }
     }
 }
