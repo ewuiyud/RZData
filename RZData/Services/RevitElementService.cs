@@ -136,8 +136,20 @@ namespace RZData.Services
             revitSolidElement.IsPropertiesCorrect = revitSolidElement.Parameters.All(p => p.Value != "缺失");
             return revitSolidElement.IsPropertiesCorrect;
         }
-        private string GetValue(Parameter parameter)
+        public static string GetElementValue(Element element, Document document, string parameterName)
         {
+            var familyElementID = element.LookupParameter("族与类型")?.AsElementId();
+            var familyElement = document.GetElement(familyElementID);
+            var parameter = element.LookupParameter(parameterName) ?? familyElement?.LookupParameter(parameterName);
+
+            return GetValue(parameter);
+        }
+        private static string GetValue(Parameter parameter)
+        {
+            if (parameter is null)
+            {
+                return null;
+            }
             switch (parameter.StorageType)
             {
                 case StorageType.String:

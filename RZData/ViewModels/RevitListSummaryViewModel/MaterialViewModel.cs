@@ -50,7 +50,7 @@ namespace RZData.ViewModels
         /// <summary>
         /// 模型工程量
         /// </summary>
-        public double ModelEngineeringQuantity { get; set; }
+        public string ModelEngineeringQuantity { get; set; }
 
         /// <summary>
         /// 单位

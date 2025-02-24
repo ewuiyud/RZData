@@ -40,5 +40,9 @@ namespace RZData.Models
         /// TDC-使用位置
         /// </summary>
         public string UsageLocation { get; set; }
+        /// <summary>
+        /// 工程量
+        /// </summary>
+        public string Quantity { get; set; }
     }
 }

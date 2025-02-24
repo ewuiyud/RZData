@@ -211,18 +211,18 @@ namespace RZData.ViewModels
             ObservableCollection<MaterialViewModel> result = new ObservableCollection<MaterialViewModel>();
             foreach (var revitSolidElement in list)
             {
-                var excelMaterialBusinessRecord = SortMaterials(revitSolidElement);
-                if (excelMaterialBusinessRecord != null)
+                var record = SortMaterials(revitSolidElement);
+                if (record != null)
                 {
                     var materialRecord = new MaterialViewModel();
-                    materialRecord.MaterialName = excelMaterialBusinessRecord.Name;
-                    if (excelMaterialBusinessRecord.UsageLocation.Count() > 5)
+                    materialRecord.MaterialName = record.Name;
+                    if (record.UsageLocation.Count() > 5)
                     {
-                        var input = excelMaterialBusinessRecord.UsageLocation.Split('：')[1];
+                        var input = record.UsageLocation.Split('：')[1];
                         materialRecord.UsageMethod = ExplainString(input, revitSolidElement) + "使用";
                     }
                     materialRecord.ProjectFeaturesDetail = ExplainProjectFeatures(
-                        excelMaterialBusinessRecord.ProjectCharacteristics, revitSolidElement);
+                        record.ProjectCharacteristics, revitSolidElement);
                     var m = result.FirstOrDefault(
                         a => a.MaterialName == materialRecord.MaterialName
                         && a.UsageMethod == materialRecord.UsageMethod
@@ -235,6 +235,10 @@ namespace RZData.ViewModels
                     {
                         materialRecord.RevitSolidElements.Add(revitSolidElement);
                         result.Add(materialRecord);
+                    }
+                    if (!string.IsNullOrEmpty(record.Quantity))
+                    {
+                        materialRecord.ModelEngineeringQuantity = InterpretString(record.Quantity, revitSolidElement);
                     }
                 }
             }
@@ -300,6 +304,74 @@ namespace RZData.ViewModels
                 return (prefix.Substring(2), suffix);
             }
             return (prefix.Substring(2), ExplainString(suffix, revitSolidElement));
+        }
+        // 解释字符串的方法
+        string InterpretString(string input, RevitSolidElement revitSolidElement)
+        {
+            // 定义正则表达式模式来匹配《》和 %%xx%% 包裹的内容
+            //string pattern1 = @"《([^》]+)》";
+            string pattern2 = @"%%([^%]+)%%";
+
+            // 替换 %%xx%% 包裹的内容
+            input = Regex.Replace(input, pattern2, match => ConvertMethod2(match.Groups[1].Value, revitSolidElement));
+
+            return input;
+        }
+
+        // 转换方法 1
+        string ConvertMethod1(string input, RevitSolidElement revitSolidElement)
+        {
+            var dictionary = ExcelDataService.ExcelPropertyDic;
+            if (dictionary.Keys.Contains(input))
+            {
+                var tDCName = dictionary[input];
+                if (tDCName == "TDC-元素分类名称")
+                {
+                    return revitSolidElement.ElementName;
+                }
+                else
+                {
+                    var p = revitSolidElement.Parameters.FirstOrDefault(a => a.TDCName == tDCName);
+                    if (p != null)
+                    {
+                        return p.Value;
+                    }
+                    else
+                    {
+                        return "未识别属性，请检查模板对应词条";
+                    }
+                }
+            }
+            else
+            {
+                TaskDialog.Show("错误信息", $"需要匹配的项目特征：{input}， 不合法");
+                throw new Exception($"需要匹配的项目特征：{input}， 不合法。");
+            }
+        }
+
+        // 转换方法 2
+        string ConvertMethod2(string input, RevitSolidElement revitSolidElement)
+        {
+            if (input == "TDC-元素分类名称")
+            {
+                return revitSolidElement.ElementName;
+            }
+
+            var p = revitSolidElement.Parameters.FirstOrDefault(a => a.TDCName == input);
+            if (p != null)
+            {
+                return p.Value;
+            }
+
+            var doc = UiDocument.Document;
+            Element element = doc.GetElement(new ElementId(revitSolidElement.ID));
+            var result = RevitElementService.GetElementValue(element, doc, input);
+            if (result != null)
+            {
+                return result;
+            }
+
+            return "未识别属性，请检查模板对应词条";
         }
         string ExplainString(string input, RevitSolidElement revitSolidElement)
         {

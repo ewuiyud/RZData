@@ -79,7 +79,8 @@ namespace RZData.Services
                     SpaceName = worksheet.Cells[row, 5].Text,
                     ExtendRule = worksheet.Cells[row, 6].Text,
                     ProjectCharacteristics = worksheet.Cells[row, 7].Text,
-                    UsageLocation = worksheet.Cells[row, 8].Text
+                    UsageLocation = worksheet.Cells[row, 8].Text,
+                    Quantity = worksheet.Cells[row, 9].Text
                 };
 
                 if (!ExcelMaterialBusinessRules.Contains(record))
