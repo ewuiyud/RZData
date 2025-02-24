@@ -24,9 +24,9 @@ namespace RZData.Views
     {
         public RevitListSummaryView(UIDocument uiDocument)
         {
+            ViewModelLocator.Instance(uiDocument).Reset();
             InitializeComponent();
             var revitListSummaryViewModel = ViewModelLocator.Instance(uiDocument).RevitListSummaryViewModel;
-            ViewModelLocator.Instance(uiDocument).Reset();
             revitListSummaryViewModel.GetMaterialListFromDataElement();
             DataContext = revitListSummaryViewModel;
         }
