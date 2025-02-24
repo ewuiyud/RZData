@@ -129,7 +129,7 @@ namespace RZData.Services
                 {
                     Name = propertyName.Value,
                     TDCName = propertyName.Key,
-                    Value = parameter != null ? GetValue(parameter) : "缺失",
+                    Value = parameter != null ? parameter.GetValue() : "缺失",
                     ValueType = parameter != null ? (parameter.Element.Id == element.Id ? "实例参数" : "类型参数") : ""
                 });
             }
@@ -142,27 +142,7 @@ namespace RZData.Services
             var familyElement = document.GetElement(familyElementID);
             var parameter = element.LookupParameter(parameterName) ?? familyElement?.LookupParameter(parameterName);
 
-            return GetValue(parameter);
-        }
-        private static string GetValue(Parameter parameter)
-        {
-            if (parameter is null)
-            {
-                return null;
-            }
-            switch (parameter.StorageType)
-            {
-                case StorageType.String:
-                    return parameter.AsString();
-                case StorageType.Double:
-                    return parameter.AsValueString();
-                case StorageType.Integer:
-                    return parameter.AsValueString();
-                case StorageType.ElementId:
-                    return parameter.AsInteger().ToString();
-                default:
-                    return parameter.AsString();
-            }
+            return parameter.GetValue();
         }
     }
 }

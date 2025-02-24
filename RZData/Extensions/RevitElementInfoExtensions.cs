@@ -11,19 +11,34 @@ namespace RZData.Extensions
     {
         public static string GetValue(this Autodesk.Revit.DB.Parameter parameter)
         {
+            if (parameter is null)
+            {
+                return null;
+            }
+            string result = null;
             switch (parameter.StorageType)
             {
                 case StorageType.String:
-                    return parameter.AsString();
+                    result = parameter.AsString();
+                    break;
                 case StorageType.Double:
-                    return parameter.AsValueString();
+                    result = parameter.AsValueString();
+                    break;
                 case StorageType.Integer:
-                    return parameter.AsValueString();
+                    result = parameter.AsValueString();
+                    break;
                 case StorageType.ElementId:
-                    return parameter.AsInteger().ToString();
+                    result = parameter.AsInteger().ToString();
+                    break;
                 default:
-                    return parameter.AsString();
+                    result = parameter.AsString();
+                    break;
             }
+            if (string.IsNullOrEmpty(result))
+            {
+                return null;
+            }
+            return result;
         }
         public static string GetFamilyCategory(this Element element)
         {
