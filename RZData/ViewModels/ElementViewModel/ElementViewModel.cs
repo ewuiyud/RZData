@@ -48,11 +48,12 @@ namespace RZData.ViewModels
             if (existingElementInstance == null)
             {
                 var newElementInstance = new ElementInstanceViewModel { Name = revitSolidElement.ID, Parameters = revitSolidElement.Parameters };
+                newElementInstance.Parent = existingFamily;
                 existingFamily.ElementInstances.Add(newElementInstance);
                 existingElementInstance = newElementInstance;
             }
 
-            //如果是系统族，需要添加族类型
+            //如果是系统族，需要添加族拓展名称
             if (revitSolidElement.RevitElementFamilyType == RevitElementFamilyType.SystemFamilyElement)
             {
                 var existingExtend = existingFamily.FamilyExtends.
@@ -63,7 +64,11 @@ namespace RZData.ViewModels
                     existingFamily.FamilyExtends.Add(newExtend);
                     existingExtend = newExtend;
                 }
-                if (!existingExtend.ElementInstances.Contains(existingElementInstance)) existingExtend.ElementInstances.Add(existingElementInstance);
+                if (!existingExtend.ElementInstances.Contains(existingElementInstance))
+                {
+                    existingExtend.ElementInstances.Add(existingElementInstance);
+                    existingElementInstance.Parent = existingExtend;
+                }
                 if (!existingExtend.IDs.Contains(revitSolidElement.ID)) existingExtend.IDs.Add(revitSolidElement.ID);
 
                 //将族中的参数添加到族中
@@ -90,7 +95,7 @@ namespace RZData.ViewModels
                     var existingParameter = existingFamily.Parameters.FirstOrDefault(p => p.Name == item.Name);
                     if (existingParameter == null)
                     {
-                        var newParameter = new ParameterSetVM (item);
+                        var newParameter = new ParameterSetVM(item);
                         existingFamily.Parameters.Add(newParameter);
                     }
                     else

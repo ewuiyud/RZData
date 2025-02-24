@@ -15,6 +15,7 @@ namespace RZData.ViewModels
         {
             Parameters = new List<ParameterVM>();
         }
+        public object Parent { get; set; }
         public int Name { get; set; }
         public List<ParameterVM> Parameters { get; set; }
 

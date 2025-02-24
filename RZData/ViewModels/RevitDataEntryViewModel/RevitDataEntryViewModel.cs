@@ -185,19 +185,6 @@ namespace RZData.ViewModels
                 }
                 else if (SelectedItem is ElementInstanceViewModel elementInstance)
                 {
-                    FamilyExtendViewModel familyExtendView = null;
-                    foreach (var familyCategories in AllElements.FamilyCategories)
-                    {
-                        foreach (var f in familyCategories.Families)
-                        {
-                            var result = f.FamilyExtends.FirstOrDefault(a => a.IDs.Contains(elementInstance.Name));
-                            if (result != null && result is FamilyExtendViewModel)
-                            {
-                                familyExtendView = result;
-                                break;
-                            }
-                        }
-                    }
                     foreach (var parameter in elementInstance.Parameters)
                     {
                         await CustomHandler.Run(a =>
@@ -205,8 +192,18 @@ namespace RZData.ViewModels
                             SetParameter(a.ActiveUIDocument, parameter, elementInstance.Name);
                         });
                     }
-                    familyExtendView.ReloadParameter(UiDocument.Document);
-                    //elementInstance.ReloadParameter(UiDocument.Document);
+                    if (elementInstance.Parent != null)
+                    {
+                        if (elementInstance.Parent is FamilyViewModel familyViewModel)
+                        {
+                            familyViewModel.ReloadParameter(UiDocument.Document);
+                        }
+                        else if (elementInstance.Parent is FamilyExtendViewModel familyExtendViewModel)
+                        {
+                            familyExtendViewModel.ReloadParameter(UiDocument.Document);
+                        }
+                    }
+                    elementInstance.ReloadParameter(UiDocument.Document);
 
                 }
             }
