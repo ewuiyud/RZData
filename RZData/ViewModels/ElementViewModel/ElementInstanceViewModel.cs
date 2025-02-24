@@ -13,10 +13,10 @@ namespace RZData.ViewModels
     {
         public ElementInstanceViewModel()
         {
-            Parameters = new List<Models.Parameter>();
+            Parameters = new List<ParameterVM>();
         }
         public int Name { get; set; }
-        public List<Models.Parameter> Parameters { get; set; }
+        public List<ParameterVM> Parameters { get; set; }
 
         public void ReloadParameter(Document document)
         {

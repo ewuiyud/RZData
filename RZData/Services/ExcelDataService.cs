@@ -1,5 +1,6 @@
 using Autodesk.Revit.UI;
 using Microsoft.Win32;
+using Models;
 using OfficeOpenXml;
 using RZData.Models;
 using RZData.ViewModels;
@@ -37,7 +38,6 @@ namespace RZData.Services
         public static string LoadDataFromExcel()
         {
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-            List<ExcelFamilyRecord> records = new List<ExcelFamilyRecord>();
             OpenFileDialog openFileDialog = new OpenFileDialog
             {
                 Filter = "Excel Files|*.xlsx",
@@ -70,15 +70,17 @@ namespace RZData.Services
             int rowCount = worksheet.Dimension.Rows;
             for (int row = 2; row <= rowCount; row++)
             {
-                ExcelMaterialBusinessRecord record = new ExcelMaterialBusinessRecord();
-                record.Code = worksheet.Cells[row, 1].Text;
-                record.Name = worksheet.Cells[row, 2].Text;
-                record.ElementName = worksheet.Cells[row, 3].Text;
-                record.ProductName = worksheet.Cells[row, 4].Text;
-                record.SpaceName = worksheet.Cells[row, 5].Text;
-                record.ExtendRule = worksheet.Cells[row, 6].Text;
-                record.ProjectCharacteristics = worksheet.Cells[row, 7].Text;
-                record.UsageLocation = worksheet.Cells[row, 8].Text;
+                ExcelMaterialBusinessRecord record = new ExcelMaterialBusinessRecord
+                {
+                    Code = worksheet.Cells[row, 1].Text,
+                    Name = worksheet.Cells[row, 2].Text,
+                    ElementName = worksheet.Cells[row, 3].Text,
+                    ProductName = worksheet.Cells[row, 4].Text,
+                    SpaceName = worksheet.Cells[row, 5].Text,
+                    ExtendRule = worksheet.Cells[row, 6].Text,
+                    ProjectCharacteristics = worksheet.Cells[row, 7].Text,
+                    UsageLocation = worksheet.Cells[row, 8].Text
+                };
 
                 if (!ExcelMaterialBusinessRules.Contains(record))
                 {
@@ -92,7 +94,7 @@ namespace RZData.Services
             ExcelPropertyDic.Clear();
             var worksheet = package.Workbook.Worksheets["属性字典"];
             int rowCount = worksheet.Dimension.Rows;
-            string key = string.Empty; string value = string.Empty;
+            string key; string value;
             for (int row = 2; row <= rowCount; row++)
             {
                 key = worksheet.Cells[row, 1].Text;
@@ -278,13 +280,13 @@ namespace RZData.Services
                         list = list.Distinct().ToList();
                     }
                     int row = 2;
-                    foreach (var item in list)
+                    foreach (var (FamilyCategory, FamilyName, ExtendName, Parameters) in list)
                     {
-                        worksheet.Cells[row, 1].Value = item.FamilyCategory;
-                        worksheet.Cells[row, 2].Value = item.FamilyName;
-                        worksheet.Cells[row, 3].Value = item.ExtendName;
+                        worksheet.Cells[row, 1].Value = FamilyCategory;
+                        worksheet.Cells[row, 2].Value = FamilyName;
+                        worksheet.Cells[row, 3].Value = ExtendName;
                         if (!IsFamilyNameFalse)
-                            worksheet.Cells[row, 4].Value = item.Parameters;
+                            worksheet.Cells[row, 4].Value = Parameters;
                         row++;
                     }
 
@@ -304,6 +306,50 @@ namespace RZData.Services
                     }
                 }
             }
+        }
+        public static ObservableCollection<EmbeddedCarbonCalcutionModel> ReadEmbeddedCarbonCalcutionExcel(string filePath)
+        {
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+            var materials = new ObservableCollection<EmbeddedCarbonCalcutionModel>();
+            if (!File.Exists(filePath))
+            {
+                TaskDialog.Show("错误", "文件不存在！");
+                return null;
+            }
+            using (var package = new ExcelPackage(new FileInfo(filePath)))
+            {
+                var worksheet = package.Workbook.Worksheets[0]; // 假设数据在第一个工作表中
+
+                // 获取最大行数和列数
+                var rowCount = worksheet.Dimension.Rows;
+                var colCount = worksheet.Dimension.Columns;
+
+                // 从第二行开始读取数据（第一行通常是表头）
+                for (int row = 2; row <= rowCount; row++)
+                {
+                    var material = new EmbeddedCarbonCalcutionModel();
+
+                    // 按照属性顺序从 Excel 单元格中读取数据并赋值给对象属性
+                    material.SerialNumber = worksheet.Cells[row, 1].GetValue<int>();
+                    material.MaterialName = worksheet.Cells[row, 2].GetValue<string>();
+                    material.SpecificationModel = worksheet.Cells[row, 3].GetValue<string>();
+                    material.MaterialCategory = worksheet.Cells[row, 4].GetValue<string>();
+                    material.SecondLevelCategory = worksheet.Cells[row, 5].GetValue<string>();
+                    material.Quantity = worksheet.Cells[row, 6].GetValue<decimal>();
+                    material.Unit = worksheet.Cells[row, 7].GetValue<string>();
+                    material.WeightConversionCoefficient = worksheet.Cells[row, 8].GetValue<decimal>();
+                    material.MaterialUnitPrice = worksheet.Cells[row, 9].GetValue<decimal>();
+                    material.CarbonEmission = worksheet.Cells[row, 10].GetValue<decimal>();
+                    material.MaterialTotalPrice = worksheet.Cells[row, 11].GetValue<decimal>();
+                    material.Weight = worksheet.Cells[row, 12].GetValue<decimal>();
+                    material.TransportationDistance = worksheet.Cells[row, 13].GetValue<decimal>();
+                    material.TransportationCarbonEmission = worksheet.Cells[row, 14].GetValue<decimal>();
+
+                    materials.Add(material);
+                }
+            }
+
+            return materials;
         }
     }
 }

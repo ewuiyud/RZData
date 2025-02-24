@@ -17,12 +17,12 @@ namespace RZData.ViewModels
             familyExtends = new ObservableCollection<FamilyExtendViewModel>();
             IDs = new List<int>();
             ElementInstances = new ObservableCollection<ElementInstanceViewModel>();
-            Parameters = new List<Models.ParameterSet>();
+            Parameters = new List<ParameterSetVM>();
         }
         public string Name { get; set; }
         public List<int> IDs { get; set; }
         public ObservableCollection<ElementInstanceViewModel> ElementInstances { get; set; }
-        public List<Models.ParameterSet> Parameters { get; set; }
+        public List<ParameterSetVM> Parameters { get; set; }
         private ObservableCollection<FamilyExtendViewModel> familyExtends;
         public ObservableCollection<FamilyExtendViewModel> FamilyExtends { get => familyExtends; set => SetProperty(ref familyExtends, value); }
 
@@ -51,7 +51,7 @@ namespace RZData.ViewModels
                     }
                     else
                     {
-                        var parameterSet = new Models.ParameterSet(parameter);
+                        var parameterSet = new ParameterSetVM(parameter);
                         parameterSet.Parameters.Add(parameter);
                         Parameters.Add(parameterSet);
                     }

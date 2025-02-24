@@ -101,7 +101,7 @@ namespace RZData.ViewModels
             RequiredProperties = new ObservableCollection<(string, string)>();
             AddRequiredPropertiesCommand = new RelayCommand(AddRequiredProperties);
             DeleteRequiredPropertiesCommand = new RelayCommand(DeleteRequiredProperties);
-            OKWitheRequiredPropertiesCommand = new RelayCommand(OKWitheRequiredProperties);
+            OKWitheRequiredPropertiesCommand = new RelayCommand(OKWithRequiredProperties);
             DeleteRequiredPropertyCommand = new RelayCommand<(string, string)>(DeleteRequiredProperty);
             ExportExcelCommand = new RelayCommand(ExportExcel);
             CansoleCommand = new RelayCommand(Cansole);
@@ -128,7 +128,7 @@ namespace RZData.ViewModels
             revitListSummaryView.Close();
         }
 
-        private void OKWitheRequiredProperties()
+        private void OKWithRequiredProperties()
         {
             try
             {

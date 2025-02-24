@@ -72,7 +72,7 @@ namespace RZData.ViewModels
                     var existingParameter = existingExtend.Parameters.FirstOrDefault(p => p.Name == item.Name);
                     if (existingParameter == null)
                     {
-                        var newParameter = new Models.ParameterSet(item);
+                        var newParameter = new ParameterSetVM(item);
                         existingExtend.Parameters.Add(newParameter);
                     }
                     else
@@ -90,7 +90,7 @@ namespace RZData.ViewModels
                     var existingParameter = existingFamily.Parameters.FirstOrDefault(p => p.Name == item.Name);
                     if (existingParameter == null)
                     {
-                        var newParameter = new Models.ParameterSet (item);
+                        var newParameter = new ParameterSetVM (item);
                         existingFamily.Parameters.Add(newParameter);
                     }
                     else

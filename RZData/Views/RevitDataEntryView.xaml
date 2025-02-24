@@ -6,7 +6,6 @@
              xmlns:local="clr-namespace:RZData.Views"
              mc:Ignorable="d" 
              Title="数据批量录入"
-             Topmost="True"
              MaxHeight="750" MinHeight="750" MaxWidth="900" MinWidth="900">
     <Window.Resources>
         <ResourceDictionary>

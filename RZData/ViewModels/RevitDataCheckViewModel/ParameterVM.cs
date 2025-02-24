@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RZData.Models
+namespace RZData.ViewModels
 {
-    public class Parameter : ObservableObject
+    public class ParameterVM : ObservableObject
     {
         private string _value;
         public string Value { get => _value; set => SetProperty(ref _value, value); }

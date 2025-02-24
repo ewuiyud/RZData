@@ -201,7 +201,7 @@ namespace RZData.ViewModels
             }
         }
 
-        private void SetParameter(UIDocument uIDocument, Models.Parameter parameter, int elementId)
+        private void SetParameter(UIDocument uIDocument, ParameterVM parameter, int elementId)
         {
             using (Transaction transaction = new Transaction(uIDocument.Document, "SetParameter"))
             {
@@ -228,7 +228,7 @@ namespace RZData.ViewModels
             }
         }
 
-        private void SetParameter(UIDocument uIDocument, Models.ParameterSet parameterSet, List<int> IDs)
+        private void SetParameter(UIDocument uIDocument, ParameterSetVM parameterSet, List<int> IDs)
         {
             using (Transaction transaction = new Transaction(uIDocument.Document, "SetParameter"))
             {

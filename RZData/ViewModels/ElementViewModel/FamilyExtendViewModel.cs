@@ -13,12 +13,12 @@ namespace RZData.ViewModels
         {
             IDs = new List<int>();
             ElementInstances = new ObservableCollection<ElementInstanceViewModel>();
-            Parameters = new List<Models.ParameterSet>();
+            Parameters = new List<ParameterSetVM>();
         }
         public string Name { get; set; }
         public List<int> IDs { get; set; }
         public ObservableCollection<ElementInstanceViewModel> ElementInstances { get; set; }
-        public List<Models.ParameterSet> Parameters { get; set; }
+        public List<ParameterSetVM> Parameters { get; set; }
 
         internal void ReloadParameter(Document document)
         {
@@ -45,7 +45,7 @@ namespace RZData.ViewModels
                     }
                     else
                     {
-                        Parameters.Add(new Models.ParameterSet(parameter));
+                        Parameters.Add(new ParameterSetVM(parameter));
                     }
                 }
             }

@@ -2,14 +2,11 @@
 using Autodesk.Revit.UI;
 using RZData.Extensions;
 using RZData.Models;
+using RZData.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
-using Parameter = RZData.Models.Parameter;
 
 namespace RZData.Services
 {
@@ -49,7 +46,7 @@ namespace RZData.Services
             }
             return AllSolidElements;
         }
-        private void ProcessNonFamilyInstance(List<ExcelFamilyRecord> systemFamilyDictionary,
+        public void ProcessNonFamilyInstance(List<ExcelFamilyRecord> systemFamilyDictionary,
             Document document, Element element, RevitSolidElement revitSolidElement)
         {
             var extendName = element.GetExtendName();
@@ -66,7 +63,7 @@ namespace RZData.Services
                 CheckParameters(record, document, element, revitSolidElement);
             }
         }
-        private void ProcessFamilyInstance(List<ExcelFamilyRecord> loadableFamilyDictionary,
+        public void ProcessFamilyInstance(List<ExcelFamilyRecord> loadableFamilyDictionary,
             Document document, Element element, RevitSolidElement revitSolidElement)
         {
             var typeName = element.GetFamilyName();
@@ -82,7 +79,7 @@ namespace RZData.Services
                 CheckParameters(record, document, element, revitSolidElement);
             }
         }
-        private bool CheckRecordExtendName(ExcelFamilyRecord excelRecord, Element element)
+        public bool CheckRecordExtendName(ExcelFamilyRecord excelRecord, Element element)
         {
             const string typePrefix = "类型=";
             var recordExtendName = excelRecord.ExtendName;
@@ -128,7 +125,7 @@ namespace RZData.Services
             foreach (var propertyName in excelRecord.RequiredProperties)
             {
                 var parameter = element.LookupParameter(propertyName.Value) ?? familyElement?.LookupParameter(propertyName.Value);
-                revitSolidElement.Parameters.Add(new Parameter
+                revitSolidElement.Parameters.Add(new ParameterVM
                 {
                     Name = propertyName.Value,
                     TDCName = propertyName.Key,
@@ -139,7 +136,7 @@ namespace RZData.Services
             revitSolidElement.IsPropertiesCorrect = revitSolidElement.Parameters.All(p => p.Value != "缺失");
             return revitSolidElement.IsPropertiesCorrect;
         }
-        private string GetValue(Autodesk.Revit.DB.Parameter parameter)
+        private string GetValue(Parameter parameter)
         {
             switch (parameter.StorageType)
             {

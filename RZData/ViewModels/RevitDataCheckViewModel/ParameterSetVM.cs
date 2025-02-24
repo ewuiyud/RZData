@@ -9,27 +9,27 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RZData.Models
+namespace RZData.ViewModels
 {
-    public class ParameterSet : ObservableObject
+    public class ParameterSetVM : ObservableObject
     {
         private string _value;
         private string _status;
         public string Name { get; set; }
         private ObservableCollection<string> Values { get; set; }
-        public ObservableCollection<Parameter> Parameters { get; set; }
+        public ObservableCollection<ParameterVM> Parameters { get; set; }
         public string ValueType { get; set; }
-        public ParameterSet()
+        public ParameterSetVM()
         {
             Values = new ObservableCollection<string>();
-            Parameters = new ObservableCollection<Parameter>();
+            Parameters = new ObservableCollection<ParameterVM>();
             Parameters.CollectionChanged += Parameters_CollectionChanged;
         }
 
-        public ParameterSet(Parameter parameter)
+        public ParameterSetVM(ParameterVM parameter)
         {
             Values = new ObservableCollection<string>();
-            Parameters = new ObservableCollection<Parameter>();
+            Parameters = new ObservableCollection<ParameterVM>();
             Parameters.Add(parameter);
             Name = parameter.Name;
             ValueType = parameter.ValueType;
@@ -40,7 +40,7 @@ namespace RZData.Models
         {
             if (e.NewItems != null)
             {
-                foreach (Parameter newItem in e.NewItems)
+                foreach (ParameterVM newItem in e.NewItems)
                 {
                     newItem.PropertyChanged += Parameter_PropertyChanged;
                 }
@@ -48,7 +48,7 @@ namespace RZData.Models
 
             if (e.OldItems != null)
             {
-                foreach (Parameter oldItem in e.OldItems)
+                foreach (ParameterVM oldItem in e.OldItems)
                 {
                     oldItem.PropertyChanged -= Parameter_PropertyChanged;
                 }
@@ -102,6 +102,6 @@ namespace RZData.Models
             }
         }
 
-        public Parameter Parameter { get; }
+        public ParameterVM Parameter { get; }
     }
 }

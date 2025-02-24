@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using RZData.Extensions;
 using RZData.Services;
+using RZData.ViewModels;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
@@ -16,7 +17,7 @@ namespace RZData.Models
             FamilyCategory = element.GetFamilyCategory();
             FamilyName = element.GetFamilyName();
             ExtendName = element.GetExtendName();
-            Parameters = new List<Parameter>();
+            Parameters = new List<ParameterVM>();
         }
         public readonly RevitElementFamilyType RevitElementFamilyType;
         public string FamilyCategory { get; set; }
@@ -24,7 +25,7 @@ namespace RZData.Models
         public string ExtendName { get; set; }
         public int ID { get; set; }
         public bool IsNameCorrect { get; set; }
-        public List<Parameter> Parameters { get; set; }
+        public List<ParameterVM> Parameters { get; set; }
         public bool IsPropertiesCorrect { get; set; }
         public string ElementName { get; set; }
     }
