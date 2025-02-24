@@ -27,7 +27,6 @@ namespace RZData.Views
             InitializeComponent();
             var revitListSummaryViewModel = ViewModelLocator.Instance(uiDocument).RevitListSummaryViewModel;
             ViewModelLocator.Instance(uiDocument).Reset();
-            revitListSummaryViewModel.SetView(this);
             revitListSummaryViewModel.GetMaterialListFromDataElement();
             DataContext = revitListSummaryViewModel;
         }
@@ -61,6 +60,11 @@ namespace RZData.Views
             var viewModel = DataContext as RevitListSummaryViewModel;
             viewModel.SelectedPropertyValue = null;
             viewModel.DoubleClickAndPickObjects();
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
         }
     }
 }

@@ -19,7 +19,6 @@ namespace RZData.ViewModels
 {
     public class RevitListSummaryViewModel : BaseViewModel
     {
-        private RevitListSummaryView revitListSummaryView;
         private ObservableCollection<MaterialViewModel> _allMaterialList;
         private ObservableCollection<MaterialViewModel> _showMaterialList;
         private MaterialViewModel _selectedMaterialRecord;
@@ -104,7 +103,6 @@ namespace RZData.ViewModels
             OKWitheRequiredPropertiesCommand = new RelayCommand(OKWithRequiredProperties);
             DeleteRequiredPropertyCommand = new RelayCommand<(string, string)>(DeleteRequiredProperty);
             ExportExcelCommand = new RelayCommand(ExportExcel);
-            CansoleCommand = new RelayCommand(Cansole);
         }
 
         private void ExportExcel()
@@ -117,15 +115,6 @@ namespace RZData.ViewModels
             {
                 TaskDialog.Show("错误信息", ex.Message);
             }
-        }
-
-        public void SetView(RevitListSummaryView revitListSummaryView)
-        {
-            this.revitListSummaryView = revitListSummaryView;
-        }
-        private void Cansole()
-        {
-            revitListSummaryView.Close();
         }
 
         private void OKWithRequiredProperties()
