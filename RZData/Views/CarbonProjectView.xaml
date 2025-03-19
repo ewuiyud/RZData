@@ -124,7 +124,8 @@
         <StackPanel>
             <Label Content="项目名称：" FontFamily="微软雅黑 light" FontSize="25" Margin="20,20,0,0"/>
             <Border x:Name="border" Margin="20" BorderBrush="Black" BorderThickness="1">
-                <TextBox x:Name="ProjectName" FontFamily="微软雅黑 light" Text="请输入项目名称" VerticalContentAlignment="Center" FontSize="25" Foreground="gray" Height="35" Width="780" Margin="0,0,0,0">
+                <TextBox x:Name="ProjectName" FontFamily="微软雅黑 light" Text="请输入项目名称" VerticalContentAlignment="Center" FontSize="25" Foreground="gray" Height="35" Width="780" Margin="0,0,0,0"
+                          GotFocus="ProjectName_GotFocus" LostFocus="ProjectName_LostFocus">
                 </TextBox>
             </Border>
             <Grid Margin="20,0,0,0">
@@ -140,11 +141,12 @@
                 </Grid.RowDefinitions>
                 <Label x:Name="label" Content="行业：" FontFamily="微软雅黑 light" FontSize="25" Width="151" VerticalAlignment="Center" HorizontalAlignment="Left" Height="43" Margin="0,0,0,0"/>
                 <Label x:Name="label1" Grid.Column="1" Content="场景：" FontFamily="微软雅黑 light" FontSize="25" Width="151" HorizontalAlignment="Left" VerticalAlignment="Center" Height="43" Margin="0,0,0,0"/>
-                <ComboBox x:Name="comboBox" SelectedIndex="0"  FontFamily="微软雅黑 light" FontSize="20" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Center" Width="250" Height="35" Margin="0,0,0,0">
+                <ComboBox x:Name="comboBox" SelectedIndex="0" FontFamily="微软雅黑 light" FontSize="20" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Center" Width="250" Height="35" Margin="0,0,0,0">
                     <System:String>建材工程</System:String>
                 </ComboBox>
-                <ComboBox x:Name="comboBox1" SelectedIndex="0" FontFamily="微软雅黑 light" FontSize="20" Background="White" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" Width="250" Height="35" Margin="0,0,0,0" BorderBrush="#FFACACAC" Foreground="Black">
+                <ComboBox x:Name="comboBox1" FontFamily="微软雅黑 light" FontSize="20" Background="White" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" Width="250" Height="35" Margin="0,0,0,0" BorderBrush="#FFACACAC" Foreground="Black">
                     <System:String>建材生产及运输碳排放</System:String>
+                    <System:String>建材工程施工过程碳排放</System:String>
                 </ComboBox>
 
                 <Label x:Name="label2" Grid.Row="2" Content="国家：" FontFamily="微软雅黑 light" FontSize="25" Width="151" VerticalAlignment="Center" HorizontalAlignment="Left" Height="43" Margin="0,0,0,0"/>
@@ -152,14 +154,48 @@
                 <ComboBox x:Name="comboBox2" SelectedIndex="0"  FontFamily="微软雅黑 light" FontSize="20" Grid.Row="3" HorizontalAlignment="Left" VerticalAlignment="Center" Width="250" Height="35" Margin="0,0,0,0" BorderBrush="#FFACACAC" Foreground="Black">
                     <System:String>中国</System:String>
                 </ComboBox>
-                <ComboBox x:Name="comboBox3" SelectedIndex="0"  FontFamily="微软雅黑 light" FontSize="20" Grid.Row="3" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" Width="250" Height="35" Margin="0,0,0,0" BorderBrush="#FFACACAC" Foreground="Black">
+                <ComboBox x:Name="comboBox3"  FontFamily="微软雅黑 light" FontSize="20" Grid.Row="3" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" Width="250" Height="35" Margin="0,0,0,0" BorderBrush="#FFACACAC" Foreground="Black">
+                    <System:String>北京市</System:String>
+                    <System:String>天津市</System:String>
+                    <System:String>河北省</System:String>
+                    <System:String>山西省</System:String>
+                    <System:String>内蒙古自治区</System:String>
+                    <System:String>辽宁省</System:String>
+                    <System:String>吉林省</System:String>
+                    <System:String>黑龙江省</System:String>
+                    <System:String>上海市</System:String>
+                    <System:String>江苏省</System:String>
+                    <System:String>浙江省</System:String>
+                    <System:String>安徽省</System:String>
+                    <System:String>福建省</System:String>
+                    <System:String>江西省</System:String>
+                    <System:String>山东省</System:String>
+                    <System:String>河南省</System:String>
+                    <System:String>湖北省</System:String>
+                    <System:String>湖南省</System:String>
                     <System:String>广东省</System:String>
+                    <System:String>广西壮族自治区</System:String>
+                    <System:String>海南省</System:String>
+                    <System:String>重庆市</System:String>
+                    <System:String>四川省</System:String>
+                    <System:String>贵州省</System:String>
+                    <System:String>云南省</System:String>
+                    <System:String>西藏自治区</System:String>
+                    <System:String>陕西省</System:String>
+                    <System:String>甘肃省</System:String>
+                    <System:String>青海省</System:String>
+                    <System:String>宁夏回族自治区</System:String>
+                    <System:String>新疆维吾尔自治区</System:String>
+                    <System:String>香港特别行政区</System:String>
+                    <System:String>澳门特别行政区</System:String>
+                    <System:String>台湾省</System:String>
                 </ComboBox>
 
             </Grid>
             <Label Content="请选择匹配使用的标准：" FontFamily="微软雅黑 light" FontSize="25" Margin="10"/>
-            <ComboBox x:Name="comboBox4" SelectedIndex="0"  FontFamily="微软雅黑 light" FontSize="20"  Margin="20,0,20,20">
+            <ComboBox x:Name="comboBox4" FontFamily="微软雅黑 light" FontSize="20"  Margin="20,0,20,20">
                 <System:String>国标-建筑碳排放计量标准GBT51366/2019</System:String>
+                <System:String>装配式建筑碳排放计算标准</System:String>
             </ComboBox>
             <Button Content="计算"  HorizontalAlignment="Right" FontFamily="微软雅黑 light" FontSize="20"  Width="150" Height="35" Margin="20,0,20,20" Click="Button_Click" />
         </StackPanel>

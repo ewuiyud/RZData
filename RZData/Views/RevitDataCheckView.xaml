@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:RZData.Views"
+             xmlns:userControl ="clr-namespace:RZData.UserControls"
              mc:Ignorable="d" 
              Title="数据校验"
              MaxHeight="750" MinHeight="750" MaxWidth="800" MinWidth="800">
@@ -28,8 +29,9 @@
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="auto"/>
                     </Grid.RowDefinitions>
-                    <TextBox Style="{StaticResource SeachBox}" x:Name="SearchTextBox" Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}" Margin="10,20,10,10"
-         GotFocus="TextBox_GotFocus" LostFocus="TextBox_LostFocus" Grid.ColumnSpan="2"/>
+                    <userControl:SearchBox  Margin="10,20,10,10" Text="{Binding SearchKeyword,Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                    <!--<TextBox Style="{StaticResource SeachBox}" x:Name="SearchTextBox" Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}" Margin="10,20,10,10"
+         GotFocus="TextBox_GotFocus" LostFocus="TextBox_LostFocus" Grid.ColumnSpan="2"/>-->
                     <TreeView Grid.Row="1" ItemsSource="{Binding ShowParametersCheckElements.FamilyCategories}" Margin="10,0"
                           SelectedItemChanged="TreeView_SelectedItemChanged">
                         <TreeView.ItemContainerStyle>

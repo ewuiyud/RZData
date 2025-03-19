@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using RZData.Services;
 using RZData.Views;
 using Services;
 using System;
@@ -16,6 +17,8 @@ namespace RZData.Commands
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
         {
             UIDocument uiDocument = commandData.Application.ActiveUIDocument;
+            //RevitElementService revitElementService = new RevitElementService();
+            //revitElementService.OutputAllElements(uiDocument);
             CarbonProjectView view = new CarbonProjectView(uiDocument);
             RevitService.SetWindowTop(view);
             view.Show();

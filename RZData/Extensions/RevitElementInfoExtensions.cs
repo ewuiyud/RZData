@@ -46,8 +46,12 @@ namespace RZData.Extensions
         }
         public static string GetFamilyName(this Element element)
         {
-            var dd = element.GetParameters("族");
-            return dd[0].AsValueString() ?? null;
+            var familyNames = element.GetParameters("族");
+            if (familyNames.Count == 0)
+            {
+                return null;
+            }
+            return familyNames[0].AsValueString() ?? null;
         }
         public static string GetExtendName(this Element element)
         {

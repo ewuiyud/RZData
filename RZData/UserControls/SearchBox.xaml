@@ -1,0 +1,32 @@
+﻿<UserControl x:Class="RZData.UserControls.SearchBox"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:icon = "http://metro.mahapps.com/winfx/xaml/iconpacks"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:RZData.UserControls"
+             mc:Ignorable="d"
+             Name="searchBox">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVis"/>
+    </UserControl.Resources>
+    <Border BorderBrush="Transparent" BorderThickness="0">
+        <Grid>
+            <StackPanel Orientation="Horizontal" Panel.ZIndex="1">
+                <icon:PackIconMaterial Kind="Magnify" Foreground="#6f6f6f" Height="20" Width="20" Margin="10,0,5,0" VerticalAlignment="Center">
+                    </icon:PackIconMaterial>
+                <TextBlock Text="请输入关键字搜索" Foreground="#898989" FontSize="20"  Margin="0" VerticalAlignment="Center" IsHitTestVisible="False"
+                       Visibility="{Binding ElementName=SearchTextBox,Path=Text.IsEmpty,Converter={StaticResource BooleanToVis}}">
+                    </TextBlock>
+            </StackPanel>
+            <Border BorderThickness="0.2" CornerRadius="13" BorderBrush="#e9e9e9" Background="White">
+                <TextBox x:Name="SearchTextBox" FontSize="20" Foreground="#6f6f6f" VerticalAlignment="Center" BorderBrush="Transparent" Padding="30 3" 
+                         Text="{Binding ElementName=searchBox ,Path=Text,Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                    <TextBox.Effect>
+                        <DropShadowEffect  BlurRadius="20" ShadowDepth="1" Direction="-90" Opacity="0.1"/>
+                    </TextBox.Effect>
+                </TextBox>
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>

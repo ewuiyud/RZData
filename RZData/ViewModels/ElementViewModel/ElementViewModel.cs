@@ -47,8 +47,12 @@ namespace RZData.ViewModels
             var existingElementInstance = existingFamily.ElementInstances.FirstOrDefault(e => e.Name == revitSolidElement.ID);
             if (existingElementInstance == null)
             {
-                var newElementInstance = new ElementInstanceViewModel { Name = revitSolidElement.ID, Parameters = revitSolidElement.Parameters };
-                newElementInstance.Parent = existingFamily;
+                var newElementInstance = new ElementInstanceViewModel
+                {
+                    Name = revitSolidElement.ID,
+                    Parameters = revitSolidElement.Parameters,
+                    Parent = existingFamily
+                };
                 existingFamily.ElementInstances.Add(newElementInstance);
                 existingElementInstance = newElementInstance;
             }

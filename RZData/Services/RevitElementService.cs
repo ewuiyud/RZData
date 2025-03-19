@@ -1,17 +1,96 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using Newtonsoft.Json;
 using RZData.Extensions;
 using RZData.Models;
 using RZData.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
+using System.Xml;
 
 namespace RZData.Services
 {
     public class RevitElementService
     {
+        //输出所有的元素数据用于测试
+        public void OutputAllElements(UIDocument UiDocument)
+        {
+            var elementDataList = new List<Dictionary<string, object>>();
+            var document = UiDocument.Document;
+            var collector = new FilteredElementCollector(document);
+            var elements = collector.WhereElementIsNotElementType();
+            List<string> categortyFilter = new List<string>
+            {
+                "图框",
+                "图纸",
+                "明细表",
+                "视图",
+                "标高",
+                "视口",
+                "常规注释",
+                "文字注释",
+                "立面",
+                "详图项目",
+                "自动绘制尺寸标注",
+                "导线",
+                "尺寸标注",
+                "导线标记",
+                "详图项目标记",
+                "相机",
+                "多类别标记",
+            };
+            foreach (var element in elements)
+            {
+                //var familyElementID = element.LookupParameter("族与类型")?.AsElementId();
+                //var familyElement = document.GetElement(familyElementID);
+                var familyCategory = element.GetFamilyCategory();
+                if (categortyFilter.Contains(familyCategory))
+                {
+                    continue;
+                }
+                var familyName = element.GetFamilyName();
+                var extendName = element.GetExtendName();
+                if (string.IsNullOrEmpty(familyName) || string.IsNullOrEmpty(familyCategory) || string.IsNullOrEmpty(extendName))
+                {
+                    continue;
+                }
+                var parameters = element.Parameters.GetEnumerator();
+                var pars = new List<string>();
+                while (parameters.MoveNext())
+                {
+                    var parameter = parameters.Current as Parameter;
+                    if (parameter.Definition == null)
+                    {
+                        continue;
+                    }
+                    if (!pars.Contains((parameter.Definition.Name+":"+ parameter.GetValue())))
+                    {
+                        pars.Add((parameter.Definition.Name + ":" + parameter.GetValue()));
+                    }
+                }
+                //输出为json格式文件
+                var elementData = new Dictionary<string, object>
+                {
+                    { "FamilyCategory", familyCategory },
+                    { "FamilyName", familyName },
+                    { "ExtendName", extendName },
+                    { "Parameters", pars }
+                };
+
+                elementDataList.Add(elementData);
+            }
+            // 序列化为 JSON 格式
+            var json = JsonConvert.SerializeObject(elementDataList, Newtonsoft.Json.Formatting.Indented);
+
+            // 输出为 JSON 格式文件
+            var outputPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "RevitElements.json");
+            File.WriteAllText(outputPath, json);
+
+            TaskDialog.Show("输出完成", $"所有元素数据已输出到 {outputPath}");
+        }
         public ObservableCollection<RevitSolidElement> LoadAllRevitElements(UIDocument UiDocument)
         {
             List<ExcelFamilyRecord> records = ExcelDataService.ExcelFamilyRecords;

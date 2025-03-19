@@ -1,13 +1,6 @@
-﻿using Autodesk.Revit.DB;
-using CommunityToolkit.Mvvm.ComponentModel;
-using System;
-using System.Collections.Generic;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RZData.ViewModels
 {
@@ -29,8 +22,10 @@ namespace RZData.ViewModels
         public ParameterSetVM(ParameterVM parameter)
         {
             Values = new ObservableCollection<string>();
-            Parameters = new ObservableCollection<ParameterVM>();
-            Parameters.Add(parameter);
+            Parameters = new ObservableCollection<ParameterVM>
+            {
+                parameter
+            };
             Name = parameter.Name;
             ValueType = parameter.ValueType;
             Parameters.CollectionChanged += Parameters_CollectionChanged;
@@ -53,7 +48,6 @@ namespace RZData.ViewModels
                     oldItem.PropertyChanged -= Parameter_PropertyChanged;
                 }
             }
-
             UpdateValues();
         }
         private void Parameter_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -91,7 +85,7 @@ namespace RZData.ViewModels
         {
             get
             {
-                if (Value == "缺失")
+                if (string.IsNullOrEmpty(ValueType))
                 {
                     return "缺失";
                 }

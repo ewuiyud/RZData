@@ -18,11 +18,38 @@ namespace Views
     /// </summary>
     public partial class CarbonProjectView : Window
     {
-        UIDocument UIDocument;
+        readonly UIDocument UIDocument;
+        private const string DefaultProjectNameText = "请输入项目名称";
         public CarbonProjectView(UIDocument uIDocument)
         {
             InitializeComponent();
             UIDocument = uIDocument;
+            SetDefaultProjectNameText();
+        }
+        private void SetDefaultProjectNameText()
+        {
+            if (string.IsNullOrEmpty(ProjectName.Text))
+            {
+                ProjectName.Text = DefaultProjectNameText;
+                ProjectName.Foreground = Brushes.Gray;
+            }
+        }
+
+        private void ProjectName_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (ProjectName.Text == DefaultProjectNameText)
+            {
+                ProjectName.Text = string.Empty;
+                ProjectName.Foreground = Brushes.Black;
+            }
+        }
+
+        private void ProjectName_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(ProjectName.Text))
+            {
+                SetDefaultProjectNameText();
+            }
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)

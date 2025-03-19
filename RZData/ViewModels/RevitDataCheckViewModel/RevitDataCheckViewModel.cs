@@ -57,8 +57,6 @@ namespace RZData.ViewModels
         {
             switch (SelectedItem)
             {
-                case FamilyCategoryViewModel familyCategory:
-                    break;
                 case FamilyViewModel family:
                     SelectElementInRevit(family);
                     break;
@@ -96,8 +94,10 @@ namespace RZData.ViewModels
         private void SelectElementInRevit(ElementInstanceViewModel elementInstance)
         {
             var uidoc = UiDocument;
-            var elementIds = new List<ElementId>();
-            elementIds.Add(new ElementId(elementInstance.Name));
+            var elementIds = new List<ElementId>
+            {
+                new ElementId(elementInstance.Name)
+            };
             uidoc.Selection.SetElementIds(elementIds);
         }
         public void Search()

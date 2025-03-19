@@ -20,22 +20,6 @@ namespace RZData.Views
             ViewModelLocator.Instance(uiDocument).Reset();
             InitializeComponent();
             DataContext = ViewModelLocator.Instance(uiDocument).RevitDataCheckViewModel;
-            Loaded += OnLoaded;
-        }
-        private void OnLoaded(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                var textBox = this.FindName("SearchTextBox") as System.Windows.Controls.TextBox;
-                if (textBox != null && string.IsNullOrEmpty(textBox.Text))
-                {
-                    SetDefaultSearchText(textBox);
-                }
-            }
-            catch (System.Exception ex)
-            {
-                TaskDialog.Show("错误信息", ex.Message);
-            }
         }
 
         private void TreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
@@ -56,51 +40,6 @@ namespace RZData.Views
             catch (Exception ex)
             {
                 TaskDialog.Show("错误信息", ex.Message);
-            }
-        }
-
-        private void TextBox_GotFocus(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                var textBox = sender as System.Windows.Controls.TextBox;
-                if (textBox.Text == DefaultSearchText)
-                {
-                    textBox.Text = string.Empty;
-                    textBox.Foreground = System.Windows.Media.Brushes.Black;
-                }
-            }
-            catch (Exception ex)
-            {
-                TaskDialog.Show("错误信息", ex.Message);
-            }
-        }
-
-        private void TextBox_LostFocus(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                var textBox = sender as System.Windows.Controls.TextBox;
-                if (string.IsNullOrEmpty(textBox.Text))
-                {
-                    SetDefaultSearchText(textBox);
-                }
-            }
-            catch (Exception ex)
-            {
-                TaskDialog.Show("错误信息", ex.Message);
-            }
-        }
-        private void SetDefaultSearchText(System.Windows.Controls.TextBox textBox)
-        {
-            try
-            {
-                textBox.Text = DefaultSearchText;
-                textBox.Foreground = System.Windows.Media.Brushes.Gray;
-            }
-            catch (System.Exception e)
-            {
-                TaskDialog.Show("错误信息", e.Message);
             }
         }
 

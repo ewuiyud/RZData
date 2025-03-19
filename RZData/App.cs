@@ -24,7 +24,6 @@ namespace RZData
             AddButton(panel, "数据录入", "DataEntry", "数据录入功能", "RZData.Commands.RevitDataEntryCommand", "Resources/data_Entry.png");
             AddButton(panel, "清单计算", "ListSummary", "清单计算功能", "RZData.Commands.RevitListSummaryCommand", "Resources/list_summary.png");
             //AddButton(panel, "隐含碳计算", "EmbeddedCarbonCalculation", "计算建材生成及运输过程中的隐含碳", "RZData.Commands.RevitEmbeddedCarbonCalculationCommand", "Resources/embedded_carbon_calculation.png");
-
             return Result.Succeeded;
         }
 

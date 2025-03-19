@@ -328,23 +328,24 @@ namespace RZData.Services
                 // 从第二行开始读取数据（第一行通常是表头）
                 for (int row = 2; row <= rowCount; row++)
                 {
-                    var material = new EmbeddedCarbonCalcutionModel();
-
-                    // 按照属性顺序从 Excel 单元格中读取数据并赋值给对象属性
-                    material.SerialNumber = worksheet.Cells[row, 1].GetValue<int>();
-                    material.MaterialName = worksheet.Cells[row, 2].GetValue<string>();
-                    material.SpecificationModel = worksheet.Cells[row, 3].GetValue<string>();
-                    material.MaterialCategory = worksheet.Cells[row, 4].GetValue<string>();
-                    material.SecondLevelCategory = worksheet.Cells[row, 5].GetValue<string>();
-                    material.Quantity = worksheet.Cells[row, 6].GetValue<decimal>();
-                    material.Unit = worksheet.Cells[row, 7].GetValue<string>();
-                    material.WeightConversionCoefficient = worksheet.Cells[row, 8].GetValue<decimal>();
-                    material.MaterialUnitPrice = worksheet.Cells[row, 9].GetValue<decimal>();
-                    material.CarbonEmission = worksheet.Cells[row, 10].GetValue<decimal>();
-                    material.MaterialTotalPrice = worksheet.Cells[row, 11].GetValue<decimal>();
-                    material.Weight = worksheet.Cells[row, 12].GetValue<decimal>();
-                    material.TransportationDistance = worksheet.Cells[row, 13].GetValue<decimal>();
-                    material.TransportationCarbonEmission = worksheet.Cells[row, 14].GetValue<decimal>();
+                    var material = new EmbeddedCarbonCalcutionModel
+                    {
+                        // 按照属性顺序从 Excel 单元格中读取数据并赋值给对象属性
+                        SerialNumber = worksheet.Cells[row, 1].GetValue<int>(),
+                        MaterialName = worksheet.Cells[row, 2].GetValue<string>(),
+                        SpecificationModel = worksheet.Cells[row, 3].GetValue<string>(),
+                        MaterialCategory = worksheet.Cells[row, 4].GetValue<string>(),
+                        SecondLevelCategory = worksheet.Cells[row, 5].GetValue<string>(),
+                        Quantity = worksheet.Cells[row, 6].GetValue<decimal>(),
+                        Unit = worksheet.Cells[row, 7].GetValue<string>(),
+                        WeightConversionCoefficient = worksheet.Cells[row, 8].GetValue<decimal>(),
+                        MaterialUnitPrice = worksheet.Cells[row, 9].GetValue<decimal>(),
+                        CarbonEmission = worksheet.Cells[row, 10].GetValue<decimal>(),
+                        MaterialTotalPrice = worksheet.Cells[row, 11].GetValue<decimal>(),
+                        Weight = worksheet.Cells[row, 12].GetValue<decimal>(),
+                        TransportationDistance = worksheet.Cells[row, 13].GetValue<decimal>(),
+                        TransportationCarbonEmission = worksheet.Cells[row, 14].GetValue<decimal>()
+                    };
 
                     materials.Add(material);
                 }

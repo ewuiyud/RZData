@@ -29,10 +29,7 @@ namespace RZData.ViewModels
             set
             {
                 SetProperty(ref _searchKeyword, value);
-                if (_searchKeyword != "请输入关键词搜索")
-                {
-                    SearchCommand.Execute(null);
-                }
+                SearchCommand.Execute(null);
             }
         }
         public ElementViewModel ShowElements { get => _showElements; set => SetProperty(ref _showElements, value); }
@@ -40,8 +37,10 @@ namespace RZData.ViewModels
         {
             get
             {
-                var fs = new ObservableCollection<FamilyCategoryViewModel>();
-                fs.Add(new FamilyCategoryViewModel() { Name = "所有" });
+                var fs = new ObservableCollection<FamilyCategoryViewModel>
+                {
+                    new FamilyCategoryViewModel() { Name = "所有" }
+                };
                 var elements = AllElements;
                 elements.FamilyCategories.ToList().ForEach(a => fs.Add(a));
                 return fs;
@@ -66,7 +65,6 @@ namespace RZData.ViewModels
                         var revitSolidElements = AllElements.RevitSolidElements.ToList().FindAll(a => a.FamilyCategory == _selectedElement.Name);
                         ShowElements = new ElementViewModel(revitSolidElements);
                     }
-                    SearchKeyword = "请输入关键词搜索";
                 }
             }
         }
@@ -84,8 +82,6 @@ namespace RZData.ViewModels
         {
             switch (SelectedItem)
             {
-                case FamilyCategoryViewModel familyCategory:
-                    break;
                 case FamilyViewModel family:
                     SelectElementInRevit(family);
                     break;
@@ -123,8 +119,10 @@ namespace RZData.ViewModels
         private void SelectElementInRevit(ElementInstanceViewModel elementInstance)
         {
             var uidoc = UiDocument;
-            var elementIds = new List<ElementId>();
-            elementIds.Add(new ElementId(elementInstance.Name));
+            var elementIds = new List<ElementId>
+            {
+                new ElementId(elementInstance.Name)
+            };
             uidoc.Selection.SetElementIds(elementIds);
         }
         private void Search()
@@ -204,7 +202,6 @@ namespace RZData.ViewModels
                         }
                     }
                     elementInstance.ReloadParameter(UiDocument.Document);
-
                 }
             }
             catch (Exception ex)

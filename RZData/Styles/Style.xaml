@@ -1,6 +1,7 @@
 ﻿<ResourceDictionary x:Class="RZData.Styles.Style"
                     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:Icon="http://metro.mahapps.com/winfx/xaml/iconpacks"
                     xmlns:local="using:RZData.Styles">
 
     <ControlTemplate x:Key="MyScrollViewer" TargetType="{x:Type ScrollViewer}">
