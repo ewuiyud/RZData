@@ -9,6 +9,7 @@ namespace RZData.UserControls
         public SearchBox()
         {
             InitializeComponent();
+            //若不不在此处引用icon，会导致找不到dll错误
             var icon = new PackIconMaterial
             {
                 Kind = PackIconMaterialKind.Magnify

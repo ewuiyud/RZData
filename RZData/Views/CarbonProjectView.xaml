@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Views"
-       xmlns:System="clr-namespace:System;assembly=mscorlib" x:Name="window" x:Class="Views.CarbonProjectView"
+        xmlns:System="clr-namespace:System;assembly=mscorlib" x:Name="window" x:Class="Views.CarbonProjectView"
         mc:Ignorable="d"
         Title="隐含碳计算" Height="500" Width="800" Foreground="Black">
     <Grid>

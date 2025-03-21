@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:RZData.Views"
-              xmlns:userControls="clr-namespace:RZData.UserControls"
+             xmlns:userControls="clr-namespace:RZData.UserControls"
              mc:Ignorable="d" 
              Title="数据批量录入"
              MaxHeight="750" MinHeight="750" MaxWidth="900" MinWidth="900">

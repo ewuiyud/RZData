@@ -14,7 +14,6 @@ namespace RZData.Views
     /// </summary>
     public partial class RevitDataCheckView : Window
     {
-        private const string DefaultSearchText = "请输入关键词搜索";
         public RevitDataCheckView(UIDocument uiDocument)
         {
             ViewModelLocator.Instance(uiDocument).Reset();
@@ -56,8 +55,7 @@ namespace RZData.Views
         {
             DependencyObject parentObject = VisualTreeHelper.GetParent(child);
             if (parentObject == null) return null;
-            T parent = parentObject as T;
-            if (parent != null)
+            if (parentObject is T parent)
                 return parent;
             else
                 return FindVisualParent<T>(parentObject);

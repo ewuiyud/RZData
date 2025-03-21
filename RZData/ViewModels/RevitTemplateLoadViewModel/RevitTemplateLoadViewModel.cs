@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.UI;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Prism.Navigation.Regions;
 using RZData.Services;
 using System;
 using System.IO;
@@ -50,6 +51,7 @@ namespace RZData.ViewModels
         public ICommand LoadDataFromExcelCommand { get; }
         public ICommand OKCommand { get; }
         public Action CloseAction { get; set; }
+        public IRegionManager RegionManager { get; }
 
         private void LoadDataFromExcel()
         {

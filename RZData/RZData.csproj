@@ -60,10 +60,12 @@
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
     <PackageReference Include="EPPlus" Version="7.0.5" />
-    <PackageReference Include="EPPlus.Interfaces" Version="7.5.0" />
-    <PackageReference Include="EPPlus.System.Drawing" Version="7.5.0" />
     <PackageReference Include="MahApps.Metro.IconPacks.Material" Version="5.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Prism.DryIoc" Version="9.0.537" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Module1\Module1.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="Resources\Templates\TempExcel.xlsx">
