@@ -14,7 +14,7 @@ namespace RZData.ViewModels
     {
         public ElementViewModel(List<RevitSolidElement> revitSolidElements)
         {
-            familyCategories = new ObservableCollection<FamilyCategoryViewModel>();
+            FamilyCategories = new ObservableCollection<FamilyCategoryViewModel>();
             RevitSolidElements = revitSolidElements;
             foreach (var item in RevitSolidElements)
             {

@@ -21,7 +21,8 @@ namespace RZData.ViewModels
 
         public ParameterSetVM(ParameterVM parameter)
         {
-            Values = new ObservableCollection<string>();
+            Value = parameter.Value;
+            Values = new ObservableCollection<string>() { parameter.Value };
             Parameters = new ObservableCollection<ParameterVM>
             {
                 parameter
@@ -29,6 +30,7 @@ namespace RZData.ViewModels
             Name = parameter.Name;
             ValueType = parameter.ValueType;
             Parameters.CollectionChanged += Parameters_CollectionChanged;
+            UpdateValues();
         }
 
         private void Parameters_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)

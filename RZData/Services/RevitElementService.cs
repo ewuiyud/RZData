@@ -66,7 +66,7 @@ namespace RZData.Services
                     {
                         continue;
                     }
-                    if (!pars.Contains((parameter.Definition.Name+":"+ parameter.GetValue())))
+                    if (!pars.Contains((parameter.Definition.Name + ":" + parameter.GetValue())))
                     {
                         pars.Add((parameter.Definition.Name + ":" + parameter.GetValue()));
                     }
@@ -129,7 +129,7 @@ namespace RZData.Services
             Document document, Element element, RevitSolidElement revitSolidElement)
         {
             var extendName = element.GetExtendName();
-            var typeNames = systemFamilyDictionary.FindAll(a => CheckRecordExtendName(a, element)).ToList();
+            var typeNames = systemFamilyDictionary.FindAll(a => CheckRecordExtendName(a, document, element)).ToList();
             if (typeNames.Count() == 0 || !typeNames.Exists(a => a.FamilyName == element.GetFamilyName()))
             {
                 revitSolidElement.IsNameCorrect = false;
@@ -158,9 +158,8 @@ namespace RZData.Services
                 CheckParameters(record, document, element, revitSolidElement);
             }
         }
-        public bool CheckRecordExtendName(ExcelFamilyRecord excelRecord, Element element)
+        public bool CheckRecordExtendName(ExcelFamilyRecord excelRecord, Document document, Element element)
         {
-            const string typePrefix = "类型=";
             var recordExtendName = excelRecord.ExtendName;
             string incorrectMessage = $"补充属性不合理，族：{excelRecord.FamilyCategory} 类型：{excelRecord.FamilyName} 补充属性：{excelRecord.ExtendName}";
             if (recordExtendName.Contains("&&"))
@@ -169,31 +168,35 @@ namespace RZData.Services
                 //存在多个条件时，
                 return requires.All(a =>
                 {
-                    if (a.StartsWith(typePrefix))
+                    if (a.StartsWith(ConstString.ExtendNamePrefix))
                     {
-                        return element.GetExtendName().StartsWith(a.Substring(3, a.Length - 4));
+                        return element.GetExtendName().IsSameAs(a.Replace(ConstString.ExtendNamePrefix, ""));
                     }
                     else
                     {
                         var str = a.Split('=');
                         if (str.Count() != 2)
                             TaskDialog.Show("错误信息", incorrectMessage);
-                        var value = element.GetParameters(str[0]);
-                        if (value.Count == 0)
+                        var value = element.GetElementValue(document, str[0]);
+                        if (value == null)
                         {
                             return false;
                         }
-                        return value[0]?.Element?.Name == str[1];
+                        return value.IsSameAs(str[1]);
                     }
                 });
             }
             else
             {
-                if (recordExtendName.StartsWith(typePrefix))
+                if (recordExtendName.StartsWith(ConstString.ExtendNamePrefix))
                 {
                     return element.GetExtendName().StartsWith(recordExtendName.Substring(3, recordExtendName.Length - 4));
                 }
-                else { TaskDialog.Show("错误信息", incorrectMessage); return false; }
+                else
+                {
+                    //TaskDialog.Show("错误信息", incorrectMessage); 
+                    return false;
+                }
             }
         }
         public bool CheckParameters(ExcelFamilyRecord excelRecord, Document document, Element element, RevitSolidElement revitSolidElement)
@@ -214,14 +217,6 @@ namespace RZData.Services
             }
             revitSolidElement.IsPropertiesCorrect = revitSolidElement.Parameters.All(p => p.Value != "缺失");
             return revitSolidElement.IsPropertiesCorrect;
-        }
-        public static string GetElementValue(Element element, Document document, string parameterName)
-        {
-            var familyElementID = element.LookupParameter("族与类型")?.AsElementId();
-            var familyElement = document.GetElement(familyElementID);
-            var parameter = element.LookupParameter(parameterName) ?? familyElement?.LookupParameter(parameterName);
-
-            return parameter.GetValue();
         }
     }
 }

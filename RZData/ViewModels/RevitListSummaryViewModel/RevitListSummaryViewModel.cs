@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using CommunityToolkit.Mvvm.Input;
+using RZData.Extensions;
 using RZData.Models;
 using RZData.Services;
 using RZData.Views;
@@ -365,7 +366,7 @@ namespace RZData.ViewModels
 
             var doc = UiDocument.Document;
             Element element = doc.GetElement(new ElementId(revitSolidElement.ID));
-            var result = RevitElementService.GetElementValue(element, doc, input);
+            var result = element.GetElementValue(doc, input);
             if (result != null)
             {
                 return result;

@@ -178,7 +178,7 @@ namespace RZData.Services
         private static void ReadFamilyWorksheet(ExcelWorksheet worksheet, List<ExcelFamilyRecord> records)
         {
             int rowCount = worksheet.Dimension.Rows;
-
+            string result = "";
             for (int row = 2; row <= rowCount; row++)
             {
                 ExcelFamilyRecord excelRecord = new ExcelFamilyRecord
@@ -191,6 +191,10 @@ namespace RZData.Services
 
                 var requiredPropertie = worksheet.Cells[row, 7].Text; // G列
                 var tDCName = worksheet.Cells[row, 8].Text; // H列
+                if (string.IsNullOrEmpty(tDCName))
+                {
+                    continue;
+                }
                 excelRecord.RequiredProperties.Add(tDCName, requiredPropertie);
 
                 var nextFamilyName = row < rowCount ? worksheet.Cells[row + 1, 2].Text : null;
@@ -200,11 +204,26 @@ namespace RZData.Services
                     row++;
                     requiredPropertie = worksheet.Cells[row, 7].Text; // G列
                     tDCName = worksheet.Cells[row, 8].Text; // H列
+                    if (string.IsNullOrEmpty(tDCName))
+                    {
+                        continue;
+                    }
                     excelRecord.RequiredProperties.Add(tDCName, requiredPropertie);
                     nextFamilyName = row < rowCount ? worksheet.Cells[row + 1, 2].Text : null;
                 }
-
+                if (!excelRecord.FamilyName.StartsWith("MIC"))
+                {
+                    if (!excelRecord.ExtendName.StartsWith(ConstString.ExtendNamePrefix))
+                    {
+                        result += $"第{row}行数据，{excelRecord.FamilyCategory}-{excelRecord.FamilyName}-{excelRecord.ExtendName}的内容不规范，未能录入该条数据。\n";
+                        continue;
+                    }
+                }
                 records.Add(excelRecord);
+            }
+            if (!string.IsNullOrEmpty(result))
+            {
+                TaskDialog.Show("载入结果", $"表格{worksheet}中:\n" + result);
             }
         }
         public static void ExportToExcelFromMaterialList(ObservableCollection<MaterialViewModel> materialViewModels)
@@ -350,7 +369,6 @@ namespace RZData.Services
                     materials.Add(material);
                 }
             }
-
             return materials;
         }
     }

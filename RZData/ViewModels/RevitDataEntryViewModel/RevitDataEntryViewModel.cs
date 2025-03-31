@@ -70,7 +70,7 @@ namespace RZData.ViewModels
         }
         public RevitDataEntryViewModel(UIDocument _uiDocument, ObservableCollection<RevitSolidElement> revitSolidElements)
         {
-            this.AllElements = new ElementViewModel(revitSolidElements.ToList());
+            this.AllElements = new ElementViewModel(revitSolidElements.ToList().FindAll(a => a.IsNameCorrect).ToList());
             this.ShowElements = AllElements;
             this.UiDocument = _uiDocument;
             SearchCommand = new RelayCommand(Search);

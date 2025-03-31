@@ -57,5 +57,42 @@ namespace RZData.Extensions
         {
             return element.Name;
         }
+        public static string GetElementValue(this Element element, Document document, string parameterName)
+        {
+            var familyElementID = element.LookupParameter("族与类型")?.AsElementId();
+            var familyElement = document.GetElement(familyElementID);
+            var parameter = element.LookupParameter(parameterName) ?? familyElement?.LookupParameter(parameterName);
+
+            return parameter.GetValue();
+        }
+
+        /// <summary>
+        /// 允许使用通配符*，str1为
+        /// </summary>
+        /// <param name="str1"></param>
+        /// <param name="str2"></param>
+        /// <returns></returns>
+        public static bool IsSameAs(this string str1, string str2)
+        {
+            if (str1 == str2)
+            {
+                return true;
+            }
+            if (str1.EndsWith("*"))
+            {
+                if (str2.StartsWith(str1.Substring(0, str1.Length - 1)))
+                {
+                    return true;
+                }
+            }
+            if (str2.EndsWith("*"))
+            {
+                if (str1.StartsWith(str2.Substring(0, str2.Length - 1)))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 }
