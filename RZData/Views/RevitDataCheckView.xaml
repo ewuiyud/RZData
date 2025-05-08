@@ -9,8 +9,8 @@
              Title="数据校验"
              MaxHeight="750" MinHeight="750" MaxWidth="800" MinWidth="800">
     <Window.Resources>
-
         <ResourceDictionary>
+            <BooleanToVisibilityConverter x:Key="BoolToVis"/>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/RZData;component/Styles/Style.xaml"/>
             </ResourceDictionary.MergedDictionaries>
@@ -94,10 +94,41 @@
                 </Grid>
             </TabItem>
         </TabControl>
+        <!--右侧显示未匹配的族-->
+        <Border Grid.Column="1" BorderThickness="1" BorderBrush="#acacac" Margin="20">
+            <StackPanel Background="#F5F8FA">
+                <TextBlock Text="选择族以查看未匹配模板构件" Margin="20,60,20,20" FontSize="18"
+           HorizontalAlignment="Center" VerticalAlignment="Center" FontFamily="微软雅黑 Light" Foreground="Black"/>
+                <StackPanel  Margin="20" HorizontalAlignment="Stretch">
+                    <Label Content="DeepSeek :"/>
+                    <Border BorderThickness="1" CornerRadius="10" Background="White">
+                        <TextBlock  Background="Transparent" Margin="10" Text="{Binding MatchResult,Mode=TwoWay}" Width="300" HorizontalAlignment="Left" TextWrapping="Wrap"/>
+                    </Border>
+                    <Button HorizontalAlignment="Right" Content="AI 匹配" Width="80" Height="30" Command="{Binding AIMatchCommand}"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"  Visibility="{Binding ShowChangeNameBtn,Converter={StaticResource BoolToVis}}">
+                        <Label Content="匹配的名称 :" VerticalAlignment="Center" Height="25"/>
+                        <TextBox Width="130" Height="20" Text="{Binding MatchName, Mode=TwoWay}" FontSize="12"/>
+                        <Button HorizontalAlignment="Right" Content="应用" Width="80" Height="30"  Command="{Binding ChangeFamilyNameCommand}"/>
+                    </StackPanel>
+                </StackPanel>
+                <StackPanel.Style>
+                    <Style TargetType="StackPanel">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ElementName=MainTabControl, Path=SelectedIndex}" Value="1">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding ElementName=MainTabControl, Path=SelectedIndex}" Value="0">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </StackPanel.Style>
+            </StackPanel>
+        </Border>
+
+        <!--右侧显示参数项 -->
         <Border Grid.Column="1" BorderThickness="1" BorderBrush="#acacac" Margin="20">
             <Grid Background="#F5F8FA" >
-                <TextBlock Text="选择组类型以查看未匹配模板构件" Margin="20,20,20,80" FontSize="18"
-                       HorizontalAlignment="Center" VerticalAlignment="Center" FontFamily="微软雅黑 Light" Foreground="Black"/>
                 <DataGrid ItemsSource="{Binding SelectedItem.Parameters}" IsReadOnly="True" CanUserAddRows="False" FontSize="14"
                        FontFamily="微软雅黑 Light" Background="White" RowHeight="28" 
                       HorizontalScrollBarVisibility="Disabled" CanUserResizeColumns="False"
@@ -119,19 +150,19 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
                     </DataGrid.Columns>
-                    <DataGrid.Style>
-                        <Style TargetType="DataGrid">
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding ElementName=MainTabControl, Path=SelectedIndex}" Value="0">
-                                    <Setter Property="Visibility" Value="Visible"/>
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding ElementName=MainTabControl, Path=SelectedIndex}" Value="1">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </DataGrid.Style>
                 </DataGrid>
+                <Grid.Style>
+                    <Style TargetType="Grid">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ElementName=MainTabControl, Path=SelectedIndex}" Value="0">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding ElementName=MainTabControl, Path=SelectedIndex}" Value="1">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Grid.Style>
             </Grid>
         </Border>
     </Grid>

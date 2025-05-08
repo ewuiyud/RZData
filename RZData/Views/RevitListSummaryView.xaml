@@ -24,6 +24,29 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
+        <StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="3">
+                <Label Content="阶段" Margin="10 0"/>
+                <ComboBox  Width="150" Margin="40 0"/>
+                <Label Content="历史清单" Margin="10 0"/>
+                <ComboBox Width="150" Margin="40 0"/>
+            </StackPanel>
+            <DataGrid ItemsSource="{Binding ShowMaterialList}"  EnableRowVirtualization="False" CanUserAddRows="False" IsReadOnly="True" AutoGenerateColumns="False" SelectedItem="{Binding SelectedMaterialRecord}" SelectionChanged="DataGrid_SelectionChanged">
+                <DataGrid.Columns>
+                    <DataGridTemplateColumn Header="行号">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}},Converter={StaticResource RowIndexConverter}}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Header="材料名称" Binding="{Binding MaterialName}"/>
+                    <DataGridTextColumn Header="使用方式"  Binding="{Binding UsageMethod}"/>
+                    <DataGridTextColumn Header="项目特征"  Binding="{Binding ProjectFeatures}"/>
+                    <DataGridTextColumn Header="工程量"  Binding="{Binding ModelEngineeringQuantity}"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </StackPanel>
         <StackPanel Orientation="Horizontal" Grid.Row="1" Height="40" HorizontalAlignment="Right">
             <Border BorderBrush="Gray" BorderThickness="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5,0">
                 <Label Content="属性项:" Width="60" Height="25" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
@@ -68,32 +91,6 @@
             <Button Grid.Column="1" Content="确定" Width="75" Height="25" Margin="10,2.5"  Command="{Binding OKWitheRequiredPropertiesCommand}" />
             <Button Grid.Column="2" Content="清除" Width="75" Height="25" Margin="5,2.5"  Command="{Binding DeleteRequiredPropertiesCommand}"/>
         </Grid>
-        <Grid  Grid.Row="4"  Height="40">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="auto"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-            <Button Content="模型中选中" Width="100" Height="20" Margin="10,0,0,0"  Visibility="Collapsed"/>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Column="1" VerticalAlignment="Center">
-                <Button Content="导出Excel" Width="70" Height="30" Margin="10,0,0,0" Command="{Binding ExportExcelCommand}"/>
-                <Button Content="取消" Width="70" Height="30" Margin="10,0,10,0" Click="Button_Click"/>
-            </StackPanel>
-        </Grid>
-        <DataGrid ItemsSource="{Binding ShowMaterialList}"  EnableRowVirtualization="False" CanUserAddRows="False" IsReadOnly="True" AutoGenerateColumns="False" SelectedItem="{Binding SelectedMaterialRecord}" SelectionChanged="DataGrid_SelectionChanged">
-            <DataGrid.Columns>
-                <DataGridTemplateColumn Header="行号">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}},Converter={StaticResource RowIndexConverter}}"/>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-                <DataGridTextColumn Header="材料名称" Binding="{Binding MaterialName}"/>
-                <DataGridTextColumn Header="使用方式"  Binding="{Binding UsageMethod}"/>
-                <DataGridTextColumn Header="项目特征"  Binding="{Binding ProjectFeatures}"/>
-                <DataGridTextColumn Header="工程量"  Binding="{Binding ModelEngineeringQuantity}"/>
-            </DataGrid.Columns>
-        </DataGrid>
         <DataGrid Grid.Row="3" ItemsSource="{Binding ShowAssemblyList}" 
                   EnableRowVirtualization="False"  CanUserAddRows="False" 
                   IsReadOnly="True" AutoGenerateColumns="False" SelectedItem="{Binding SelectedAssemblyRecord}"
@@ -111,5 +108,16 @@
                 <DataGridTextColumn Header="构件ID" Binding="{Binding AssemblyID}"/>
             </DataGrid.Columns>
         </DataGrid>
+        <Grid  Grid.Row="4"  Height="40">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Button Content="模型中选中" Width="100" Height="20" Margin="10,0,0,0"  Visibility="Collapsed"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Column="1" VerticalAlignment="Center">
+                <Button Content="导出Excel" Width="70" Height="30" Margin="10,0,0,0" Command="{Binding ExportExcelCommand}"/>
+                <Button Content="取消" Width="70" Height="30" Margin="10,0,10,0" Click="Button_Click"/>
+            </StackPanel>
+        </Grid>
     </Grid>
 </Window>

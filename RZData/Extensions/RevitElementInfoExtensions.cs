@@ -28,7 +28,7 @@ namespace RZData.Extensions
                     result = parameter.AsValueString();
                     break;
                 case StorageType.ElementId:
-                    result = parameter.AsInteger().ToString();
+                    result = parameter.AsElementId().ToString();
                     break;
                 default:
                     result = parameter.AsString();

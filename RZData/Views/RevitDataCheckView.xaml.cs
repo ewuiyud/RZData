@@ -36,6 +36,7 @@ namespace RZData.Views
                     viewModel.SelectedItem = family;
                 }
                 viewModel.PickObjectsCommand.Execute(null);
+                viewModel.AIMatchReset();
             }
             catch (Exception ex)
             {

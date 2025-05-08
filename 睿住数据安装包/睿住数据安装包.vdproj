@@ -207,15 +207,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:睿住数据安装包"
-        "ProductCode" = "8:{A733C77B-52B1-474F-BEEA-315688146FE0}"
-        "PackageCode" = "8:{0DBF4E36-0039-4CE0-8A8D-8596533903EB}"
+        "ProductCode" = "8:{5B2E2D01-CEE3-4FEB-93FB-E24AA6B12FE5}"
+        "PackageCode" = "8:{CD85E350-2AFE-4E7A-812B-55743D7A2395}"
         "UpgradeCode" = "8:{03FBB64B-A059-4BEA-99B8-ADA2D8D9AAC5}"
         "AspNetVersion" = "8:"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.0.6"
+        "ProductVersion" = "8:1.0.8"
         "Manufacturer" = "8:AQ"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
@@ -757,7 +757,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_A9B29EAC63154987BC62420EDD7BD374"
             {
-            "SourcePath" = "8:..\\RZData\\obj\\Debug\\net48\\RZData.dll"
+            "SourcePath" = "8:..\\RZData\\obj\\x64\\Debug\\net48\\RZData.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_D318CBBB79054D2E8EBC63244A851481"

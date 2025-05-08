@@ -24,6 +24,14 @@
     <None Remove="Resources\embedded_carbon_calculation.png" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="SystemPromt\MatchNameSystemPromtForLoadFamily.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SystemPromt\MatchNameSystemPromt.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
     <Content Include="CHANGELOG.md" />
   </ItemGroup>
   <ItemGroup>
@@ -64,6 +72,9 @@
     <PackageReference Include="EPPlus.System.Drawing" Version="7.5.0" />
     <PackageReference Include="MahApps.Metro.IconPacks.Material" Version="5.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\WebService\WebService.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="Resources\Templates\TempExcel.xlsx">

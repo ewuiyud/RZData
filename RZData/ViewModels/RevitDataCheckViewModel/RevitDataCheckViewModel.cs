@@ -10,6 +10,16 @@ using OfficeOpenXml;
 using RZData.Models;
 using System;
 using RZData.Services;
+using RZData.Extensions;
+using WebService;
+using System.Reflection;
+using System.IO;
+using RZData.Tools;
+using RZData.ExternalEventHandlers;
+using Newtonsoft.Json;
+using System.Web.UI.WebControls;
+using System.Threading.Tasks;
+using Autodesk.Revit.Creation;
 
 namespace RZData.ViewModels
 {
@@ -19,6 +29,12 @@ namespace RZData.ViewModels
 
         private ElementViewModel _showElements;
         private object _selectedItem;
+        private string matchResult;
+        private bool showChangeNameBtn;
+        private string matchName;
+        public string MatchName { get => matchName; set => SetProperty(ref matchName, value); }
+        public bool ShowChangeNameBtn { get => showChangeNameBtn; set => SetProperty(ref showChangeNameBtn, value); }
+        public string MatchResult { get => matchResult; set => SetProperty(ref matchResult, value); }
 
         public RevitDataCheckViewModel(UIDocument uiDocument, ObservableCollection<RevitSolidElement> AllSolidElements)
         {
@@ -32,6 +48,8 @@ namespace RZData.ViewModels
             ParameterExportCommand = new RelayCommand(ParameterExport);
             FamilyExportCommand = new RelayCommand(FamilyExport);
             PickObjectsCommand = new RelayCommand(PickObjects);
+            AIMatchCommand = new RelayCommand(AIMatch);
+            ChangeFamilyNameCommand = new AsyncRelayCommand(ChangeFamilyName);
         }
 
         public string SearchKeyword
@@ -52,7 +70,163 @@ namespace RZData.ViewModels
         public ICommand ParameterExportCommand { get; }
         public ICommand FamilyExportCommand { get; }
         public ICommand PickObjectsCommand { get; }
+        public ICommand AIMatchCommand { get; }
+        public AsyncRelayCommand ChangeFamilyNameCommand { get; }
 
+        public void AIMatchReset()
+        {
+            ShowChangeNameBtn = false;
+            MatchName = "";
+            MatchResult = "";
+        }
+        private async Task ChangeFamilyName()
+        {
+            await CustomHandler.Run((Action<UIApplication>)(a =>
+            {
+                using (Transaction transaction = new Transaction(a.ActiveUIDocument.Document, "ChangeFamilyName"))
+                {
+                    if (SelectedItem is FamilyExtendViewModel familyExtend)
+                    {
+                        transaction.Start();
+                        Element element = UiDocument.Document.GetElement(new ElementId(familyExtend.IDs[0]));
+                        var type = UiDocument.Document.GetElement(element.GetTypeId());
+                        type.Name = this.MatchName;
+                        transaction.Commit();
+                    }
+                    else if (SelectedItem is FamilyViewModel family)
+                    {
+                        transaction.Start();
+                        FamilyInstance element = UiDocument.Document.GetElement(new ElementId(family.IDs[0])) as FamilyInstance;
+                        var familyElement = element.Symbol.Family;
+                        try
+                        {
+                            familyElement.Name = this.MatchName;
+                        }
+                        catch (Exception e)
+                        {
+                            if (e.Message == "Name must be unique.\r\nParameter name: name")
+                            {
+                                TaskDialog.Show("警告", "命名重复，请添加后缀。");
+                            }
+                        }
+                        transaction.Commit();
+                    }
+                    ViewModelLocator.Instance(UiDocument).Reset();
+                }
+            }));
+        }
+        private void AIMatch()
+        {
+            if (!(SelectedItem is FamilyExtendViewModel) && !(SelectedItem is FamilyViewModel))
+            {
+                MatchResult = "";
+                ShowChangeNameBtn = false;
+                return;
+            }
+
+            string categoryName = "";
+            string familyName = "";
+            string extendName = "";
+            List<ExcelFamilyRecord> matchList = new List<ExcelFamilyRecord>();
+            if (SelectedItem is FamilyExtendViewModel familyExtend)
+            {
+                Element element = UiDocument.Document.GetElement(new ElementId(familyExtend.IDs[0]));
+                categoryName = element.GetFamilyCategory();
+                familyName = element.GetFamilyName();
+                extendName = familyExtend.Name;
+                matchList = ExcelDataService.ExcelFamilyRecords.FindAll(a => a.FamilyCategory == categoryName && familyName == a.FamilyName);
+                if (matchList.Count == 0)
+                {
+                    MatchResult = "未找到匹配项";
+                    ShowChangeNameBtn = false;
+                    return;
+                }
+
+                string listString = "";
+                foreach (var item in matchList)
+                {
+                    listString += string.Format($"{item.FamilyCategory}-{item.FamilyName}-{item.ExtendName}\n\t");
+                }
+
+                string ak = "sk-93b2d8e03fb04919a89aa235923a7fd0";
+                var dp = new DeepSeek(ak);
+                var userPromt = new[] { $"待分类数据为：{categoryName}-{familyName}-{extendName}\n" +
+                $"分类表内容为{listString}" };
+                string systemPromt = FileTool.ReadFileContent("SystemPromt//MatchNameSystemPromt.txt");
+                dp.Chat(userPromt, systemPromt);
+                if (!string.IsNullOrEmpty(dp.ErrorMessage))
+                {
+                    MatchResult = string.Format("ErrorMessage:{0}", dp.ErrorMessage);
+                    ShowChangeNameBtn = false;
+                }
+                else
+                {
+                    MatchResult = dp.ResultJson.choices[0].message.content;
+                    try
+                    {
+                        var resultJson = JsonConvert.DeserializeObject<FamilyNameJson>(MatchResult);
+                        MatchName = resultJson.名称;
+                        ShowChangeNameBtn = true;
+                    }
+                    catch
+                    {
+                        ShowChangeNameBtn = false;
+                    }
+                }
+            }
+            else if (SelectedItem is FamilyViewModel family)
+            {
+                Element element = UiDocument.Document.GetElement(new ElementId(family.IDs[0]));
+                if (!(element is FamilyInstance))
+                {
+                    MatchResult = "";
+                    ShowChangeNameBtn = false;
+                    return;
+                }
+                categoryName = element.GetFamilyCategory();
+                familyName = element.GetFamilyName();
+                extendName = element.GetExtendName();
+                matchList = ExcelDataService.ExcelFamilyRecords.FindAll(a => a.FamilyCategory == categoryName);
+                if (matchList.Count == 0)
+                {
+                    MatchResult = "未找到匹配项";
+                    ShowChangeNameBtn = false;
+                    return;
+                }
+
+                string listString = "";
+                foreach (var item in matchList)
+                {
+                    listString += string.Format($"{item.FamilyCategory}-{item.FamilyName}-{item.ExtendName}\n\t");
+                }
+
+                string ak = "sk-93b2d8e03fb04919a89aa235923a7fd0";
+                var dp = new DeepSeek(ak);
+                var userPromt = new[] { $"待分类数据为：{categoryName}-{familyName}-{extendName}\n" +
+                $"分类表内容为{listString}" };
+                string systemPromt = FileTool.ReadFileContent("SystemPromt//MatchNameSystemPromtForLoadFamily.txt");
+                dp.Chat(userPromt, systemPromt);
+                if (!string.IsNullOrEmpty(dp.ErrorMessage))
+                {
+                    MatchResult = string.Format("ErrorMessage:{0}", dp.ErrorMessage);
+                    ShowChangeNameBtn = false;
+                }
+                else
+                {
+                    MatchResult = dp.ResultJson.choices[0].message.content;
+                    try
+                    {
+                        var resultJson = JsonConvert.DeserializeObject<FamilyNameJson>(MatchResult);
+                        MatchName = resultJson.族;
+                        ShowChangeNameBtn = true;
+                    }
+                    catch
+                    {
+                        ShowChangeNameBtn = false;
+                    }
+                }
+            }
+        }
         internal void PickObjects()
         {
             switch (SelectedItem)
@@ -62,9 +236,6 @@ namespace RZData.ViewModels
                     break;
                 case FamilyExtendViewModel familyExtend:
                     SelectElementInRevit(familyExtend);
-                    break;
-                case ElementInstanceViewModel elementInstance:
-                    SelectElementInRevit(elementInstance);
                     break;
                 default:
                     break;
@@ -91,15 +262,15 @@ namespace RZData.ViewModels
             }
             uidoc.Selection.SetElementIds(elementIds);
         }
-        private void SelectElementInRevit(ElementInstanceViewModel elementInstance)
-        {
-            var uidoc = UiDocument;
-            var elementIds = new List<ElementId>
-            {
-                new ElementId(elementInstance.Name)
-            };
-            uidoc.Selection.SetElementIds(elementIds);
-        }
+        //private void SelectElementInRevit(ElementInstanceViewModel elementInstance)
+        //{
+        //    var uidoc = UiDocument;
+        //    var elementIds = new List<ElementId>
+        //    {
+        //        new ElementId(elementInstance.Name)
+        //    };
+        //    uidoc.Selection.SetElementIds(elementIds);
+        //}
         public void Search()
         {
             try
