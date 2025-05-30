@@ -12,7 +12,6 @@ namespace Services
     {
         [DllImport("user32.dll")]
         private static extern int EnableWindow(IntPtr handle, bool enable);
-
         [DllImport("user32.dll")]
         private static extern int ShowWindow(IntPtr hWnd, int nCmdShow);
 

@@ -17,6 +17,14 @@ namespace RZData.ViewModels
             ProjectFeaturesDetail = new Dictionary<string, string>();
         }
         /// <summary>
+        /// 分类编码
+        /// </summary>
+        public string ID;
+        /// <summary>
+        /// 父级的分类编码
+        /// </summary>
+        public string FatherID;
+        /// <summary>
         /// 材料名称
         /// </summary>
         public string MaterialName { get; set; }
@@ -50,12 +58,12 @@ namespace RZData.ViewModels
         /// <summary>
         /// 模型工程量
         /// </summary>
-        public string ModelEngineeringQuantity { get; set; }
+        public double ModelEngineeringQuantity { get; set; }
 
         /// <summary>
         /// 单位
         /// </summary>
-        public string Unit { get; set; }
+        public string ModelEngineeringUnit { get; set; }
 
         /// <summary>
         /// 转换规则

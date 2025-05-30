@@ -10,9 +10,12 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Resources;
+using System.Web.UI;
 
 namespace RZData.Services
 {
+
     public static class ExcelDataService
     {
         /// <summary>
@@ -72,7 +75,7 @@ namespace RZData.Services
             {
                 ExcelMaterialBusinessRecord record = new ExcelMaterialBusinessRecord
                 {
-                    Code = worksheet.Cells[row, 1].Text,
+                    ID = worksheet.Cells[row, 1].Text,
                     Name = worksheet.Cells[row, 2].Text,
                     ElementName = worksheet.Cells[row, 3].Text,
                     ProductName = worksheet.Cells[row, 4].Text,
@@ -80,7 +83,8 @@ namespace RZData.Services
                     ExtendRule = worksheet.Cells[row, 6].Text,
                     ProjectCharacteristics = worksheet.Cells[row, 7].Text,
                     UsageLocation = worksheet.Cells[row, 8].Text,
-                    Quantity = worksheet.Cells[row, 9].Text
+                    Quantity = worksheet.Cells[row, 9].Text,
+                    Unit = worksheet.Cells[row, 10].Text
                 };
 
                 if (!ExcelMaterialBusinessRules.Contains(record))
@@ -228,44 +232,77 @@ namespace RZData.Services
         }
         public static void ExportToExcelFromMaterialList(ObservableCollection<MaterialViewModel> materialViewModels)
         {
-            using (var package = new ExcelPackage())
+            // 从 Resources 中加载模板文件
+            var assembly = Assembly.GetExecutingAssembly();
+            var resourceName = "RZData.Resources.Templates.项目材料清单模板.xlsx";
+            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
             {
-                var worksheet = package.Workbook.Worksheets.Add("睿住数据");
-                int row = 1;
-                worksheet.Cells[row, 1].Value = "行号";
-                worksheet.Cells[row, 2].Value = "材料名称";
-                worksheet.Cells[row, 3].Value = "使用方式";
-                worksheet.Cells[row, 4].Value = "项目特征";
-                worksheet.Cells[row, 5].Value = "工程量";
-                row++;
-                foreach (var material in materialViewModels)
+                using (var package = new ExcelPackage(stream))
                 {
-                    worksheet.Cells[row, 1].Value = row - 1;
-                    worksheet.Cells[row, 2].Value = material.MaterialName;
-                    worksheet.Cells[row, 3].Value = material.UsageMethod;
-                    string projectFeatures = "";
-                    foreach (var item in material.ProjectFeaturesDetail)
+                    var worksheet = package.Workbook.Worksheets[0];
+                    // 分组逻辑
+                    var groupedElements = materialViewModels.GroupBy(m => GetParentId(m.ID))
+                                                  .ToDictionary(g => g.Key, g => g.ToList());
+                    int row = 4; int index = 1;
+                    foreach (var group in groupedElements)
                     {
-                        projectFeatures += $"{item.Key}:{item.Value}\n";
+                        worksheet.Cells[row, 1].Value = group.Key + " " +
+                            ExcelDataService.ExcelMaterialBusinessRules.Find(a => a.ID == group.Key).Name;
+                        // 合并指定范围的单元格
+                        string range = $"A{row}:J{row}";
+                        worksheet.Cells[range].Merge = true;
+                        worksheet.Cells[range].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                        row++;
+                        foreach (var material in group.Value)
+                        {
+                            string parentID = GetParentId(material.ID);
+                            worksheet.Cells[row, 1].Value = index;
+                            index++;
+                            worksheet.Cells[row, 2].Value = material.MaterialName;
+                            worksheet.Cells[row, 3].Value = material.UsageMethod;
+                            string projectFeatures = "";
+                            foreach (var item in material.ProjectFeaturesDetail)
+                            {
+                                projectFeatures += $"{item.Key}:{item.Value}\t\n";
+                            }
+                            worksheet.Cells[row, 4].Value = projectFeatures.Remove(projectFeatures.Length - 2);
+                            worksheet.Cells[row, 5].Value = material.ModelEngineeringQuantity;
+                            worksheet.Cells[row, 6].Value = material.ModelEngineeringUnit;
+                            row++;
+                        }
                     }
-                    worksheet.Cells[row, 4].Value = projectFeatures;
-                    worksheet.Cells[row, 5].Value = material.ModelEngineeringQuantity;
-                    row++;
-                }
+                    // 假设已存在数据，获取已使用的单元格范围
+                    ExcelRange usedRange = worksheet.Cells[worksheet.Dimension.Address];
+                    int startRow = Math.Max(3, usedRange.Start.Row); // 确保起始行有效
+                    int endRow = usedRange.End.Row;
+                    int startCol = usedRange.Start.Column;
+                    int endCol = usedRange.End.Column;
+                    ExcelRange targetRange = worksheet.Cells[startRow, startCol, endRow, endCol];
+                    // 检查是否有数据
+                    if (targetRange != null)
+                    {
+                        // 为有效数据区域添加所有框线
+                        targetRange.Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        targetRange.Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        targetRange.Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        targetRange.Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        targetRange.Style.Border.Diagonal.Style = OfficeOpenXml.Style.ExcelBorderStyle.None;
+                    }
 
-                // 保存文件
-                SaveFileDialog saveFileDialog = new SaveFileDialog
-                {
-                    Filter = "Excel files (*.xlsx)|*.xlsx",
-                    FilterIndex = 2,
-                    RestoreDirectory = true
-                };
+                    // 保存文件
+                    SaveFileDialog saveFileDialog = new SaveFileDialog
+                    {
+                        Filter = "Excel files (*.xlsx)|*.xlsx",
+                        FilterIndex = 2,
+                        RestoreDirectory = true
+                    };
 
-                if (saveFileDialog.ShowDialog() == true)
-                {
-                    var file = new FileInfo(saveFileDialog.FileName);
-                    package.SaveAs(file);
-                    TaskDialog.Show("提示", "导出成功！");
+                    if (saveFileDialog.ShowDialog() == true)
+                    {
+                        var file = new FileInfo(saveFileDialog.FileName);
+                        package.SaveAs(file);
+                        TaskDialog.Show("提示", "导出成功！");
+                    }
                 }
             }
         }
@@ -370,6 +407,25 @@ namespace RZData.Services
                 }
             }
             return materials;
+        }
+        internal static string GetParentId(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+                return string.Empty;
+
+            // 按连字符分割ID
+            string[] parts = id.Split('-');
+
+            // 如果ID只有1部分，没有父级，返回空或原始ID（根据需求决定）
+            if (parts.Length <= 1)
+                return string.Empty;
+
+            // 移除最后一部分
+            string[] parentParts = new string[parts.Length - 1];
+            Array.Copy(parts, parentParts, parts.Length - 1);
+
+            // 重新组合父级ID
+            return string.Join("-", parentParts);
         }
     }
 }

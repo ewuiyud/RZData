@@ -15,13 +15,13 @@
     {
         "Entry"
         {
-        "MsmKey" = "8:_89EC6BBF5A7141AE9A9777B39BF110A1"
+        "MsmKey" = "8:_13BBBF2DC7F544008E366638EB9D645B"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_A9B29EAC63154987BC62420EDD7BD374"
+        "MsmKey" = "8:_89EC6BBF5A7141AE9A9777B39BF110A1"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -207,15 +207,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:睿住数据安装包"
-        "ProductCode" = "8:{5B2E2D01-CEE3-4FEB-93FB-E24AA6B12FE5}"
-        "PackageCode" = "8:{CD85E350-2AFE-4E7A-812B-55743D7A2395}"
+        "ProductCode" = "8:{5443999A-8305-4ED3-897C-A7ECFFBF7027}"
+        "PackageCode" = "8:{2B94B75C-C080-432A-95A9-41421C585494}"
         "UpgradeCode" = "8:{03FBB64B-A059-4BEA-99B8-ADA2D8D9AAC5}"
         "AspNetVersion" = "8:"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.0.8"
+        "ProductVersion" = "8:1.0.9"
         "Manufacturer" = "8:AQ"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
@@ -727,35 +727,7 @@
         }
         "ProjectOutput"
         {
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_3550A62720A1485C92F7DD1DEA23CC40"
-            {
-            "SourcePath" = "8:"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_D318CBBB79054D2E8EBC63244A851481"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            "ProjectOutputGroupRegister" = "3:1"
-            "OutputConfiguration" = "8:"
-            "OutputGroupCanonicalName" = "8:PublishItems"
-            "OutputProjectGuid" = "8:{E8F4747D-8B5E-4145-95C6-8DC4F7D9AE0A}"
-            "ShowKeyOutput" = "11:TRUE"
-                "ExcludeFilters"
-                {
-                }
-            }
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_A9B29EAC63154987BC62420EDD7BD374"
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_13BBBF2DC7F544008E366638EB9D645B"
             {
             "SourcePath" = "8:..\\RZData\\obj\\x64\\Debug\\net48\\RZData.dll"
             "TargetName" = "8:"
@@ -777,6 +749,34 @@
             "ProjectOutputGroupRegister" = "3:1"
             "OutputConfiguration" = "8:"
             "OutputGroupCanonicalName" = "8:Built"
+            "OutputProjectGuid" = "8:{E8F4747D-8B5E-4145-95C6-8DC4F7D9AE0A}"
+            "ShowKeyOutput" = "11:TRUE"
+                "ExcludeFilters"
+                {
+                }
+            }
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_B438F23F41DA4B29A396FF61D061D70E"
+            {
+            "SourcePath" = "8:"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_D318CBBB79054D2E8EBC63244A851481"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            "ProjectOutputGroupRegister" = "3:1"
+            "OutputConfiguration" = "8:"
+            "OutputGroupCanonicalName" = "8:PublishItems"
             "OutputProjectGuid" = "8:{E8F4747D-8B5E-4145-95C6-8DC4F7D9AE0A}"
             "ShowKeyOutput" = "11:TRUE"
                 "ExcludeFilters"

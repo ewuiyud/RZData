@@ -100,7 +100,7 @@
                 <TextBlock Text="选择族以查看未匹配模板构件" Margin="20,60,20,20" FontSize="18"
            HorizontalAlignment="Center" VerticalAlignment="Center" FontFamily="微软雅黑 Light" Foreground="Black"/>
                 <StackPanel  Margin="20" HorizontalAlignment="Stretch">
-                    <Label Content="DeepSeek :"/>
+                    <Label Content="DeepSeek(试用) :"/>
                     <Border BorderThickness="1" CornerRadius="10" Background="White">
                         <TextBlock  Background="Transparent" Margin="10" Text="{Binding MatchResult,Mode=TwoWay}" Width="300" HorizontalAlignment="Left" TextWrapping="Wrap"/>
                     </Border>

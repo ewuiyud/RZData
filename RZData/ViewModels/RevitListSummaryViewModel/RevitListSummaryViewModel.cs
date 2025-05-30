@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using RZData.Extensions;
 using RZData.Models;
 using RZData.Services;
+using RZData.Tools;
 using RZData.Views;
 using System;
 using System.Collections;
@@ -215,8 +216,14 @@ namespace RZData.ViewModels
                 var record = SortMaterials(revitSolidElement);
                 if (record != null)
                 {
-                    var materialRecord = new MaterialViewModel();
-                    materialRecord.MaterialName = record.Name;
+                    var materialRecord = new MaterialViewModel
+                    {
+                        MaterialName = record.Name
+                    };
+                    if (!string.IsNullOrEmpty(record.ID))
+                    {
+                        materialRecord.ID = record.ID;
+                    }
                     if (record.UsageLocation.Count() > 5)
                     {
                         var input = record.UsageLocation.Split('：')[1];
@@ -224,6 +231,17 @@ namespace RZData.ViewModels
                     }
                     materialRecord.ProjectFeaturesDetail = ExplainProjectFeatures(
                         record.ProjectCharacteristics, revitSolidElement);
+                    if (!string.IsNullOrEmpty(record.Unit))
+                    {
+                        materialRecord.ModelEngineeringUnit = record.Unit;
+                    }
+                    if (!string.IsNullOrEmpty(record.Quantity))
+                    {
+                        materialRecord.ModelEngineeringQuantity += DataMatchTool.Evaluate(record.Quantity, (string valueName) =>
+                        {
+                            return GetModelEngineeringQuantityValue(valueName, revitSolidElement);
+                        });
+                    }
                     var m = result.FirstOrDefault(
                         a => a.MaterialName == materialRecord.MaterialName
                         && a.UsageMethod == materialRecord.UsageMethod
@@ -231,15 +249,12 @@ namespace RZData.ViewModels
                     if (m != null)
                     {
                         m.RevitSolidElements.Add(revitSolidElement);
+                        m.ModelEngineeringQuantity += materialRecord.ModelEngineeringQuantity;
                     }
                     else
                     {
                         materialRecord.RevitSolidElements.Add(revitSolidElement);
                         result.Add(materialRecord);
-                    }
-                    if (!string.IsNullOrEmpty(record.Quantity))
-                    {
-                        materialRecord.ModelEngineeringQuantity = InterpretString(record.Quantity, revitSolidElement);
                     }
                 }
             }
@@ -296,7 +311,6 @@ namespace RZData.ViewModels
         }
         (string, string) ExplainCodeProperty(string input, RevitSolidElement revitSolidElement)
         {
-            var dictionary = ExcelDataService.ExcelPropertyDic;
             string temp = input;
             string prefix = temp.Split('：')[0];
             string suffix = temp.Split('：')[1];
@@ -306,59 +320,21 @@ namespace RZData.ViewModels
             }
             return (prefix.Substring(2), ExplainString(suffix, revitSolidElement));
         }
-        // 解释字符串的方法
-        string InterpretString(string input, RevitSolidElement revitSolidElement)
+
+        // 转换方法
+        string GetModelEngineeringQuantityValue(string valueName, RevitSolidElement revitSolidElement)
         {
-            // 定义正则表达式模式来匹配《》和 %%xx%% 包裹的内容
-            //string pattern1 = @"《([^》]+)》";
-            string pattern2 = @"%%([^%]+)%%";
-
-            // 替换 %%xx%% 包裹的内容
-            input = Regex.Replace(input, pattern2, match => ConvertMethod2(match.Groups[1].Value, revitSolidElement));
-
-            return input;
-        }
-
-        // 转换方法 1
-        string ConvertMethod1(string input, RevitSolidElement revitSolidElement)
-        {
-            var dictionary = ExcelDataService.ExcelPropertyDic;
-            if (dictionary.Keys.Contains(input))
-            {
-                var tDCName = dictionary[input];
-                if (tDCName == "TDC-元素分类名称")
-                {
-                    return revitSolidElement.ElementName;
-                }
-                else
-                {
-                    var p = revitSolidElement.Parameters.FirstOrDefault(a => a.TDCName == tDCName);
-                    if (p != null)
-                    {
-                        return p.Value;
-                    }
-                    else
-                    {
-                        return "未识别属性，请检查模板对应词条";
-                    }
-                }
-            }
-            else
-            {
-                TaskDialog.Show("错误信息", $"需要匹配的项目特征：{input}， 不合法");
-                throw new Exception($"需要匹配的项目特征：{input}， 不合法。");
-            }
-        }
-
-        // 转换方法 2
-        string ConvertMethod2(string input, RevitSolidElement revitSolidElement)
-        {
-            if (input == "TDC-元素分类名称")
+            if (valueName == "TDC-元素分类名称")
             {
                 return revitSolidElement.ElementName;
             }
 
-            var p = revitSolidElement.Parameters.FirstOrDefault(a => a.TDCName == input);
+            if (valueName == "数量")
+            {
+                return "1";
+            }
+
+            var p = revitSolidElement.Parameters.FirstOrDefault(a => a.TDCName == valueName);
             if (p != null)
             {
                 return p.Value;
@@ -366,13 +342,13 @@ namespace RZData.ViewModels
 
             var doc = UiDocument.Document;
             Element element = doc.GetElement(new ElementId(revitSolidElement.ID));
-            var result = element.GetElementValue(doc, input);
+            var result = element.GetElementValue(doc, valueName);
             if (result != null)
             {
                 return result;
             }
 
-            return "未识别属性，请检查模板对应词条";
+            return "0";
         }
         string ExplainString(string input, RevitSolidElement revitSolidElement)
         {
@@ -646,8 +622,10 @@ namespace RZData.ViewModels
             try
             {
                 var uidoc = UiDocument;
-                var elementIds = new List<ElementId>();
-                elementIds.Add(new ElementId(int.Parse(SelectedAssemblyRecord.AssemblyID)));
+                var elementIds = new List<ElementId>
+                {
+                    new ElementId(int.Parse(SelectedAssemblyRecord.AssemblyID))
+                };
                 uidoc.Selection.SetElementIds(elementIds);
             }
             catch (Exception ex)

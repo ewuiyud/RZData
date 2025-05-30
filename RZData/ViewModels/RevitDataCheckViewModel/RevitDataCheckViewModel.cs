@@ -152,7 +152,7 @@ namespace RZData.ViewModels
                 var dp = new DeepSeek(ak);
                 var userPromt = new[] { $"待分类数据为：{categoryName}-{familyName}-{extendName}\n" +
                 $"分类表内容为{listString}" };
-                string systemPromt = FileTool.ReadFileContent("SystemPromt//MatchNameSystemPromt.txt");
+                string systemPromt = FileTool.ReadFileContent("RZData.SystemPromt.MatchNameSystemPromt.txt");
                 dp.Chat(userPromt, systemPromt);
                 if (!string.IsNullOrEmpty(dp.ErrorMessage))
                 {
@@ -204,7 +204,7 @@ namespace RZData.ViewModels
                 var dp = new DeepSeek(ak);
                 var userPromt = new[] { $"待分类数据为：{categoryName}-{familyName}-{extendName}\n" +
                 $"分类表内容为{listString}" };
-                string systemPromt = FileTool.ReadFileContent("SystemPromt//MatchNameSystemPromtForLoadFamily.txt");
+                string systemPromt = FileTool.ReadFileContent("RZData.SystemPromt.MatchNameSystemPromtForLoadFamily.txt");
                 dp.Chat(userPromt, systemPromt);
                 if (!string.IsNullOrEmpty(dp.ErrorMessage))
                 {

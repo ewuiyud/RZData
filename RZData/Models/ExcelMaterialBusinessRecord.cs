@@ -11,7 +11,7 @@ namespace RZData.Models
         /// <summary>
         /// 分类编码
         /// </summary>
-        public string Code { get; set; }
+        public string ID { get; set; }
         /// <summary>
         /// 分类名称
         /// </summary>
@@ -44,5 +44,9 @@ namespace RZData.Models
         /// 工程量
         /// </summary>
         public string Quantity { get; set; }
+        /// <summary>
+        /// 单位
+        /// </summary>
+        public string Unit { get; set; } 
     }
 }
