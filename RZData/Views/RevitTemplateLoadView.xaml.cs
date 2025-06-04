@@ -41,7 +41,7 @@ namespace RZData.Views
             DataContext = revitTemplateLoadViewModel;
             if (revitTemplateLoadViewModel != null)
             {
-                revitTemplateLoadViewModel.CloseAction = new Action(this.Close);
+                revitTemplateLoadViewModel.CloseAction = new Action(this.Hide);
             }
         }
     }

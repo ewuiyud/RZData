@@ -59,7 +59,8 @@ namespace RZData.Views
         {
             var viewModel = DataContext as RevitListSummaryViewModel;
             viewModel.SelectedPropertyValue = null;
-            viewModel.DoubleClickAndPickObjects();
+            var dataGrid = sender as DataGrid;
+            viewModel.DoubleClickAndPickObjects(dataGrid.Name != "UnmatchedAssemblyDataGrid");
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)

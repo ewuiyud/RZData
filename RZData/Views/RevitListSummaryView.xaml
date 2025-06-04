@@ -7,117 +7,252 @@
              xmlns:converters="clr-namespace:RZData.Converters"
              mc:Ignorable="d" 
              Title="清单计算"
-             MaxHeight="500" MinHeight="500" MaxWidth="650" MinWidth="650">
+             MaxHeight="900" MinHeight="900" MaxWidth="1400" MinWidth="1400">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/RZData;component/Styles/Style.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <converters:RowIndexConverter x:Key="RowIndexConverter"/>
+            <Style x:Key="TabItemStyle" TargetType="TabItem">
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="Padding" Value="15,8"/>
+                <Setter Property="Margin" Value="2,0"/>
+            </Style>
+            <Style x:Key="DataGridStyle" TargetType="DataGrid">
+                <Setter Property="AutoGenerateColumns" Value="False"/>
+                <Setter Property="CanUserAddRows" Value="False"/>
+                <Setter Property="CanUserDeleteRows" Value="False"/>
+                <Setter Property="EnableRowVirtualization" Value="False"/>
+                <Setter Property="IsReadOnly" Value="True"/>
+                <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+                <Setter Property="HorizontalGridLinesBrush" Value="#E5E9F0"/>
+                <Setter Property="AlternatingRowBackground" Value="#FAFBFC"/>
+                <Setter Property="HeadersVisibility" Value="Column"/>
+                <Setter Property="SelectionMode" Value="Single"/>
+            </Style>
+
+            <Style x:Key="ActionButtonStyle" TargetType="Button">
+                <Setter Property="Padding" Value="12,6"/>
+                <Setter Property="Margin" Value="5"/>
+                <Setter Property="FontSize" Value="12"/>
+                <Setter Property="Background" Value="#5E81AC"/>
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="#81A1C1"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <Style x:Key="MappingPanelStyle" TargetType="Border">
+                <Setter Property="Background" Value="#ECEFF4"/>
+                <Setter Property="BorderBrush" Value="#D08770"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="CornerRadius" Value="5"/>
+                <Setter Property="Padding" Value="10"/>
+                <Setter Property="Margin" Value="5"/>
+            </Style>
+
+            <Style x:Key="HeaderTextStyle" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="16"/>
+                <Setter Property="FontWeight" Value="Bold"/>
+                <Setter Property="Margin" Value="5"/>
+                <Setter Property="Foreground" Value="#2E3440"/>
+            </Style>
         </ResourceDictionary>
     </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="3" Visibility="Hidden">
-                <Label Content="阶段" Margin="10 0"/>
-                <ComboBox  Width="150" Margin="40 0"/>
-                <Label Content="历史清单" Margin="10 0"/>
-                <ComboBox Width="150" Margin="40 0"/>
-            </StackPanel>
-        </StackPanel>
-        <DataGrid ItemsSource="{Binding ShowMaterialList}"  EnableRowVirtualization="False" CanUserAddRows="False" IsReadOnly="True" AutoGenerateColumns="False" SelectedItem="{Binding SelectedMaterialRecord}" SelectionChanged="DataGrid_SelectionChanged">
-            <DataGrid.Columns>
-                <DataGridTemplateColumn Header="行号">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}},Converter={StaticResource RowIndexConverter}}"/>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-                <DataGridTextColumn Header="材料名称" Binding="{Binding MaterialName}"/>
-                <DataGridTextColumn Header="使用方式"  Binding="{Binding UsageMethod}"/>
-                <DataGridTextColumn Header="项目特征"  Binding="{Binding ProjectFeatures}"/>
-                <DataGridTextColumn Header="工程量"  Binding="{Binding ModelEngineeringQuantity}"/>
-            </DataGrid.Columns>
-        </DataGrid>
-        <StackPanel Orientation="Horizontal" Grid.Row="1" Height="40" HorizontalAlignment="Right">
-            <Border BorderBrush="Gray" BorderThickness="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5,0">
-                <Label Content="属性项:" Width="60" Height="25" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
-            </Border>
-            <ComboBox Width="175" DropDownOpened="ComboBox_DropDownOpened" ItemsSource="{Binding PropertyNames}" 
-                      Height="25" Margin="10,2.5" HorizontalAlignment="Center" VerticalAlignment="Center"
-                      SelectedItem="{Binding SelectedPropertyName}" SelectionChanged="ComboBox_SelectionChanged"/>
-            <Border BorderBrush="Gray" BorderThickness="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5,0">
-                <Label Content="属性值:" Width="60" Height="25" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
-            </Border>
-            <ComboBox Width="175" Height="25" Margin="10,2.5" DropDownOpened="ComboBox_DropDownOpened_1"
-                      ItemsSource="{Binding PropertyValues}" SelectedItem="{Binding SelectedPropertyValue}"/>
-            <Button Content="增加" Width="75" Height="25" Margin="5,2.5" VerticalAlignment="Center" Command="{Binding AddRequiredPropertiesCommand}"/>
-        </StackPanel>
-        <Grid Grid.Row="2" Height="40" HorizontalAlignment="Stretch" VerticalAlignment="Center">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="auto"/>
-                <ColumnDefinition Width="auto"/>
-            </Grid.ColumnDefinitions>
-            <ScrollViewer Grid.Row="3" Template="{StaticResource MyScrollViewer}" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Height="40" Focusable="True">
-                <ItemsControl d:ItemsSource="{d:SampleData}" ItemsSource="{Binding RequiredProperties}" Grid.Row="3" Margin="0" Height="40" VerticalContentAlignment="Bottom">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel Orientation="Horizontal" VerticalAlignment="Top"/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate >
-                        <DataTemplate>
-                            <Border BorderBrush="Gray" BorderThickness="1" Margin="5" Height="20" VerticalAlignment="Center">
-                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding}" Height="15"/>
-                                    <Button Content="×" Style="{StaticResource SimbleButton}" Foreground="Red" Height="25" Width="15" FontSize="7" VerticalAlignment="Top" VerticalContentAlignment="Top" Margin="0,0,2,0" Padding="0"
+        <!-- 标题栏 -->
+        <Border Background="#434C5E" Padding="15,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" Text="材料清单汇总管理系统" 
+                          FontSize="20" FontWeight="Bold" Foreground="White" 
+                          VerticalAlignment="Center"/>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <Button Content="刷新" Style="{StaticResource ActionButtonStyle}"
+                            Background="#A3BE8C" Name="ConnectRevitBtn" Visibility="Hidden"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+        <!-- 主要内容区域 -->
+        <TabControl Grid.Row="1" Margin="10">
+            <!-- 模型工程量清单 -->
+            <TabItem Header="模型工程量清单" Style="{StaticResource TabItemStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="200"/>
+                    </Grid.RowDefinitions>
+                    <!-- 模型工程量清单表格 -->
+                    <DataGrid Grid.Row="0" Style="{StaticResource DataGridStyle}" ItemsSource="{Binding ShowMaterialList}"  EnableRowVirtualization="False"
+                  SelectedItem="{Binding SelectedMaterialRecord}" SelectionChanged="DataGrid_SelectionChanged" Margin="5 5 5 0">
+                        <DataGrid.Columns>
+                            <DataGridTemplateColumn Header="行号" >
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}},Converter={StaticResource RowIndexConverter}}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="材料名称" Binding="{Binding MaterialName}" Width="100"/>
+                            <DataGridTextColumn Header="使用方式"  Binding="{Binding UsageMethod}" Width="100"/>
+                            <DataGridTextColumn Header="项目特征"  Binding="{Binding ProjectFeatures}" Width="300"/>
+                            <DataGridTextColumn Header="模型工程量"  Binding="{Binding ModelEngineeringQuantity}" Width="100"/>
+                            <DataGridTextColumn Header="单位"  Binding="{Binding ModelEngineeringQuantity}" Width="100"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <!-- 操作栏 -->
+                    <Border Grid.Row="1" Background="#F8F9FA"  Margin="5 5 5 0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="4*"/>
+                                <ColumnDefinition Width="2*"/>
+                            </Grid.ColumnDefinitions>
+                            <!--筛选-->
+                            <Border BorderThickness="1" BorderBrush="Gray" CornerRadius="3" Background="#ffffff" Margin="0">
+                                <Grid >
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="* "/>
+                                        <RowDefinition Height="* "/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="5*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Orientation="Horizontal" Height="40" HorizontalAlignment="Stretch">
+                                        <Border BorderBrush="Gray" BorderThickness="0" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5,0">
+                                            <Label Content="属性项:" Width="60" Height="25" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                        </Border>
+                                        <ComboBox Width="175" DropDownOpened="ComboBox_DropDownOpened" ItemsSource="{Binding PropertyNames}" 
+                                             Height="25" Margin="10,2.5" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                             SelectedItem="{Binding SelectedPropertyName}" SelectionChanged="ComboBox_SelectionChanged"/>
+                                        <Border BorderBrush="Gray" BorderThickness="0" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5,0">
+                                            <Label Content="属性值:" Width="60" Height="25" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                        </Border>
+                                        <ComboBox Width="250" Height="25" Margin="10,2.5" DropDownOpened="ComboBox_DropDownOpened_1" ItemsSource="{Binding PropertyValues}" SelectedItem="{Binding SelectedPropertyValue}"/>
+                                    </StackPanel>
+                                    <Button Grid.Column="1" Content="增加" Background="#A3BE8C" HorizontalAlignment="Right" Style="{StaticResource ActionButtonStyle}" Command="{Binding AddRequiredPropertiesCommand}"/>
+                                    <ScrollViewer  Grid.Row="1" Template="{StaticResource MyScrollViewer}" 
+                                                   HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Height="40" Focusable="True">
+                                        <ItemsControl d:ItemsSource="{d:SampleData}" ItemsSource="{Binding RequiredProperties}" Grid.Row="3" Margin="0" Height="40" VerticalContentAlignment="Bottom">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Top"/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate >
+                                                <DataTemplate>
+                                                    <Border BorderBrush="Gray" BorderThickness="1" Margin="5" Height="23" CornerRadius="3" VerticalAlignment="Center">
+                                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding}" Height="15" VerticalAlignment="Center" Margin="10 0 0 2"/>
+                                                            <Button Content="×" Style="{StaticResource SimbleButton}" Foreground="Red" Height="25" Width="15" FontSize="10" VerticalAlignment="Top" VerticalContentAlignment="Top" Margin="5,0,2,0" Padding="0"
                                         Command="{Binding DataContext.DeleteRequiredPropertyCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                         CommandParameter="{Binding}" />
-                                </StackPanel>
+                                                        </StackPanel>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
+                                    <Grid Grid.Row="1" Grid.Column="1" Height="40" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="auto"/>
+                                            <ColumnDefinition Width="auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Button Grid.Row="1" Grid.Column="0" Content="确定" Background="#A3BE8C" Style="{StaticResource ActionButtonStyle}" Command="{Binding OKWitheRequiredPropertiesCommand}" />
+                                        <Button Grid.Row="1" Grid.Column="1" Content="清除" Background="#A3BE8C" Style="{StaticResource ActionButtonStyle}" Command="{Binding DeleteRequiredPropertiesCommand}"/>
+                                    </Grid>
+                                </Grid>
                             </Border>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </ScrollViewer>
-            <Button Grid.Column="1" Content="确定" Width="75" Height="25" Margin="10,2.5"  Command="{Binding OKWitheRequiredPropertiesCommand}" />
-            <Button Grid.Column="2" Content="清除" Width="75" Height="25" Margin="5,2.5"  Command="{Binding DeleteRequiredPropertiesCommand}"/>
-        </Grid>
-        <DataGrid Grid.Row="3" ItemsSource="{Binding ShowAssemblyList}" 
-                  EnableRowVirtualization="False"  CanUserAddRows="False" 
-                  IsReadOnly="True" AutoGenerateColumns="False" SelectedItem="{Binding SelectedAssemblyRecord}"
-                  MouseDoubleClick="DataGrid_MouseDoubleClick">
-            <DataGrid.Columns>
-                <DataGridTemplateColumn Header="行号">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}},Converter={StaticResource RowIndexConverter}}"/>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-                <DataGridTextColumn Header="构件名称" Binding="{Binding AssemblyName}"/>
-                <DataGridTextColumn Header="所属模型" Binding="{Binding Modelbelonging}"/>
-                <DataGridTextColumn Header="构件ID" Binding="{Binding AssemblyID}"/>
-            </DataGrid.Columns>
-        </DataGrid>
-        <Grid  Grid.Row="4"  Height="40">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="auto"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-            <Button Content="模型中选中" Width="100" Height="20" Margin="10,0,0,0"  Visibility="Collapsed"/>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Column="1" VerticalAlignment="Center">
-                <Button Content="导出Excel" Width="70" Height="30" Margin="10,0,0,0" Command="{Binding ExportExcelCommand}"/>
-                <Button Content="取消" Width="70" Height="30" Margin="10,0,10,0" Click="Button_Click"/>
-            </StackPanel>
-        </Grid>
+
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                                <Button Content="取消" Style="{StaticResource ActionButtonStyle}" Name="ConfigMappingBtn" Click="Button_Click"/>
+                                <Button Content="导出报告" Style="{StaticResource ActionButtonStyle}"  Command="{Binding ExportExcelCommand}"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                    <!--附加表格-->
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <!--构件细项-->
+                        <Border Style="{StaticResource MappingPanelStyle}" Background="#fdfdfe">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <StackPanel Grid.Row="0" Orientation="Horizontal">
+                                    <TextBlock Text="构件细项" Style="{StaticResource HeaderTextStyle}"/>
+                                </StackPanel>
+                                <DataGrid Grid.Row="1" ItemsSource="{Binding ShowAssemblyList}" Style="{StaticResource DataGridStyle}"
+                             SelectedItem="{Binding SelectedAssemblyRecord}"
+                             MouseDoubleClick="DataGrid_MouseDoubleClick">
+                                    <DataGrid.Columns>
+                                        <DataGridTemplateColumn Header="行号">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}},Converter={StaticResource RowIndexConverter}}"/>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                        <DataGridTextColumn Header="构件名称" Binding="{Binding AssemblyName}"/>
+                                        <DataGridTextColumn Header="所属模型" Binding="{Binding Modelbelonging}"/>
+                                        <DataGridTextColumn Header="构件ID" Binding="{Binding AssemblyID}"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </Grid>
+                        </Border>
+                        <!--未匹配的项-->
+                        <Border Style="{StaticResource MappingPanelStyle}" Background="#fdfdfe" Grid.Column="1">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <StackPanel Grid.Row="0" Orientation="Horizontal">
+                                    <TextBlock Text="未匹配的项目" Style="{StaticResource HeaderTextStyle}"/>
+                                    <TextBlock Text="(需要手动处理)" Foreground="Red" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <DataGrid Grid.Row="1" x:Name="UnmatchedAssemblyDataGrid" ItemsSource="{Binding UnmatchedAssemblyList}" Style="{StaticResource DataGridStyle}" SelectedItem="{Binding SelectedUnMatchedAssemblyRecord}" MouseDoubleClick="DataGrid_MouseDoubleClick">
+                                    <DataGrid.Columns>
+                                        <DataGridTemplateColumn Header="行号">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}},Converter={StaticResource RowIndexConverter}}"/>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                        <DataGridTextColumn Header="构件名称" Binding="{Binding AssemblyName}"/>
+                                        <DataGridTextColumn Header="所属模型" Binding="{Binding Modelbelonging}"/>
+                                        <DataGridTextColumn Header="构件ID" Binding="{Binding AssemblyID}"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </TabItem>
+            <TabItem Header="工程量清单"/>
+            <TabItem Header="采购工程量清单"/>
+        </TabControl>
     </Grid>
 </Window>

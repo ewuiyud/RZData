@@ -25,7 +25,9 @@ namespace RZData.ViewModels
         private ObservableCollection<MaterialViewModel> _showMaterialList;
         private MaterialViewModel _selectedMaterialRecord;
         private ObservableCollection<AssemblyViewModel> _showAssemblyList;
+        private ObservableCollection<AssemblyViewModel> _unmatchedAssemblyList;
         private AssemblyViewModel _selectedAssemblyRecord;
+        private AssemblyViewModel _selectedUnMatchedAssemblyRecord;
         private ObservableCollection<string> _propertyNames;
         private ObservableCollection<string> _propertyValues;
         private string _selectedPropertyName;
@@ -53,10 +55,26 @@ namespace RZData.ViewModels
             get => _selectedAssemblyRecord;
             set => SetProperty(ref _selectedAssemblyRecord, value);
         }
+        public AssemblyViewModel SelectedUnMatchedAssemblyRecord
+        {
+            get => _selectedUnMatchedAssemblyRecord;
+            set => SetProperty(ref _selectedUnMatchedAssemblyRecord, value);
+        }
+        /// <summary>
+        /// 构件细项表绑定数据
+        /// </summary>
         public ObservableCollection<AssemblyViewModel> ShowAssemblyList
         {
             get => _showAssemblyList;
             set => SetProperty(ref _showAssemblyList, value);
+        }
+        /// <summary>
+        /// 未匹配元素表绑定数据
+        /// </summary>
+        public ObservableCollection<AssemblyViewModel> UnmatchedAssemblyList
+        {
+            get => _unmatchedAssemblyList;
+            set => SetProperty(ref _unmatchedAssemblyList, value);
         }
         public ObservableCollection<string> PropertyNames
         {
@@ -97,6 +115,7 @@ namespace RZData.ViewModels
             AllMaterialList = new ObservableCollection<MaterialViewModel>();
             ShowMaterialList = new ObservableCollection<MaterialViewModel>();
             ShowAssemblyList = new ObservableCollection<AssemblyViewModel>();
+            UnmatchedAssemblyList = new ObservableCollection<AssemblyViewModel>();
             PropertyNames = new ObservableCollection<string>();
             PropertyValues = new ObservableCollection<string>();
             RequiredProperties = new ObservableCollection<(string, string)>();
@@ -257,6 +276,16 @@ namespace RZData.ViewModels
                         result.Add(materialRecord);
                     }
                 }
+                else
+                {
+                    var element = UiDocument.Document.GetElement(new ElementId(revitSolidElement.ID));
+                    UnmatchedAssemblyList.Add(new AssemblyViewModel()
+                    {
+                        AssemblyID = element.Id.ToString(),
+                        AssemblyName = element.LookupParameter("族与类型").AsValueString(),
+                        Modelbelonging = element.Document == UiDocument.Document ? "当前模型" : "链接模型"
+                    });
+                }
             }
             return result;
         }
@@ -320,7 +349,6 @@ namespace RZData.ViewModels
             }
             return (prefix.Substring(2), ExplainString(suffix, revitSolidElement));
         }
-
         // 转换方法
         string GetModelEngineeringQuantityValue(string valueName, RevitSolidElement revitSolidElement)
         {
@@ -516,7 +544,6 @@ namespace RZData.ViewModels
             regexPattern = $"^{regexPattern}$";
             return Regex.IsMatch(input, regexPattern);
         }
-
         internal void GetAssemblyList()
         {
             try
@@ -539,7 +566,6 @@ namespace RZData.ViewModels
                 TaskDialog.Show("错误信息", ex.Message);
             }
         }
-
         internal void PropertyNameDroped()
         {
             try
@@ -563,7 +589,6 @@ namespace RZData.ViewModels
                 TaskDialog.Show("错误信息", ex.Message);
             }
         }
-
         internal void PropertyValueDroped()
         {
             try
@@ -617,14 +642,23 @@ namespace RZData.ViewModels
             if (RequiredProperties.Contains(parameter))
                 RequiredProperties.Remove(parameter);
         }
-        internal void DoubleClickAndPickObjects()
+        internal void DoubleClickAndPickObjects(bool selectAssemblyElement = true)
         {
             try
             {
+                int id;
+                if (selectAssemblyElement)
+                {
+                    id = int.Parse(SelectedAssemblyRecord.AssemblyID);
+                }
+                else
+                {
+                    id = int.Parse(SelectedUnMatchedAssemblyRecord.AssemblyID);
+                }
                 var uidoc = UiDocument;
                 var elementIds = new List<ElementId>
                 {
-                    new ElementId(int.Parse(SelectedAssemblyRecord.AssemblyID))
+                    new ElementId(id)
                 };
                 uidoc.Selection.SetElementIds(elementIds);
             }
