@@ -247,8 +247,8 @@ namespace RZData.ViewModels
                     {
                         materialRecord.UsageMethod = ExplainString(record.UsageLocation, revitSolidElement);
                     }
-                    materialRecord.ProjectFeaturesDetail = ExplainProjectFeatures(
-                        record.ProjectCharacteristics, revitSolidElement);
+                    materialRecord.ProjectFeatures = ExplainString(record.ProjectCharacteristics, revitSolidElement);
+                    materialRecord.ProjectFeaturesDetail = ExplainProjectFeatures(materialRecord.ProjectFeatures);
                     if (!string.IsNullOrEmpty(record.Unit))
                     {
                         materialRecord.ModelEngineeringUnit = record.Unit;
@@ -344,16 +344,16 @@ namespace RZData.ViewModels
             }
             return null;
         }
-        (string, string) ExplainCodeProperty(string input, RevitSolidElement revitSolidElement)
+        (string, string) ExplainCodeProperty(string input)
         {
             string temp = input;
+            if (!temp.Contains('：'))
+            {
+                return (null,null);
+            }
             string prefix = temp.Split('：')[0];
             string suffix = temp.Split('：')[1];
-            if (!suffix.Contains("《"))
-            {
-                return (prefix.Substring(2), suffix);
-            }
-            return (prefix.Substring(2), ExplainStringOld(suffix, revitSolidElement));
+            return (prefix.Substring(2), suffix);
         }
         // 转换方法
         string GetModelEngineeringQuantityValue(string valueName, RevitSolidElement revitSolidElement)
@@ -439,50 +439,7 @@ namespace RZData.ViewModels
 
             return result;
         }
-        /// <summary>
-        /// 旧的解释字符串的方法，保留以便兼容旧数据，待下次更新删除
-        /// </summary>
-        /// <param name="input"></param>
-        /// <param name="revitSolidElement"></param>
-        /// <returns></returns>
-        /// <exception cref="Exception"></exception>
-        string ExplainStringOld(string input, RevitSolidElement revitSolidElement)
-        {
-            var dictionary = ExcelDataService.ExcelPropertyDic;
-            if (!input.Contains("《"))
-            {
-                return input;
-            }
-            int startIndex = input.IndexOf("《");
-            int endIndex = input.IndexOf("》");
-            string key = input.Substring(startIndex + 1, endIndex - startIndex - 1);
-            if (dictionary.Keys.Contains(key))
-            {
-                var tDCName = dictionary[key];
-                if (tDCName == "TDC-元素分类名称")
-                {
-                    return revitSolidElement.ElementName;
-                }
-                else
-                {
-                    var p = revitSolidElement.Parameters.FirstOrDefault(a => a.TDCName == tDCName);
-                    if (p != null)
-                    {
-                        return p.Value;
-                    }
-                    else
-                    {
-                        return "未识别属性，请检查模板对应词条";
-                    }
-                }
-            }
-            else
-            {
-                TaskDialog.Show("错误信息", $"需要匹配的项目特征：{input}， 不合法");
-                throw new Exception($"需要匹配的项目特征：{input}， 不合法。");
-            }
-        }
-        Dictionary<string, string> ExplainProjectFeatures(string input, RevitSolidElement revitSolidElement)
+        Dictionary<string, string> ExplainProjectFeatures(string input)
         {
             var result = new Dictionary<string, string>();
             if (string.IsNullOrEmpty(input))
@@ -492,7 +449,12 @@ namespace RZData.ViewModels
             var features = input.Split('\n');
             foreach (var feature in features)
             {
-                var temp = ExplainCodeProperty(feature, revitSolidElement);
+                var temp = ExplainCodeProperty(feature);
+                //对于不包含‘：’的字符串，返回结果为（null,null），不做处理
+                if (temp.Item1==null)
+                {
+                    continue;
+                }
                 result.Add(temp.Item1, temp.Item2);
             }
             return result;

@@ -258,12 +258,7 @@ namespace RZData.Services
                             index++;
                             worksheet.Cells[row, 2].Value = material.MaterialName;
                             worksheet.Cells[row, 3].Value = material.UsageMethod;
-                            string projectFeatures = "";
-                            foreach (var item in material.ProjectFeaturesDetail)
-                            {
-                                projectFeatures += $"{item.Key}:{item.Value}\t\n";
-                            }
-                            worksheet.Cells[row, 4].Value = projectFeatures.Remove(projectFeatures.Length - 2);
+                            worksheet.Cells[row, 4].Value = material.ProjectFeatures;
                             worksheet.Cells[row, 5].Value = material.ModelEngineeringQuantity;
                             worksheet.Cells[row, 6].Value = material.ModelEngineeringUnit;
                             row++;

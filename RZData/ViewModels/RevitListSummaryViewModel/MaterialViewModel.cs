@@ -37,20 +37,7 @@ namespace RZData.ViewModels
         /// <summary>
         /// 项目特征
         /// </summary>
-        public string ProjectFeatures
-        {
-            get
-            {
-                string result = "";
-                int index = 1;
-                foreach (var item in ProjectFeaturesDetail)
-                {
-                    result += $"{index}、{item.Key}:{item.Value}\n";
-                    index++;
-                }
-                return result;
-            }
-        }
+        public string ProjectFeatures { get; set; }
         /// <summary>
         /// 项目特征具体数据
         /// </summary>

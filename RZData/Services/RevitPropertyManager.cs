@@ -36,7 +36,7 @@ namespace RZData.Services
                     Dictionary<string, List<string>> addedParameters = new Dictionary<string, List<string>>();
                     foreach (var data in familyData)
                     {
-                        CreateProjectParameter(_uIDocument, "cailia", BuiltInCategory.OST_Walls, ParameterType.Text);
+                        CreateProjectParameter(_uIDocument, data, ParameterType.Text);
                     }
 
                     trans.Commit();
@@ -49,7 +49,6 @@ namespace RZData.Services
             }
         }
 
-
         /// <summary>
         /// 为指定类型的元素创建项目参数
         /// </summary>
@@ -58,13 +57,16 @@ namespace RZData.Services
         /// <param name="builtInCategory">指定元素的类别</param>
         /// <param name="parameterType">参数类型</param>
         public void CreateProjectParameter(
-            UIDocument uidoc,
-            string parameterName,
-            BuiltInCategory builtInCategory,
-            ParameterType parameterType)
+            UIDocument uidoc, InsetParameterData data,
+            ParameterType parameterType = ParameterType.Text)
         {
             Document doc = uidoc.Document;
             Autodesk.Revit.ApplicationServices.Application app = uidoc.Application.Application;
+            string parameterName = data.ParameterName;
+            // 先检查是否所有类别都存在
+            var systemCategories = doc.Settings.Categories;
+            data.CategoryNames.ForEach(a => { });
+
             // 1.
             string filePath = "MySharedParameterFile.txt";
             FileStream fs = File.Create(filePath);
@@ -85,17 +87,30 @@ namespace RZData.Services
 
             // 5.
             CategorySet categories = app.Create.NewCategorySet();
-            Category category = doc.Settings.Categories.get_Item(builtInCategory);
-            categories.Insert(category);
+            data.CategoryNames.ForEach(a =>
+            {
+                if (systemCategories.Contains(a))
+                {
+                    categories.Insert(systemCategories.get_Item(a));
+                }
+                else
+                {
 
-            // 6. 
-            ElementBinding binding = app.Create.NewInstanceBinding(categories); //  new InstanceBinding(categories);
-                                                                                //ElementBinding binding = app.Create.NewTypeBinding(categories);
+                }
+            });
+
+            // 6.
+            if (categories.IsEmpty)
+            {
+                return;
+            }
+            ElementBinding binding = app.Create.NewInstanceBinding(categories);
+            //  new InstanceBinding(categories);
+            //ElementBinding binding = app.Create.NewTypeBinding(categories);
 
             // 7. 项目参数绑定
             BindingMap bingingMap = doc.ParameterBindings;
             bingingMap.Insert(definition, binding);
-
             doc.Regenerate();
 
             //definitionFile.Dispose();

@@ -32,7 +32,7 @@ namespace RZData.ViewModels
             this.UiDocument = _uiDocument;
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
             AllSolidElements = new ObservableCollection<RevitSolidElement>();
-            RevitTemplateLoadViewModel = new RevitTemplateLoadViewModel();
+            RevitTemplateLoadViewModel = new RevitTemplateLoadViewModel(UiDocument);
             this.Reset();
         }
 

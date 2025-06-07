@@ -107,6 +107,11 @@ namespace RZData.Services
 
             foreach (var element in elements)
             {
+                //若符合过滤规则，直接跳过
+                if (SelectiveFiltering(element))
+                {
+                    continue;
+                }
                 if (familyList.Contains(element.GetFamilyCategory()))
                 {
                     if (element is FamilyInstance familyInstance)
@@ -125,12 +130,32 @@ namespace RZData.Services
             }
             return AllSolidElements;
         }
+        /// <summary>
+        /// 过滤掉部分指定的元素
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns></returns>
+        public bool SelectiveFiltering(Element element)
+        {
+            string category = element.GetFamilyCategory();
+            string family = element.GetFamilyName();
+            Dictionary<string, List<string>> filterList = new Dictionary<string, List<string>>
+            {
+                {"墙",new List<string>{"幕墙" } },
+                {"幕墙嵌板",new List<string>{"空系统嵌板"} }
+            };
+            if (category != null && filterList.Keys.Contains(category))
+            {
+                return filterList[category].Contains(family);
+            }
+            return false;
+        }
         public void ProcessNonFamilyInstance(List<ExcelFamilyRecord> systemFamilyDictionary,
             Document document, Element element, RevitSolidElement revitSolidElement)
         {
             var extendName = element.GetExtendName();
             var typeNames = systemFamilyDictionary.FindAll(a => CheckRecordExtendName(a, document, element)).ToList();
-            if (typeNames.Count() == 0 || !typeNames.Exists(a => a.FamilyName == element.GetFamilyName()))
+            if (typeNames.Count() == 0 || !typeNames.Exists(a => a.FamilyName == element.GetFamilyName() && a.FamilyCategory == element.GetFamilyCategory()))
             {
                 revitSolidElement.IsNameCorrect = false;
             }
@@ -146,14 +171,15 @@ namespace RZData.Services
             Document document, Element element, RevitSolidElement revitSolidElement)
         {
             var typeName = element.GetFamilyName();
-            var record = loadableFamilyDictionary.FirstOrDefault(a => typeName.StartsWith(a.FamilyName.Substring(0, a.FamilyName.Length - 1)));
-            if (record == null || element.GetFamilyCategory() != record.FamilyCategory)
+            var typeNames = loadableFamilyDictionary.FindAll(a => typeName.StartsWith(a.FamilyName.Substring(0, a.FamilyName.Length - 1))).ToList();
+            if (typeNames.Count() == 0 || !typeNames.Exists(a => element.GetFamilyCategory() == a.FamilyCategory))
             {
                 revitSolidElement.IsNameCorrect = false;
             }
             else
             {
                 revitSolidElement.IsNameCorrect = true;
+                var record = typeNames.First(a => a.FamilyCategory == element.GetFamilyCategory());
                 revitSolidElement.ElementName = record.ElementName;
                 CheckParameters(record, document, element, revitSolidElement);
             }
@@ -207,13 +233,11 @@ namespace RZData.Services
             foreach (var propertyName in excelRecord.RequiredProperties)
             {
                 var parameter = element.LookupParameter(propertyName.Value) ?? familyElement?.LookupParameter(propertyName.Value);
-                revitSolidElement.Parameters.Add(new ParameterVM
-                {
-                    Name = propertyName.Value,
-                    TDCName = propertyName.Key,
-                    Value = parameter != null ? parameter.GetValue() : "缺失",
-                    ValueType = parameter != null ? (parameter.Element.Id == element.Id ? "实例参数" : "类型参数") : ""
-                });
+                var name = propertyName.Value;
+                var value = parameter != null ? parameter.GetValue() : "缺失";
+                var tdcName = propertyName.Key;
+                var type = parameter != null ? (parameter.Element.Id == element.Id ? "实例参数" : "类型参数") : "";
+                revitSolidElement.Parameters.Add(new ParameterVM(name, value, tdcName, type));
             }
             revitSolidElement.IsPropertiesCorrect = revitSolidElement.Parameters.All(p => p.Value != "缺失");
             return revitSolidElement.IsPropertiesCorrect;
