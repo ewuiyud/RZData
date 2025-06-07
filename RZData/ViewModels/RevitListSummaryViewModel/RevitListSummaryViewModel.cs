@@ -243,10 +243,9 @@ namespace RZData.ViewModels
                     {
                         materialRecord.ID = record.ID;
                     }
-                    if (record.UsageLocation.Count() > 5)
+                    if (!string.IsNullOrEmpty(record.UsageLocation))
                     {
-                        var input = record.UsageLocation.Split('：')[1];
-                        materialRecord.UsageMethod = ExplainString(input, revitSolidElement) + "使用";
+                        materialRecord.UsageMethod = ExplainString(record.UsageLocation, revitSolidElement);
                     }
                     materialRecord.ProjectFeaturesDetail = ExplainProjectFeatures(
                         record.ProjectCharacteristics, revitSolidElement);
@@ -256,10 +255,17 @@ namespace RZData.ViewModels
                     }
                     if (!string.IsNullOrEmpty(record.Quantity))
                     {
-                        materialRecord.ModelEngineeringQuantity += DataMatchTool.Evaluate(record.Quantity, (string valueName) =>
+                        var mqStr = ExplainString(record.Quantity, revitSolidElement);
+                        try
                         {
-                            return GetModelEngineeringQuantityValue(valueName, revitSolidElement);
-                        });
+                            // 使用DataTable的Compute方法计算表达式
+                            double mq = Convert.ToDouble(new System.Data.DataTable().Compute(mqStr, null));
+                            materialRecord.ModelEngineeringQuantity += mq;
+                        }
+                        catch (Exception ex)
+                        {
+                            TaskDialog.Show("警告", $"表达式计算失败: {mqStr}\t\n错误详情:{ex}");
+                        }
                     }
                     var m = result.FirstOrDefault(
                         a => a.MaterialName == materialRecord.MaterialName
@@ -283,7 +289,7 @@ namespace RZData.ViewModels
                     {
                         AssemblyID = element.Id.ToString(),
                         AssemblyName = element.LookupParameter("族与类型").AsValueString(),
-                        Modelbelonging = element.Document == UiDocument.Document ? "当前模型" : "链接模型"
+                        //Modelbelonging = element.Document == UiDocument.Document ? "当前模型" : "链接模型"
                     });
                 }
             }
@@ -347,7 +353,7 @@ namespace RZData.ViewModels
             {
                 return (prefix.Substring(2), suffix);
             }
-            return (prefix.Substring(2), ExplainString(suffix, revitSolidElement));
+            return (prefix.Substring(2), ExplainStringOld(suffix, revitSolidElement));
         }
         // 转换方法
         string GetModelEngineeringQuantityValue(string valueName, RevitSolidElement revitSolidElement)
@@ -362,12 +368,6 @@ namespace RZData.ViewModels
                 return "1";
             }
 
-            var p = revitSolidElement.Parameters.FirstOrDefault(a => a.TDCName == valueName);
-            if (p != null)
-            {
-                return p.Value;
-            }
-
             var doc = UiDocument.Document;
             Element element = doc.GetElement(new ElementId(revitSolidElement.ID));
             var result = element.GetElementValue(doc, valueName);
@@ -378,7 +378,75 @@ namespace RZData.ViewModels
 
             return "0";
         }
-        string ExplainString(string input, RevitSolidElement revitSolidElement)
+        /// <summary>
+        /// 新的解释字符串的方法，旧的方法应该在下次更新中删除
+        ///1. 字符串中《xx》包裹的内容为查询值，可以从定义好的dictionary中查询对应的值；
+        ///2. 字符传中((xx))包裹的内容为固定字符串，直接保留；
+        ///3. 字符串[[xx]]包裹的内容为Revit中的元素参数；
+        ///4. 字符串中%%xx%%包裹的内容为注释，直接忽略掉。
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="revitSolidElement"></param>
+        /// <returns></returns>
+        internal string ExplainString(string input, RevitSolidElement revitSolidElement)
+        {
+            if (string.IsNullOrEmpty(input))
+                return string.Empty;
+
+            string result = input;
+            var dictionary = ExcelDataService.ExcelPropertyDic;
+            // 1. 处理《xx》格式 - 字典查询
+            result = Regex.Replace(result, @"《([^》]+)》", match =>
+            {
+                string key = match.Groups[1].Value;
+                if (!dictionary.ContainsKey(key))
+                {
+                    return $"未在属性列表中找到对应的属性id{input}";
+                }
+                var tDCName = dictionary[key];
+                if (tDCName == "TDC-元素分类名称")
+                {
+                    return revitSolidElement.ElementName;
+                }
+                else
+                {
+                    var p = revitSolidElement.Parameters.FirstOrDefault(a => a.TDCName == tDCName);
+                    if (p != null)
+                    {
+                        return p.Value;
+                    }
+                    else
+                    {
+                        return $"不存在的属性项：{tDCName}";
+                    }
+                }
+            });
+
+            // 2. 处理((xx))格式 - 固定字符串，去掉括号
+            result = Regex.Replace(result, @"\(\(([^)]+)\)\)", match =>
+            {
+                return match.Groups[1].Value;
+            });
+
+            //3.处理[[xx]]格式 - Revit中的元素参数；
+            result = Regex.Replace(result, @"\[\[([^)]+)\]\]", match =>
+            {
+                return GetModelEngineeringQuantityValue(match.Groups[1].Value, revitSolidElement);
+            });
+
+            // 4. 处理%%xx%%格式 - 注释，直接移除
+            result = Regex.Replace(result, @"%%[^%]*%%", "");
+
+            return result;
+        }
+        /// <summary>
+        /// 旧的解释字符串的方法，保留以便兼容旧数据，待下次更新删除
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="revitSolidElement"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        string ExplainStringOld(string input, RevitSolidElement revitSolidElement)
         {
             var dictionary = ExcelDataService.ExcelPropertyDic;
             if (!input.Contains("《"))
@@ -557,7 +625,7 @@ namespace RZData.ViewModels
                         {
                             AssemblyID = element.Id.ToString(),
                             AssemblyName = element.LookupParameter("族与类型").AsValueString(),
-                            Modelbelonging = element.Document == UiDocument.Document ? "当前模型" : "链接模型"
+                            //Modelbelonging = element.Document == UiDocument.Document ? "当前模型" : "链接模型"
                         });
                     }
             }

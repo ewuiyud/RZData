@@ -17,7 +17,7 @@ namespace RZData.ViewModels
         /// <summary>
         /// 所属模型
         /// </summary>
-        public string Modelbelonging { get; set; }
+        //public string Modelbelonging { get; set; }
 
         /// <summary>
         /// 构件ID
