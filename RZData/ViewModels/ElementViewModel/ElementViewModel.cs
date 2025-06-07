@@ -47,48 +47,44 @@ namespace RZData.ViewModels
                 {
                     Name = revitSolidElement.ID,
                     Parameters = revitSolidElement.Parameters,
-                    Parent = existingFamily
                 };
                 existingFamily.ElementInstances.Add(newElementInstance);
                 existingElementInstance = newElementInstance;
             }
 
-            //如果是系统族，需要添加族拓展名称
-            if (revitSolidElement.RevitElementFamilyType == RevitElementFamilyType.SystemFamilyElement)
+            var existingExtend = existingFamily.FamilyExtends.
+                FirstOrDefault(e => e.Name == revitSolidElement.ExtendName);
+            if (existingExtend == null)
             {
-                var existingExtend = existingFamily.FamilyExtends.
-                    FirstOrDefault(e => e.Name == revitSolidElement.ExtendName);
-                if (existingExtend == null)
-                {
-                    var newExtend = new FamilyExtendViewModel { Name = revitSolidElement.ExtendName };
-                    existingFamily.FamilyExtends.Add(newExtend);
-                    existingExtend = newExtend;
-                }
-                if (!existingExtend.ElementInstances.Contains(existingElementInstance))
-                {
-                    existingExtend.ElementInstances.Add(existingElementInstance);
-                    existingElementInstance.Parent = existingExtend;
-                }
-                if (!existingExtend.IDs.Contains(revitSolidElement.ID)) existingExtend.IDs.Add(revitSolidElement.ID);
+                var newExtend = new FamilyExtendViewModel { Name = revitSolidElement.ExtendName, Parent = existingFamily };
+                existingFamily.FamilyExtends.Add(newExtend);
+                existingExtend = newExtend;
+            }
+            if (!existingExtend.ElementInstances.Contains(existingElementInstance))
+            {
+                existingExtend.ElementInstances.Add(existingElementInstance);
+                existingElementInstance.Parent = existingExtend;
+            }
+            if (!existingExtend.IDs.Contains(revitSolidElement.ID)) existingExtend.IDs.Add(revitSolidElement.ID);
 
-                //将族中的参数添加到族中
-                foreach (var item in revitSolidElement.Parameters)
+            //将族中的参数添加到族中
+            foreach (var item in revitSolidElement.Parameters)
+            {
+                var existingParameter = existingExtend.Parameters.FirstOrDefault(p => p.Name == item.Name);
+                if (existingParameter == null)
                 {
-                    var existingParameter = existingExtend.Parameters.FirstOrDefault(p => p.Name == item.Name);
-                    if (existingParameter == null)
-                    {
-                        var newParameter = new ParameterSetVM(item);
-                        existingExtend.Parameters.Add(newParameter);
-                    }
-                    else
-                    {
-                        //如果已经存在，需要判断是否已经添加过
-                        if (!existingParameter.Parameters.Contains(item))
-                            existingParameter.Parameters.Add(item);
-                    }
+                    var newParameter = new ParameterSetVM(item);
+                    existingExtend.Parameters.Add(newParameter);
+                }
+                else
+                {
+                    //如果已经存在，需要判断是否已经添加过
+                    if (!existingParameter.Parameters.Contains(item))
+                        existingParameter.Parameters.Add(item);
                 }
             }
-            else
+
+            if (revitSolidElement.RevitElementFamilyType != RevitElementFamilyType.SystemFamilyElement)
             {             //将族中的参数添加到族中
                 foreach (var item in revitSolidElement.Parameters)
                 {

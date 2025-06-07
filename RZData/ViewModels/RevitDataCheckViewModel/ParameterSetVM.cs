@@ -8,6 +8,7 @@ namespace RZData.ViewModels
     {
         private string _value;
         private string _status;
+        private bool _isModified;
         public string Name { get; set; }
         private ObservableCollection<string> Values { get; set; }
         public ObservableCollection<ParameterVM> Parameters { get; set; }
@@ -17,6 +18,7 @@ namespace RZData.ViewModels
             Values = new ObservableCollection<string>();
             Parameters = new ObservableCollection<ParameterVM>();
             Parameters.CollectionChanged += Parameters_CollectionChanged;
+            IsModified = false;
         }
 
         public ParameterSetVM(ParameterVM parameter)
@@ -31,6 +33,7 @@ namespace RZData.ViewModels
             ValueType = parameter.ValueType;
             Parameters.CollectionChanged += Parameters_CollectionChanged;
             UpdateValues();
+            IsModified = false;
         }
 
         private void Parameters_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -51,6 +54,7 @@ namespace RZData.ViewModels
                 }
             }
             UpdateValues();
+            IsModified = false;
         }
         private void Parameter_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
@@ -80,9 +84,20 @@ namespace RZData.ViewModels
                 Status = "";
                 Value = Values[0];
             }
+            IsModified = false;
         }
         public string Status { get => _status; set => SetProperty(ref _status, value); }
-        public string Value { get => _value; set => SetProperty(ref _value, value); }
+        public string Value
+        {
+            get => _value;
+            set
+            {
+                IsModified = true;
+                SetProperty(ref _value, value);
+            }
+        }
+        public bool IsModified { get => _isModified; set => SetProperty(ref _isModified, value); }
+
         public string ShowValue
         {
             get

@@ -46,18 +46,7 @@ namespace RZData.Views
             var source = item.ItemsSource;
             if (item != null)
             {
-                if (item.ItemsSource == null|| item.Items.Count == 0)
-                {
-                    if (item.DataContext is FamilyExtendViewModel familyExtendViewModel)
-                    {
-                        item.ItemsSource = familyExtendViewModel.ElementInstances;
-                    }
-                    else if (item.DataContext is FamilyViewModel familyViewModel)
-                    {
-                        item.ItemsSource = familyViewModel.ElementInstances;
-                    }
-                }
-                else
+                if (!(item.DataContext is FamilyExtendViewModel familyExtendViewModel))
                 {
                     item.IsExpanded = true;
                 }

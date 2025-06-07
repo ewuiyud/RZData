@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.UI;
 using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.Collections.Generic;
@@ -25,17 +26,28 @@ namespace RZData.ViewModels
         public List<ParameterSetVM> Parameters { get; set; }
         private ObservableCollection<FamilyExtendViewModel> familyExtends;
         public ObservableCollection<FamilyExtendViewModel> FamilyExtends { get => familyExtends; set => SetProperty(ref familyExtends, value); }
-
-        internal void ReloadParameter(Document document)
+        internal void ResetParameter(Document document, ParameterSetVM parameter)
         {
-            foreach (var ElementInstance in ElementInstances)
+            var name = parameter.Name; var value = parameter.Value;
+            //修改所有拓展类型的参数
+            foreach (var familyExtend in FamilyExtends)
             {
-                ElementInstance.ReloadParameter(document);
+                var p = familyExtend.Parameters.FirstOrDefault(a => a.Name == name);
+                if (p != null)
+                {
+                    p.Value = value;
+                    p.IsModified = false;
+                }
+                familyExtend.ResetParameter(document, parameter);
+                parameter.IsModified = false;
             }
-            MergeParameters();
         }
-        internal void MergeParameters()
+        public void MergeParameters()
         {
+            if (Parameters.Count == 0)
+            {
+                return;
+            }
             Parameters.Clear();
             foreach (var ElementInstance in ElementInstances)
             {

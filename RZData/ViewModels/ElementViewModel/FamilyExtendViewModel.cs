@@ -15,18 +15,23 @@ namespace RZData.ViewModels
             ElementInstances = new ObservableCollection<ElementInstanceViewModel>();
             Parameters = new List<ParameterSetVM>();
         }
+        public FamilyViewModel Parent { get; set; }
         public string Name { get; set; }
         public List<int> IDs { get; set; }
         public ObservableCollection<ElementInstanceViewModel> ElementInstances { get; set; }
         public List<ParameterSetVM> Parameters { get; set; }
-
-        internal void ReloadParameter(Document document)
+        internal void ResetParameter(Document document, ParameterSetVM parameter)
         {
+            var name = parameter.Name; var value = parameter.Value;
             foreach (var ElementInstance in ElementInstances)
             {
-                ElementInstance.ReloadParameter(document);
+                var p = ElementInstance.Parameters.FirstOrDefault(a => a.Name == name);
+                if (p != null)
+                {
+                    p.Value = value;
+                    p.IsModified = false;
+                }
             }
-            MergeParameters();
         }
         internal void MergeParameters()
         {

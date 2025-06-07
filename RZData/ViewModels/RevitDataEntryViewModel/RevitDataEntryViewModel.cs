@@ -157,51 +157,54 @@ namespace RZData.ViewModels
                 {
                     foreach (var parameter in familyExtend.Parameters)
                     {
-                        if (parameter.Value != null && !parameter.Value.StartsWith("["))
+                        if (parameter.IsModified)
                         {
                             await CustomHandler.Run(a =>
                             {
                                 SetParameter(a.ActiveUIDocument, parameter, familyExtend.IDs);
                             });
+                            familyExtend.ResetParameter(UiDocument.Document, parameter);
+                            familyExtend.Parent.MergeParameters();
+                            parameter.IsModified = false;
                         }
                     }
-                    familyExtend.ReloadParameter(UiDocument.Document);
                 }
                 else if (SelectedItem is FamilyViewModel family)
                 {
+                    //对系统族直接跳过操作
+                    if (family.Parameters.Count == 0)
+                    {
+                        return;
+                    }
+                    //对载入族进行操作
                     foreach (var parameter in family.Parameters)
                     {
-                        if (parameter.Value != null && !parameter.Value.StartsWith("["))
+                        if (parameter.IsModified)
                         {
                             await CustomHandler.Run(a =>
                             {
                                 SetParameter(a.ActiveUIDocument, parameter, family.IDs);
                             });
+                            family.ResetParameter(UiDocument.Document, parameter);
+                            parameter.IsModified = false;
                         }
                     }
-                    family.ReloadParameter(UiDocument.Document);
                 }
                 else if (SelectedItem is ElementInstanceViewModel elementInstance)
                 {
                     foreach (var parameter in elementInstance.Parameters)
                     {
-                        await CustomHandler.Run(a =>
+                        if (parameter.IsModified)
                         {
-                            SetParameter(a.ActiveUIDocument, parameter, elementInstance.Name);
-                        });
-                    }
-                    if (elementInstance.Parent != null)
-                    {
-                        if (elementInstance.Parent is FamilyViewModel familyViewModel)
-                        {
-                            familyViewModel.ReloadParameter(UiDocument.Document);
-                        }
-                        else if (elementInstance.Parent is FamilyExtendViewModel familyExtendViewModel)
-                        {
-                            familyExtendViewModel.ReloadParameter(UiDocument.Document);
+                            await CustomHandler.Run(a =>
+                            {
+                                SetParameter(a.ActiveUIDocument, parameter, elementInstance.Name);
+                            });
+                            elementInstance.Parent.MergeParameters();
+                            elementInstance.Parent.Parent.MergeParameters();
+                            parameter.IsModified = false;
                         }
                     }
-                    elementInstance.ReloadParameter(UiDocument.Document);
                 }
             }
             catch (Exception ex)

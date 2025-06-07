@@ -15,21 +15,21 @@ namespace RZData.ViewModels
         {
             Parameters = new List<ParameterVM>();
         }
-        public object Parent { get; set; }
+        public FamilyExtendViewModel Parent { get; set; }
         public int Name { get; set; }
         public List<ParameterVM> Parameters { get; set; }
 
-        public void ReloadParameter(Document document)
-        {
-            Element element = document.GetElement(new ElementId(Name));
-            var familyElementID = element.LookupParameter("族与类型")?.AsElementId();
-            var familyElement = document.GetElement(familyElementID);
-            foreach (var p in Parameters)
-            {
-                var parameter = element.LookupParameter(p.Name) ?? familyElement?.LookupParameter(p.Name);
-                p.Value = parameter != null ? parameter.GetValue() : "缺失";
-                p.ValueType = parameter != null ? (parameter.Element.Id == element.Id ? "实例参数" : "类型参数") : "";
-            }
-        }
+        //public void ReloadParameter(Document document)
+        //{
+        //    Element element = document.GetElement(new ElementId(Name));
+        //    var familyElementID = element.LookupParameter("族与类型")?.AsElementId();
+        //    var familyElement = document.GetElement(familyElementID);
+        //    foreach (var p in Parameters)
+        //    {
+        //        var parameter = element.LookupParameter(p.Name) ?? familyElement?.LookupParameter(p.Name);
+        //        p.Value = parameter != null ? parameter.GetValue() : "缺失";
+        //        p.ValueType = parameter != null ? (parameter.Element.Id == element.Id ? "实例参数" : "类型参数") : "";
+        //    }
+        //}
     }
 }
