@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-public class ExcelFamilyRecord
+public class ExcelFamilyModel
 {
     public string FamilyCategory { get; set; }
     public string FamilyName { get; set; }
@@ -11,7 +11,7 @@ public class ExcelFamilyRecord
     /// </summary>
     public string ElementName { get; set; }
 
-    public ExcelFamilyRecord()
+    public ExcelFamilyModel()
     {
         RequiredProperties = new Dictionary<string, string>();
     }

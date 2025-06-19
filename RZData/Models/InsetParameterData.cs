@@ -13,12 +13,10 @@ namespace RZData.Models
     {
         public string ParameterName { get; set; }
         public List<string> CategoryNames { get; set; }
-        public List<string> FamilyNames { get; set; }
 
         public InsetParameterData()
         {
             CategoryNames = new List<string>();
-            FamilyNames = new List<string>();
         }
     }
 }

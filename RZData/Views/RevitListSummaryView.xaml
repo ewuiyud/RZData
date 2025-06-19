@@ -115,6 +115,17 @@
                             <DataGridTextColumn Header="项目特征"  Binding="{Binding ProjectFeatures}" Width="300"/>
                             <DataGridTextColumn Header="模型工程量"  Binding="{Binding ModelEngineeringQuantity}" Width="100"/>
                             <DataGridTextColumn Header="单位"  Binding="{Binding ModelEngineeringUnit}" Width="100"/>
+                            <DataGridTemplateColumn Header="关联物料库"  Width="100" Visibility="Hidden">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ComboBox ItemsSource="{Binding ProductLibraryList}"
+                                                  Loaded="ComboBox_Loaded"
+                                                  SelectionChanged="ComboBox_SelectionChanged_1"
+                                                  Height="25">
+                                        </ComboBox>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
                         </DataGrid.Columns>
                     </DataGrid>
                     <!-- 操作栏 -->

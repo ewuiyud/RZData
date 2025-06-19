@@ -15,42 +15,49 @@ namespace RZData.Views
             var revitDataEntryViewModel = ViewModelLocator.Instance(uiDocument).RevitDataEntryViewModel;
             DataContext = revitDataEntryViewModel;
         }
-        private void TreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        //private void TreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        //{
+        //    try
+        //    {
+        //        var viewModel = DataContext as RevitDataEntryViewModel;
+        //        if (e.NewValue is ViewModels.FamilyExtendViewModel familyExtend)
+        //        {
+        //            viewModel.SelectedItem = familyExtend;
+        //        }
+        //        else if (e.NewValue is ViewModels.FamilyViewModel family)
+        //        {
+        //            viewModel.SelectedItem = family;
+        //        }
+        //        else if (e.NewValue is ViewModels.ElementInstanceViewModel elementInstance)
+        //        {
+        //            viewModel.SelectedItem = elementInstance;
+        //        }
+        //        viewModel.PickObjectsCommand.Execute(null);
+        //    }
+        //    catch (System.Exception ex)
+        //    {
+        //        TaskDialog.Show("错误信息", ex.Message);
+        //    }
+        //}
+
+        private void MultiSelectTreeView_TreeViewDoubleClick(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                var viewModel = DataContext as RevitDataEntryViewModel;
-                if (e.NewValue is ViewModels.FamilyExtendViewModel familyExtend)
-                {
-                    viewModel.SelectedItem = familyExtend;
-                }
-                else if (e.NewValue is ViewModels.FamilyViewModel family)
-                {
-                    viewModel.SelectedItem = family;
-                }
-                else if (e.NewValue is ViewModels.ElementInstanceViewModel elementInstance)
-                {
-                    viewModel.SelectedItem = elementInstance;
-                }
-                viewModel.PickObjectsCommand.Execute(null);
-            }
-            catch (System.Exception ex)
-            {
-                TaskDialog.Show("错误信息", ex.Message);
-            }
+            var viewModel = DataContext as RevitDataEntryViewModel;
+            viewModel.SelectedItem = e.OriginalSource;
+            viewModel.DoubleClickCommand.Execute(null);
         }
 
-        private void TreeViewItem_Loaded(object sender, RoutedEventArgs e)
+        private void FilterProperty_Drop(object sender, System.EventArgs e)
         {
-            TreeViewItem item = sender as TreeViewItem;
-            var source = item.ItemsSource;
-            if (item != null)
-            {
-                if (!(item.DataContext is FamilyExtendViewModel familyExtendViewModel))
-                {
-                    item.IsExpanded = true;
-                }
-            }
+            var viewModel = DataContext as RevitDataEntryViewModel;
+            (sender as System.Windows.Controls.ComboBox).ItemsSource = viewModel.GetFilterPropertyList();
+            viewModel.SelectedFilterValue = null;
+        }
+
+        private void FilterValue_DropDown(object sender, System.EventArgs e)
+        {
+            var viewModel = DataContext as RevitDataEntryViewModel;
+            (sender as System.Windows.Controls.ComboBox).ItemsSource = viewModel.GetFilterValueList();
         }
     }
 }

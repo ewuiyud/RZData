@@ -12,7 +12,7 @@ namespace RZData.Services
     /// <summary>
     /// Excel数据处理服务
     /// </summary>
-    public class ExcelDataProcessor
+    public class ExcelDataProcessorForParameters
     {
         /// <summary>
         /// 读取Excel文件并解析数据
@@ -37,9 +37,9 @@ namespace RZData.Services
         /// <summary>
         /// 提取原始数据
         /// </summary>
-        private List<ExcelRowData> ExtractRawData(ExcelWorksheet worksheet)
+        private List<ExcelRowDataForParameters> ExtractRawData(ExcelWorksheet worksheet)
         {
-            var rawData = new List<ExcelRowData>();
+            var rawData = new List<ExcelRowDataForParameters>();
             int rowCount = worksheet.Dimension.Rows;
 
             for (int row = 2; row <= rowCount; row++) // 假设第一行是标题
@@ -50,7 +50,7 @@ namespace RZData.Services
 
                 if (!string.IsNullOrEmpty(propertyName))
                 {
-                    rawData.Add(new ExcelRowData
+                    rawData.Add(new ExcelRowDataForParameters
                     {
                         RowIndex = row,
                         CategoryName = categoryName,
@@ -66,7 +66,7 @@ namespace RZData.Services
         /// <summary>
         /// 处理合并单元格数据
         /// </summary>
-        private List<InsetParameterData> ProcessMergedCellData(List<ExcelRowData> rawData)
+        private List<InsetParameterData> ProcessMergedCellData(List<ExcelRowDataForParameters> rawData)
         {
             var result = new List<InsetParameterData>();
             string currentCategory = "";

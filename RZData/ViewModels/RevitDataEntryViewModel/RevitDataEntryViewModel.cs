@@ -3,11 +3,14 @@ using Autodesk.Revit.UI;
 using CommunityToolkit.Mvvm.Input;
 using RZData.ExternalEventHandlers;
 using RZData.Models;
+using RZData.Tools;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Documents;
 using System.Windows.Input;
 
 namespace RZData.ViewModels
@@ -19,10 +22,71 @@ namespace RZData.ViewModels
         private string _searchKeyword;
         private ElementViewModel _showElements;
         private FamilyCategoryViewModel _selectedElement;
+        private ObservableCollection<int> _seletedElementID;
+        private List<ParameterSetVM> _selectedItemParameters;
+        private bool _showFilter;
+        private bool _showProjectFeatures;
+        private string _selectedFilterProperty;
+        private List<string> _filterLogics = new List<string>() { "等于", "大于等于", "小于等于", "不等于", "正则表达式" };
+        private ObservableCollection<FilterConditionViewModel> _filterConditions;
+        private string _selectedFilterValue;
+        private string _customFilterValue;
+        private string _selectedFilterLogic= "等于";
+        //选择的过滤的逻辑
+        public string SelectedFilterLogic { get => _selectedFilterLogic; set => SetProperty(ref _selectedFilterLogic, value); }
+        //自定义的过滤的值
+        public string CustomFilterValue { get => _customFilterValue; set => SetProperty(ref _customFilterValue, value); }
+        //选择的过滤的值
+        public string SelectedFilterValue { get => _selectedFilterValue; set => SetProperty(ref _selectedFilterValue, value); }
+        /// <summary>
+        /// 过滤条件集合
+        /// </summary>
+        public ObservableCollection<FilterConditionViewModel> FilterConditions { get => _filterConditions; set => SetProperty(ref _filterConditions, value); }
+        /// <summary>
+        /// 可用的过滤逻辑
+        /// </summary>
+        public List<string> FilterLogics { get => _filterLogics; set => SetProperty(ref _filterLogics, value); }
+        /// <summary>
+        /// 筛选器中选中的筛选属性
+        /// </summary>
+        public string SelectedFilterProperty { get => _selectedFilterProperty; set => SetProperty(ref _selectedFilterProperty, value); }
+        public bool ShowProjectFeatures { get => _showProjectFeatures; set => SetProperty(ref _showProjectFeatures, value); }
+        public bool ShowFilter { get => _showFilter; set => SetProperty(ref _showFilter, value); }
+        /// <summary>
+        /// 选中元素的参数集
+        /// </summary>
+        public List<ParameterSetVM> SelectedItemParameters { get => _selectedItemParameters; set => SetProperty(ref _selectedItemParameters, value); }
         public ICommand SearchCommand { get; }
+        public ICommand SelectAllTreeItemsCommand { get; }
+        public ICommand DeselectAllTreeItemsCommand { get; }
+        public ICommand SelectInRevitCommand { get; }
+        public ICommand EntryParametersCommand { get; }
         public ICommand OKCommand { get; }
-        public ICommand PickObjectsCommand { get; }
+        //双击触发
+        public ICommand DoubleClickCommand { get; set; }
+        //添加筛选条件
+        public ICommand AddFilterConditionCommand { get; set; }
+        //删除筛选条件
+        public ICommand RemoveFilterConditionCommand { get; }
+        //清空筛选条件
+        public ICommand ClearFilterCommand { get; }
+        //应用筛选条件
+        public ICommand ApplyFilterCommand { get; }
+
         public object SelectedItem { get => _selectedItem; set => SetProperty(ref _selectedItem, value); }
+
+        public ObservableCollection<int> SeletedElementID
+        {
+            get => _seletedElementID; set
+            {
+                SetProperty(ref _seletedElementID, value);
+            }
+        }
+        private ObservableCollection<MaterialViewModel> _showMaterialList;
+        /// <summary>
+        /// 展示选中元素汇总的材料表
+        /// </summary>
+        public ObservableCollection<MaterialViewModel> ShowMaterialList { get => _showMaterialList; set => SetProperty(ref _showMaterialList, value); }
         public string SearchKeyword
         {
             get => _searchKeyword;
@@ -41,11 +105,15 @@ namespace RZData.ViewModels
                 {
                     new FamilyCategoryViewModel() { Name = "所有" }
                 };
-                var elements = AllElements;
-                elements.FamilyCategories.ToList().ForEach(a => fs.Add(a));
+                var revitSolidElements = AllElements.RevitSolidElements.FindAll(a => FilterTool.FilterRevitElement(a, FilterConditions.ToList()));
+                var curentElmentViewModel = new ElementViewModel(revitSolidElements);
+                curentElmentViewModel.Children.ToList().ForEach(a => fs.Add(a));
                 return fs;
             }
         }
+        /// <summary>
+        /// 选择族类别过滤，过滤逻辑在Set中
+        /// </summary>
         public FamilyCategoryViewModel SelectedElement
         {
             get => _selectedElement;
@@ -56,45 +124,238 @@ namespace RZData.ViewModels
                     _selectedElement = value;
                     OnPropertyChanged(nameof(SelectedElement));
 
-                    if (_selectedElement.Name == "所有")
-                    {
-                        ShowElements = AllElements;
-                    }
-                    else
-                    {
-                        var revitSolidElements = AllElements.RevitSolidElements.ToList().FindAll(a => a.FamilyCategory == _selectedElement.Name);
-                        ShowElements = new ElementViewModel(revitSolidElements);
-                    }
+                    ReShowElements();
+                    var revitSolidElements = ShowElements.RevitSolidElements.FindAll(a => FilterTool.FilterRevitElement(a, FilterConditions.ToList()));
+                    ShowElements = new ElementViewModel(revitSolidElements);
                 }
             }
         }
+
+        private void ReShowElements()
+        {
+            if (_selectedElement == null || _selectedElement.Name == "所有")
+            {
+                ShowElements = AllElements;
+            }
+            else
+            {
+                var revitSolidElements = AllElements.RevitSolidElements.ToList().FindAll(a => a.FamilyCategory == _selectedElement.Name);
+                ShowElements = new ElementViewModel(revitSolidElements);
+            }
+            Search();
+        }
+
         public RevitDataEntryViewModel(UIDocument _uiDocument, ObservableCollection<RevitSolidElement> revitSolidElements)
         {
             this.AllElements = new ElementViewModel(revitSolidElements.ToList().FindAll(a => a.IsNameCorrect).ToList());
             this.ShowElements = AllElements;
             this.UiDocument = _uiDocument;
+            //集合初始化
+            SeletedElementID = new ObservableCollection<int>();
+            ShowMaterialList = new ObservableCollection<MaterialViewModel>();
+            FilterConditions = new ObservableCollection<FilterConditionViewModel>();
+
+            //命令初始化
             SearchCommand = new RelayCommand(Search);
+            DoubleClickCommand = new RelayCommand(DoubleClick);
+            SelectAllTreeItemsCommand = new RelayCommand(SelectAllTreeItems);
+            DeselectAllTreeItemsCommand = new RelayCommand(DeselectAllTreeItems);
+            SelectInRevitCommand = new RelayCommand(SelectInRevit);
+            EntryParametersCommand = new RelayCommand(EntryParameters);
+            AddFilterConditionCommand = new RelayCommand(AddFilterCondition);
+            ApplyFilterCommand = new RelayCommand(ApplyFilter);
+            ClearFilterCommand = new RelayCommand(ClearFilter);
             OKCommand = new AsyncRelayCommand(OK);
-            PickObjectsCommand = new RelayCommand(PickObjects);
+            RemoveFilterConditionCommand = new RelayCommand<FilterConditionViewModel>(RemoveFilter);
+
+            ResetShowElements();
         }
 
-        internal void PickObjects()
+        private void ApplyFilter()
         {
+            SelectAllTreeItems();
+            EntryParameters();
+        }
+
+        private void ClearFilter()
+        {
+            FilterConditions = new ObservableCollection<FilterConditionViewModel>();
+            ReShowElements();
+        }
+
+        private void RemoveFilter(FilterConditionViewModel condition)
+        {
+            // condition 参数就是 CommandParameter 传递过来的数据
+            if (condition != null)
+            {
+                // 从集合中移除这个筛选条件
+                FilterConditions.Remove(condition);
+            }
+            //移除一个筛选条件后要对所有的条件从新进行筛选
+            ReShowElements();
+            try
+            {
+                var revitSolidElements = ShowElements.RevitSolidElements.ToList().FindAll(a => FilterTool.FilterRevitElement(a, FilterConditions.ToList()));
+                ShowElements = new ElementViewModel(revitSolidElements);
+            }
+            catch
+            {
+                TaskDialog.Show("错误信息", "存在筛选条件不合法，将清空筛选项。");
+                FilterConditions = new ObservableCollection<FilterConditionViewModel>();
+                return;
+            }
+        }
+
+        private void AddFilterCondition()
+        {
+            try
+            {
+                FilterConditionViewModel filterConditionViewModel = new FilterConditionViewModel()
+                {
+                    PropertyName = SelectedFilterProperty,
+                    PropertyValue = string.IsNullOrEmpty(CustomFilterValue) ? SelectedFilterValue : CustomFilterValue,
+                    Logic = SelectedFilterLogic
+                };
+                //只对新增筛选条件筛选
+                var rvList = ShowElements.RevitSolidElements.ToList();
+                var revitSolidElements = rvList.FindAll(a => FilterTool.FilterRevitElement(a, filterConditionViewModel));
+                ShowElements = new ElementViewModel(revitSolidElements);
+                FilterConditions.Add(filterConditionViewModel);
+
+                SelectedFilterProperty = null;
+                CustomFilterValue = null;
+                SelectedFilterValue = null;
+                ResetShowElements();
+            }
+            catch (Exception ex)
+            {
+                TaskDialog.Show("错误信息", ex.Message);
+                return;
+            }
+
+        }
+
+        private void DoubleClick()
+        {
+            AllElements.SelectAll(false);
+            ShowElements.SelectAll(false);
+            //选中该类别下的所有元素,并处理上级的选中状态
+            ShowElements.SelectObject(SelectedItem);
+            //分类处理选中，和录入参数的逻辑
+            List<ElementInstanceViewModel> elements = new List<ElementInstanceViewModel>();
             switch (SelectedItem)
             {
+                case FamilyCategoryViewModel familyCategory:
+                    SelectElementInRevit(familyCategory);
+                    elements = familyCategory.GetAllElementInstanceViewModels();
+                    break;
                 case FamilyViewModel family:
                     SelectElementInRevit(family);
+                    elements = family.GetAllElementInstanceViewModels();
                     break;
                 case FamilyExtendViewModel familyExtend:
                     SelectElementInRevit(familyExtend);
+                    elements = familyExtend.GetAllElementInstanceViewModels();
                     break;
                 case ElementInstanceViewModel elementInstance:
                     SelectElementInRevit(elementInstance);
+                    elements.Add(elementInstance);
                     break;
                 default:
                     break;
             }
+            EntryParameters();
         }
+
+        //同步选中元素的参数
+        private void EntryParameters()
+        {
+            SelectedItemParameters = new List<ParameterSetVM>();
+            var elements = ShowElements.GetAllElements().FindAll(a => a.IsChecked);
+            var eleParMin = elements.OrderBy(a => a.Parameters.Count).FirstOrDefault();
+            if (eleParMin is null)
+            {
+                return;
+            }
+            foreach (var item in eleParMin.Parameters)
+            {
+                if (elements.All(a => a.Parameters.Exists(b => b.Name == item.Name)))
+                {
+                    var tempParameterSet = new ParameterSetVM(item);
+                    elements.ForEach(a =>
+                    {
+                        var parameter = a.Parameters.FirstOrDefault(b => b.Name == item.Name);
+                        if (parameter != null)
+                        {
+                            if (!tempParameterSet.Parameters.Contains(parameter))
+                            {
+                                tempParameterSet.Parameters.Add(parameter);
+                            }
+                        }
+                    });
+                    SelectedItemParameters.Add(tempParameterSet);
+                }
+            }
+            GetMaterialViewModels(elements);
+        }
+        //从模型中选中isChecked的对象
+        private void SelectInRevit()
+        {
+            var elements = ShowElements.GetAllElements().FindAll(a => a.IsChecked);
+            SelectElementInRevit(elements);
+        }
+        //树状图全不选
+        private void DeselectAllTreeItems()
+        {
+            AllElements.SelectAll(false);
+            ShowElements.SelectAll(false);
+        }
+        //树状图全选
+        private void SelectAllTreeItems()
+        {
+            AllElements.SelectAll(false);
+            ShowElements.SelectAll(true);
+        }
+
+        /// <summary>
+        /// 根据element列表直接汇总为materialList
+        /// </summary>
+        /// <param name="elementIDs"></param>
+        /// <returns></returns>
+        private void GetMaterialViewModels(List<ElementInstanceViewModel> elementInstances)
+        {
+            List<RevitSolidElement> revitSolidElementList = new List<RevitSolidElement>();
+            foreach (var elementInstance in elementInstances)
+            {
+                RevitSolidElement revitSolidElement = AllElements.RevitSolidElements.FirstOrDefault(a => a.ID == elementInstance.Id);
+                revitSolidElementList.Add(revitSolidElement);
+            }
+            ShowMaterialList = PropertyMatchTool.FillMaterialList(UiDocument, revitSolidElementList, out List<Element> noMatchedElement);
+        }
+
+        private void SelectElementInRevit(List<ElementInstanceViewModel> elementInstanceViewModels)
+        {
+            var uidoc = UiDocument;
+            var elementIds = new List<ElementId>();
+            foreach (var elementInstance in elementInstanceViewModels)
+            {
+                elementIds.Add(new ElementId(elementInstance.Id));
+            }
+            uidoc.Selection.SetElementIds(elementIds);
+        }
+
+        private void SelectElementInRevit(FamilyCategoryViewModel familyCategory)
+        {
+            var uidoc = UiDocument;
+            var elementIds = new List<ElementId>();
+            foreach (var elementInstance in familyCategory.GetAllElementInstanceViewModels())
+            {
+
+                elementIds.Add(new ElementId(elementInstance.Id));
+            }
+            uidoc.Selection.SetElementIds(elementIds);
+        }
+
         private void SelectElementInRevit(FamilyViewModel family)
         {
             var uidoc = UiDocument;
@@ -121,12 +382,17 @@ namespace RZData.ViewModels
             var uidoc = UiDocument;
             var elementIds = new List<ElementId>
             {
-                new ElementId(elementInstance.Name)
+                new ElementId(elementInstance.Id)
             };
             uidoc.Selection.SetElementIds(elementIds);
         }
         private void Search()
         {
+            if (SearchKeyword == null)
+            {
+                ResetShowElements();
+                return;
+            }
             if (_selectedElement == null)
             {
                 var revitSolidElements = AllElements.RevitSolidElements.FindAll(a =>
@@ -148,64 +414,46 @@ namespace RZData.ViewModels
                     a.FamilyName.Contains(SearchKeyword) || a.FamilyCategory.Contains(SearchKeyword) || a.ExtendName.Contains(SearchKeyword));
                 ShowElements = new ElementViewModel(revitSolidElements);
             }
+            if (FilterConditions.Count != 0)
+            {
+                var revitSolidElements = ShowElements.RevitSolidElements.FindAll(a => FilterTool.FilterRevitElement(a, FilterConditions.ToList()));
+                ShowElements = new ElementViewModel(revitSolidElements);
+            }
+            ResetShowElements();
         }
+
+        /// <summary>
+        /// 每当改变ShowElements的时候，都需要进行的修改
+        /// 在搜索时使用
+        /// 在下拉选择族类别时使用
+        /// 初始化的时候使用
+        /// </summary>
+        private void ResetShowElements()
+        {
+            AllElements.SelectAll(false);
+            ShowElements.SelectAll(false);
+
+            EntryParameters();
+        }
+
         private async Task OK()
         {
             try
             {
-                if (SelectedItem is FamilyExtendViewModel familyExtend)
+                var elements = ShowElements.GetAllElements().FindAll(a => a.IsChecked);
+                var ids = elements.Select(a => a.Id);
+                foreach (var parameter in SelectedItemParameters)
                 {
-                    foreach (var parameter in familyExtend.Parameters)
+                    if (parameter.IsModified)
                     {
-                        if (parameter.IsModified)
+                        await CustomHandler.Run(a =>
                         {
-                            await CustomHandler.Run(a =>
-                            {
-                                SetParameter(a.ActiveUIDocument, parameter, familyExtend.IDs);
-                            });
-                            familyExtend.ResetParameter(UiDocument.Document, parameter);
-                            familyExtend.Parent.MergeParameters();
-                            parameter.IsModified = false;
-                        }
+                            SetParameter(a.ActiveUIDocument, parameter, elements);
+                        });
+                        parameter.IsModified = false;
                     }
                 }
-                else if (SelectedItem is FamilyViewModel family)
-                {
-                    //对系统族直接跳过操作
-                    if (family.Parameters.Count == 0)
-                    {
-                        return;
-                    }
-                    //对载入族进行操作
-                    foreach (var parameter in family.Parameters)
-                    {
-                        if (parameter.IsModified)
-                        {
-                            await CustomHandler.Run(a =>
-                            {
-                                SetParameter(a.ActiveUIDocument, parameter, family.IDs);
-                            });
-                            family.ResetParameter(UiDocument.Document, parameter);
-                            parameter.IsModified = false;
-                        }
-                    }
-                }
-                else if (SelectedItem is ElementInstanceViewModel elementInstance)
-                {
-                    foreach (var parameter in elementInstance.Parameters)
-                    {
-                        if (parameter.IsModified)
-                        {
-                            await CustomHandler.Run(a =>
-                            {
-                                SetParameter(a.ActiveUIDocument, parameter, elementInstance.Name);
-                            });
-                            elementInstance.Parent.MergeParameters();
-                            elementInstance.Parent.Parent.MergeParameters();
-                            parameter.IsModified = false;
-                        }
-                    }
-                }
+                EntryParameters();
             }
             catch (Exception ex)
             {
@@ -213,63 +461,96 @@ namespace RZData.ViewModels
             }
         }
 
-        private void SetParameter(UIDocument uIDocument, ParameterVM parameter, int elementId)
+        private void SetParameter(UIDocument uIDocument, ParameterSetVM parameterSet, List<ElementInstanceViewModel> elements)
         {
-            using (Transaction transaction = new Transaction(uIDocument.Document, "SetParameter"))
-            {
-                var element = uIDocument.Document.GetElement(new ElementId(elementId));
-                transaction.Start();
-                if (parameter.ValueType == "实例参数")
-                {
-                    var p = element.LookupParameter(parameter.Name);
-                    if (!p.IsReadOnly && !p.Set(parameter.Value))
-                    {
-                        TaskDialog.Show("错误报告", $"输入参数的值不合法，参数 {parameter.Name} 的值 {parameter.Value}");
-                    }
-                }
-                else if (parameter.ValueType == "类型参数")
-                {
-                    Element fatherElement = UiDocument.Document.GetElement(element.LookupParameter("族与类型")?.AsElementId());
-                    var p = fatherElement.LookupParameter(parameter.Name);
-                    if (!p.IsReadOnly && !p.Set(parameter.Value))
-                    {
-                        TaskDialog.Show("错误报告", $"输入参数的值不合法，参数 {parameter.Name} 的值 {parameter.Value}");
-                    }
-                }
-                transaction.Commit();
-            }
-        }
-
-        private void SetParameter(UIDocument uIDocument, ParameterSetVM parameterSet, List<int> IDs)
-        {
+            var name = parameterSet.Name;
+            var value = parameterSet.Value;
             using (Transaction transaction = new Transaction(uIDocument.Document, "SetParameter"))
             {
                 transaction.Start();
                 if (parameterSet.ValueType == "实例参数")
                 {
-                    foreach (var id in IDs)
+                    foreach (var elementInstance in elements)
                     {
-                        Element element = uIDocument.Document.GetElement(new ElementId(id));
-                        var p = element.LookupParameter(parameterSet.Name);
-                        if (!p.IsReadOnly && !p.Set(parameterSet.Value))
+                        Element element = uIDocument.Document.GetElement(new ElementId(elementInstance.Id));
+                        var p = element.LookupParameter(name);
+                        if (p.IsReadOnly)
                         {
-                            TaskDialog.Show("错误报告", $"输入参数的值不合法，参数 {parameterSet.Name} 的值 {parameterSet.Value}");
+                            //错误操作需要回滚，重新读取属性表，结束当前录入的操作
+                            TaskDialog.Show("错误报告", $"输入参数不可修改，参数：{name} 的值：{value}");
+                            transaction.RollBack();
+                            EntryParameters();
+                            return;
+                        }
+                        else if (!p.Set(value))
+                        {
+                            //错误操作需要回滚，重新读取属性表，结束当前录入的操作
+                            TaskDialog.Show("错误报告", $"输入参数的值不合法，参数：{name} 的值：{value}");
+                            transaction.RollBack();
+                            EntryParameters();
+                            return;
+                        }
+                        else
+                        {
+                            //在修改模型完成后也要将绑定属性的值同步修改
+                            elementInstance.Parameters.Find(a => a.Name == name).Value = value;
                         }
                     }
                 }
                 else if (parameterSet.ValueType == "类型参数")
                 {
                     Element element = UiDocument.Document.GetElement(
-                        UiDocument.Document.GetElement(new ElementId(IDs[0])
+                        UiDocument.Document.GetElement(new ElementId(elements[0].Id)
                         ).LookupParameter("族与类型")?.AsElementId());
-                    var p = element.LookupParameter(parameterSet.Name);
-                    if (!p.IsReadOnly && !p.Set(parameterSet.Value))
+                    var p = element.LookupParameter(name);
+                    if (p.IsReadOnly)
                     {
-                        TaskDialog.Show("错误报告", $"输入参数的值不合法，参数 {parameterSet.Name} 的值 {parameterSet.Value}");
+                        //错误操作需要回滚，重新读取属性表，结束当前录入的操作
+                        TaskDialog.Show("错误报告", $"输入参数不可修改，参数：{name} 的值：{value}");
+                        transaction.RollBack();
+                        EntryParameters();
+                        return;
+                    }
+                    else if (!p.Set(value))
+                    {
+                        //错误操作需要回滚，重新读取属性表，结束当前录入的操作
+                        TaskDialog.Show("错误报告", $"输入参数的值不合法，参数：{name} 的值：{value}");
+                        transaction.RollBack();
+                        EntryParameters();
+                        return;
+                    }
+                    else
+                    {
+                        //在修改模型完成后也要将绑定属性的值同步修改
+                        elements.ForEach(e => e.Parameters.Find(a => a.Name == name).Value = value);
                     }
                 }
                 transaction.Commit();
             }
+        }
+
+        internal List<string> GetFilterPropertyList()
+        {
+            var elements = ShowElements.GetAllElements();
+            var properties = new List<string>();
+            elements.ForEach(e => e.Parameters.ForEach(p => properties.Add(p.Name)));
+            return properties.Distinct().ToList();
+        }
+
+        internal IEnumerable GetFilterValueList()
+        {
+            var name = SelectedFilterProperty;
+            var elements = ShowElements.GetAllElements();
+            var result = new List<string>();
+            elements.ForEach(e =>
+            {
+                var parameters = e.Parameters.FindAll(p => p.Name == name);
+                if (parameters != null)
+                {
+                    parameters.ForEach(p => result.Add(p.Value));
+                }
+            });
+            return result.Distinct().ToList();
         }
     }
 }

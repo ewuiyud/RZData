@@ -19,7 +19,7 @@ namespace RZData.Services
         /// <summary>
         /// 族匹配表
         /// </summary>
-        public static List<ExcelFamilyRecord> ExcelFamilyRecords = new List<ExcelFamilyRecord>();
+        public static List<ExcelFamilyModel> ExcelFamilyRecords = new List<ExcelFamilyModel>();
         /// <summary>
         /// 元素编码
         /// </summary>
@@ -35,7 +35,11 @@ namespace RZData.Services
         /// <summary>
         /// 材料业务规则
         /// </summary>
-        public static List<ExcelMaterialBusinessRecord> ExcelMaterialBusinessRules = new List<ExcelMaterialBusinessRecord>();
+        public static List<ExcelMaterialBusinessModel> ExcelMaterialBusinessRules = new List<ExcelMaterialBusinessModel>();
+        /// <summary>
+        /// 产品物料库
+        /// </summary>
+        public static List<ExcelProductMaterialLibraryModel> ExcelProductMaterialLibraryModels = new List<ExcelProductMaterialLibraryModel>();
         public static string LoadDataFromExcel()
         {
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
@@ -61,9 +65,41 @@ namespace RZData.Services
                 GetExcelProductCode(package);
                 GetExcelPropertyDic(package);
                 GetExcelMaterialBusinessRules(package);
+                GetExcelProductMaterialLibrary(package);
             }
         }
 
+        /// <summary>
+        /// 获取产品物料库
+        /// </summary>
+        /// <param name="package"></param>
+        private static void GetExcelProductMaterialLibrary(ExcelPackage package)
+        {
+            ExcelProductMaterialLibraryModels.Clear();
+            var worksheet = package.Workbook.Worksheets["产品物料库"];
+            int rowCount = worksheet.Dimension.Rows;
+            for (int row = 2; row <= rowCount; row++)
+            {
+                ExcelProductMaterialLibraryModel record = new ExcelProductMaterialLibraryModel
+                {
+                    Name = worksheet.Cells[row, 1].Text,
+                    Description = worksheet.Cells[row, 2].Text,
+                    Brand = worksheet.Cells[row, 3].Text,
+                    SpecificationAttributes = worksheet.Cells[row, 4].Text,
+                    ProductName = worksheet.Cells[row, 5].Text,
+                    SerialNumber = worksheet.Cells[row, 6].Text
+                };
+                if (!ExcelProductMaterialLibraryModels.Contains(record))
+                {
+                    ExcelProductMaterialLibraryModels.Add(record);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 获取材料业务规则配置表
+        /// </summary>
+        /// <param name="package"></param>
         private static void GetExcelMaterialBusinessRules(ExcelPackage package)
         {
             ExcelMaterialBusinessRules.Clear();
@@ -71,7 +107,7 @@ namespace RZData.Services
             int rowCount = worksheet.Dimension.Rows;
             for (int row = 2; row <= rowCount; row++)
             {
-                ExcelMaterialBusinessRecord record = new ExcelMaterialBusinessRecord
+                ExcelMaterialBusinessModel record = new ExcelMaterialBusinessModel
                 {
                     ID = worksheet.Cells[row, 1].Text,
                     Name = worksheet.Cells[row, 2].Text,
@@ -92,6 +128,10 @@ namespace RZData.Services
             }
         }
 
+        /// <summary>
+        /// 获取属性字典表
+        /// </summary>
+        /// <param name="package"></param>
         private static void GetExcelPropertyDic(ExcelPackage package)
         {
             ExcelPropertyDic.Clear();
@@ -109,6 +149,10 @@ namespace RZData.Services
             }
         }
 
+        /// <summary>
+        /// 获取产品分类编码表
+        /// </summary>
+        /// <param name="package"></param>
         private static void GetExcelProductCode(ExcelPackage package)
         {
             ExcelProductCode.Clear();
@@ -136,6 +180,10 @@ namespace RZData.Services
             }
         }
 
+        /// <summary>
+        /// 获取元素分类编码表
+        /// </summary>
+        /// <param name="package"></param>
         private static void GetExcelElementCode(ExcelPackage package)
         {
             ExcelElementCode.Clear();
@@ -163,9 +211,13 @@ namespace RZData.Services
             }
         }
 
+        /// <summary>
+        /// 获取族匹配表
+        /// </summary>
+        /// <param name="package"></param>
         public static void GetExcelFamilyRecords(ExcelPackage package)
         {
-            ExcelFamilyRecords = new List<ExcelFamilyRecord>();
+            ExcelFamilyRecords = new List<ExcelFamilyModel>();
             var worksheets = new[] { "族匹配表-装修", "族匹配表-机电", "族匹配表-结构" };
             foreach (var sheetName in worksheets)
             {
@@ -177,13 +229,13 @@ namespace RZData.Services
             }
         }
 
-        private static void ReadFamilyWorksheet(ExcelWorksheet worksheet, List<ExcelFamilyRecord> records)
+        private static void ReadFamilyWorksheet(ExcelWorksheet worksheet, List<ExcelFamilyModel> records)
         {
             int rowCount = worksheet.Dimension.Rows;
             string result = "";
             for (int row = 2; row <= rowCount; row++)
             {
-                ExcelFamilyRecord excelRecord = new ExcelFamilyRecord
+                ExcelFamilyModel excelRecord = new ExcelFamilyModel
                 {
                     FamilyCategory = worksheet.Cells[row, 2].Text, // B列
                     FamilyName = worksheet.Cells[row, 3].Text, // C列

@@ -12,48 +12,40 @@ namespace RZData.ViewModels
         public FamilyExtendViewModel()
         {
             IDs = new List<int>();
-            ElementInstances = new ObservableCollection<ElementInstanceViewModel>();
-            Parameters = new List<ParameterSetVM>();
+            Children = new ObservableCollection<ElementInstanceViewModel>();
         }
         public FamilyViewModel Parent { get; set; }
         public string Name { get; set; }
         public List<int> IDs { get; set; }
-        public ObservableCollection<ElementInstanceViewModel> ElementInstances { get; set; }
-        public List<ParameterSetVM> Parameters { get; set; }
-        internal void ResetParameter(Document document, ParameterSetVM parameter)
+        public ObservableCollection<ElementInstanceViewModel> Children { get; set; }
+
+        private bool? isChecked = false;
+        public bool? IsChecked { get => isChecked; set => SetProperty(ref isChecked, value); }
+        public void ResetIsChecked()
         {
-            var name = parameter.Name; var value = parameter.Value;
-            foreach (var ElementInstance in ElementInstances)
+            var allElementInstacees = GetAllElementInstanceViewModels();
+            bool allChecked = allElementInstacees.TrueForAll(a => a.IsChecked);
+            bool allUnchecked = allElementInstacees.TrueForAll(a => !a.IsChecked);
+            if (allChecked)
             {
-                var p = ElementInstance.Parameters.FirstOrDefault(a => a.Name == name);
-                if (p != null)
-                {
-                    p.Value = value;
-                    p.IsModified = false;
-                }
+                IsChecked = true;
+            }
+            else if (allUnchecked)
+            {
+                IsChecked = false;
+            }
+            else
+            {
+                IsChecked = null;
             }
         }
-        internal void MergeParameters()
+        /// <summary>
+        /// 获取所有的ElementInstanceViewModel
+        /// </summary>
+        /// <returns></returns>
+        public List<ElementInstanceViewModel> GetAllElementInstanceViewModels()
         {
-            Parameters.Clear();
-            foreach (var ElementInstance in ElementInstances)
-            {
-                foreach (var parameter in ElementInstance.Parameters)
-                {
-                    var currentP = Parameters.FirstOrDefault(a => a.Name == parameter.Name);
-                    if (currentP != null)
-                    {
-                        if (!currentP.Parameters.Contains(parameter))
-                        {
-                            currentP.Parameters.Add(parameter);
-                        }
-                    }
-                    else
-                    {
-                        Parameters.Add(new ParameterSetVM(parameter));
-                    }
-                }
-            }
+            return Children.ToList();
         }
     }
 }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace RZData.Models
 {
-    public class ExcelMaterialBusinessRecord
+    public class ExcelMaterialBusinessModel
     {
         /// <summary>
         /// 分类编码

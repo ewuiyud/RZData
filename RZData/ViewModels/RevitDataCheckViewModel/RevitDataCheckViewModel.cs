@@ -127,7 +127,7 @@ namespace RZData.ViewModels
             string categoryName = "";
             string familyName = "";
             string extendName = "";
-            List<ExcelFamilyRecord> matchList = new List<ExcelFamilyRecord>();
+            List<ExcelFamilyModel> matchList = new List<ExcelFamilyModel>();
             if (SelectedItem is FamilyExtendViewModel familyExtend)
             {
                 Element element = UiDocument.Document.GetElement(new ElementId(familyExtend.IDs[0]));

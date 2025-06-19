@@ -1,24 +1,49 @@
 ﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.UI;
 using RZData.Extensions;
-using RZData.Services;
 using RZData.ViewModels;
 using System.Collections.Generic;
-using System.Security.Cryptography;
 
 namespace RZData.Models
 {
     public class RevitSolidElement
     {
-        public RevitSolidElement(Element element,
-            RevitElementFamilyType revitElementFamilyType = RevitElementFamilyType.SystemFamilyElement)
+        public RevitSolidElement()
+        {
+            ID = 0;
+            RevitElementFamilyType = RevitElementFamilyType.SystemFamilyElement;
+            FamilyCategory = string.Empty;
+            FamilyName = string.Empty;
+            ExtendName = string.Empty;
+            Parameters = new List<ParameterVM>();
+        }
+        public RevitSolidElement(Element element)
         {
             ID = element.Id.IntegerValue;
-            RevitElementFamilyType = revitElementFamilyType;
+            if (element is FamilyInstance)
+                RevitElementFamilyType = RevitElementFamilyType.LoadFamilyElement;
+            else
+                RevitElementFamilyType = RevitElementFamilyType.SystemFamilyElement;
             FamilyCategory = element.GetFamilyCategory();
             FamilyName = element.GetFamilyName();
             ExtendName = element.GetExtendName();
             Parameters = new List<ParameterVM>();
         }
+
+        public RevitSolidElement(UIDocument uIDocument, ElementInstanceViewModel elementInstance)
+        {
+            ID = elementInstance.Id;
+            var element = uIDocument.Document.GetElement(new ElementId(ID));
+            if (element is FamilyInstance)
+                RevitElementFamilyType = RevitElementFamilyType.LoadFamilyElement;
+            else
+                RevitElementFamilyType = RevitElementFamilyType.SystemFamilyElement;
+            FamilyCategory = element.GetFamilyCategory();
+            FamilyName = element.GetFamilyName();
+            ExtendName = element.GetExtendName();
+            Parameters = elementInstance.Parameters;
+        }
+
         public readonly RevitElementFamilyType RevitElementFamilyType;
         public string FamilyCategory { get; set; }
         public string FamilyName { get; set; }

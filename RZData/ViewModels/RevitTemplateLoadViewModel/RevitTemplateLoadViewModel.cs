@@ -90,7 +90,7 @@ namespace RZData.ViewModels
                 var doc = uiDoc.Document;
 
                 // 处理Excel数据
-                var excelProcessor = new ExcelDataProcessor();
+                var excelProcessor = new ExcelDataProcessorForParameters();
                 var familyData = excelProcessor.ProcessExcelFile(LoadTemplatePath);
 
                 if (!excelProcessor.ValidateData(familyData))
@@ -129,7 +129,6 @@ namespace RZData.ViewModels
                     CurrentFileName = loadFileName;
                     loadFileName = "无";
                     CloseAction?.Invoke();
-
                 }
                 else
                 {

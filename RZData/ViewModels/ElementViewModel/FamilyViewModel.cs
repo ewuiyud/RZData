@@ -15,60 +15,53 @@ namespace RZData.ViewModels
     {
         public FamilyViewModel()
         {
-            familyExtends = new ObservableCollection<FamilyExtendViewModel>();
+            children = new ObservableCollection<FamilyExtendViewModel>();
             IDs = new List<int>();
             ElementInstances = new ObservableCollection<ElementInstanceViewModel>();
-            Parameters = new List<ParameterSetVM>();
         }
         public string Name { get; set; }
         public List<int> IDs { get; set; }
+        public FamilyCategoryViewModel Parent { get; set; }
         public ObservableCollection<ElementInstanceViewModel> ElementInstances { get; set; }
-        public List<ParameterSetVM> Parameters { get; set; }
-        private ObservableCollection<FamilyExtendViewModel> familyExtends;
-        public ObservableCollection<FamilyExtendViewModel> FamilyExtends { get => familyExtends; set => SetProperty(ref familyExtends, value); }
-        internal void ResetParameter(Document document, ParameterSetVM parameter)
+        private ObservableCollection<FamilyExtendViewModel> children;
+        public ObservableCollection<FamilyExtendViewModel> Children { get => children; set => SetProperty(ref children, value); }
+
+        private bool? isChecked = false;
+        public bool? IsChecked { get => isChecked; set => SetProperty(ref isChecked, value); }
+        public void ResetIsChecked()
         {
-            var name = parameter.Name; var value = parameter.Value;
-            //修改所有拓展类型的参数
-            foreach (var familyExtend in FamilyExtends)
+            var allElementInstacees = GetAllElementInstanceViewModels();
+            bool allChecked = allElementInstacees.TrueForAll(a => a.IsChecked);
+            bool allUnchecked = allElementInstacees.TrueForAll(a => !a.IsChecked);
+            if (allChecked)
             {
-                var p = familyExtend.Parameters.FirstOrDefault(a => a.Name == name);
-                if (p != null)
-                {
-                    p.Value = value;
-                    p.IsModified = false;
-                }
-                familyExtend.ResetParameter(document, parameter);
-                parameter.IsModified = false;
+                IsChecked = true;
+            }
+            else if (allUnchecked)
+            {
+                IsChecked = false;
+            }
+            else
+            {
+                IsChecked = null;
             }
         }
-        public void MergeParameters()
+        /// <summary>
+        /// 获取所有的ElementInstanceViewModel
+        /// </summary>
+        /// <returns></returns>
+        public List<ElementInstanceViewModel> GetAllElementInstanceViewModels()
         {
-            if (Parameters.Count == 0)
+            var result = new List<ElementInstanceViewModel>();
+
+            foreach (var familyExtend in Children)
             {
-                return;
-            }
-            Parameters.Clear();
-            foreach (var ElementInstance in ElementInstances)
-            {
-                foreach (var parameter in ElementInstance.Parameters)
+                foreach (var elementInstance in familyExtend.Children)
                 {
-                    var currentP = Parameters.FirstOrDefault(a => a.Name == parameter.Name);
-                    if (currentP != null)
-                    {
-                        if (!currentP.Parameters.Contains(parameter))
-                        {
-                            currentP.Parameters.Add(parameter);
-                        }
-                    }
-                    else
-                    {
-                        var parameterSet = new ParameterSetVM(parameter);
-                        parameterSet.Parameters.Add(parameter);
-                        Parameters.Add(parameterSet);
-                    }
+                    result.Add(elementInstance);
                 }
             }
+            return result;
         }
     }
 }

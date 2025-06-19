@@ -93,7 +93,7 @@ namespace RZData.Services
         }
         public ObservableCollection<RevitSolidElement> LoadAllRevitElements(UIDocument UiDocument)
         {
-            List<ExcelFamilyRecord> records = ExcelDataService.ExcelFamilyRecords;
+            List<ExcelFamilyModel> records = ExcelDataService.ExcelFamilyRecords;
             //表格中以MIC开头的族为可加载族，其他为系统族
             var systemFamilyDictionary = records.FindAll(a => !a.FamilyName.StartsWith("MIC"));
             var loadableFamilyDictionary = records.FindAll(a => a.FamilyName.StartsWith("MIC"));
@@ -116,7 +116,7 @@ namespace RZData.Services
                 {
                     if (element is FamilyInstance familyInstance)
                     {
-                        var revitSolidElement = new RevitSolidElement(element, RevitElementFamilyType.LoadFamilyElement);
+                        var revitSolidElement = new RevitSolidElement(element);
                         ProcessFamilyInstance(loadableFamilyDictionary, document, element, revitSolidElement);
                         AllSolidElements.Add(revitSolidElement);
                     }
@@ -139,6 +139,15 @@ namespace RZData.Services
         {
             string category = element.GetFamilyCategory();
             string family = element.GetFamilyName();
+            string name = element.Name;
+            if (category == "幕墙嵌板")
+            {
+                if (family == "系统嵌板")
+                {
+                    if (name == "墙" || name == "玻璃")
+                        return true;
+                }
+            }
             Dictionary<string, List<string>> filterList = new Dictionary<string, List<string>>
             {
                 {"墙",new List<string>{"幕墙" } },
@@ -148,9 +157,17 @@ namespace RZData.Services
             {
                 return filterList[category].Contains(family);
             }
+
             return false;
         }
-        public void ProcessNonFamilyInstance(List<ExcelFamilyRecord> systemFamilyDictionary,
+        /// <summary>
+        /// 系统族检查
+        /// </summary>
+        /// <param name="systemFamilyDictionary"></param> 
+        /// <param name="document"></param>
+        /// <param name="element"></param>
+        /// <param name="revitSolidElement"></param>
+        public void ProcessNonFamilyInstance(List<ExcelFamilyModel> systemFamilyDictionary,
             Document document, Element element, RevitSolidElement revitSolidElement)
         {
             var extendName = element.GetExtendName();
@@ -167,11 +184,19 @@ namespace RZData.Services
                 CheckParameters(record, document, element, revitSolidElement);
             }
         }
-        public void ProcessFamilyInstance(List<ExcelFamilyRecord> loadableFamilyDictionary,
+        /// <summary>
+        /// 载入族检查
+        /// </summary>
+        /// <param name="loadableFamilyDictionary"></param>
+        /// <param name="document"></param>
+        /// <param name="element"></param>
+        /// <param name="revitSolidElement"></param>
+        public void ProcessFamilyInstance(List<ExcelFamilyModel> loadableFamilyDictionary,
             Document document, Element element, RevitSolidElement revitSolidElement)
         {
             var typeName = element.GetFamilyName();
             var typeNames = loadableFamilyDictionary.FindAll(a => typeName.StartsWith(a.FamilyName.Substring(0, a.FamilyName.Length - 1))).ToList();
+            typeNames = typeNames.FindAll(a => CheckRecordExtendRequired(a, document, element)).ToList();
             if (typeNames.Count() == 0 || !typeNames.Exists(a => element.GetFamilyCategory() == a.FamilyCategory))
             {
                 revitSolidElement.IsNameCorrect = false;
@@ -184,7 +209,7 @@ namespace RZData.Services
                 CheckParameters(record, document, element, revitSolidElement);
             }
         }
-        public bool CheckRecordExtendName(ExcelFamilyRecord excelRecord, Document document, Element element)
+        public bool CheckRecordExtendName(ExcelFamilyModel excelRecord, Document document, Element element)
         {
             var recordExtendName = excelRecord.ExtendName;
             string incorrectMessage = $"补充属性不合理，族：{excelRecord.FamilyCategory} 类型：{excelRecord.FamilyName} 补充属性：{excelRecord.ExtendName}";
@@ -202,7 +227,10 @@ namespace RZData.Services
                     {
                         var str = a.Split('=');
                         if (str.Count() != 2)
+                        {
                             TaskDialog.Show("错误信息", incorrectMessage);
+                            return false;
+                        }
                         var value = element.GetElementValue(document, str[0]);
                         if (value == null)
                         {
@@ -225,7 +253,40 @@ namespace RZData.Services
                 }
             }
         }
-        public bool CheckParameters(ExcelFamilyRecord excelRecord, Document document, Element element, RevitSolidElement revitSolidElement)
+        /// <summary>
+        /// 如果在载入族中的补充属性中，有附加条件，那么需要判断附加条件是否满足
+        /// </summary>
+        /// <param name="excelRecord"></param>
+        /// <param name="document"></param>
+        /// <param name="element"></param>
+        /// <returns></returns>
+        public bool CheckRecordExtendRequired(ExcelFamilyModel excelRecord, Document document, Element element)
+        {
+            //若为不填，则不需要考虑
+            if (excelRecord.ExtendName == "不填")
+            {
+                return true;
+            }
+            string incorrectMessage = $"补充属性不合理，族：{excelRecord.FamilyCategory} 类型：{excelRecord.FamilyName} 补充属性：{excelRecord.ExtendName}";
+            var requires = excelRecord.ExtendName.Split(new[] { "&&" }, StringSplitOptions.None);
+            //存在多个条件时，
+            return requires.All(a =>
+            {
+                var require = a.Split('=');
+                if (require.Count() != 2)
+                {
+                    TaskDialog.Show("错误信息", incorrectMessage);
+                    return false;
+                }
+                var value = element.GetElementValue(document, require[0]);
+                if (value == null)
+                {
+                    return false;
+                }
+                return value.IsSameAs(require[1]);
+            });
+        }
+        public bool CheckParameters(ExcelFamilyModel excelRecord, Document document, Element element, RevitSolidElement revitSolidElement)
         {
             var familyElementID = element.LookupParameter("族与类型")?.AsElementId();
             var familyElement = document.GetElement(familyElementID);

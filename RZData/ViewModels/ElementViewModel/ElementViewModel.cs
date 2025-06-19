@@ -1,5 +1,7 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using Autodesk.Revit.UI;
+using CommunityToolkit.Mvvm.ComponentModel;
 using RZData.Models;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -10,7 +12,7 @@ namespace RZData.ViewModels
     {
         public ElementViewModel(List<RevitSolidElement> revitSolidElements)
         {
-            FamilyCategories = new ObservableCollection<FamilyCategoryViewModel>();
+            Children = new ObservableCollection<FamilyCategoryViewModel>();
             RevitSolidElements = revitSolidElements;
             foreach (var item in RevitSolidElements)
             {
@@ -18,89 +20,135 @@ namespace RZData.ViewModels
             }
         }
         public List<RevitSolidElement> RevitSolidElements { get; set; }
-        private ObservableCollection<FamilyCategoryViewModel> familyCategories;
-        public ObservableCollection<FamilyCategoryViewModel> FamilyCategories { get => familyCategories; set => SetProperty(ref familyCategories, value); }
+        private ObservableCollection<FamilyCategoryViewModel> children;
+        public ObservableCollection<FamilyCategoryViewModel> Children { get => children; set => SetProperty(ref children, value); }
         private void Add(RevitSolidElement revitSolidElement)
         {
-            var existingCategory = familyCategories.FirstOrDefault(a => a.Name == revitSolidElement.FamilyCategory);
+            var existingCategory = children.FirstOrDefault(a => a.Name == revitSolidElement.FamilyCategory);
             if (existingCategory == null)
             {
                 var newCategory = new FamilyCategoryViewModel { Name = revitSolidElement.FamilyCategory };
-                familyCategories.Add(newCategory);
+                children.Add(newCategory);
                 existingCategory = newCategory;
             }
-            if (!existingCategory.IDs.Contains(revitSolidElement.ID)) existingCategory.IDs.Add(revitSolidElement.ID);
 
-            var existingFamily = existingCategory.Families.FirstOrDefault(f => f.Name == revitSolidElement.FamilyName);
+            var existingFamily = existingCategory.Children.FirstOrDefault(f => f.Name == revitSolidElement.FamilyName);
             if (existingFamily == null)
             {
-                var newFamily = new FamilyViewModel { Name = revitSolidElement.FamilyName };
-                existingCategory.Families.Add(newFamily);
+                var newFamily = new FamilyViewModel { Name = revitSolidElement.FamilyName, Parent = existingCategory };
+                existingCategory.Children.Add(newFamily);
                 existingFamily = newFamily;
             }
             if (!existingFamily.IDs.Contains(revitSolidElement.ID)) existingFamily.IDs.Add(revitSolidElement.ID);
             //将族中的实例添加到族中
-            var existingElementInstance = existingFamily.ElementInstances.FirstOrDefault(e => e.Name == revitSolidElement.ID);
+            var existingElementInstance = existingFamily.ElementInstances.FirstOrDefault(e => e.Id == revitSolidElement.ID);
             if (existingElementInstance == null)
             {
                 var newElementInstance = new ElementInstanceViewModel
                 {
-                    Name = revitSolidElement.ID,
+                    Id = revitSolidElement.ID,
                     Parameters = revitSolidElement.Parameters,
                 };
                 existingFamily.ElementInstances.Add(newElementInstance);
                 existingElementInstance = newElementInstance;
             }
 
-            var existingExtend = existingFamily.FamilyExtends.
+            var existingExtend = existingFamily.Children.
                 FirstOrDefault(e => e.Name == revitSolidElement.ExtendName);
             if (existingExtend == null)
             {
                 var newExtend = new FamilyExtendViewModel { Name = revitSolidElement.ExtendName, Parent = existingFamily };
-                existingFamily.FamilyExtends.Add(newExtend);
+                existingFamily.Children.Add(newExtend);
                 existingExtend = newExtend;
             }
-            if (!existingExtend.ElementInstances.Contains(existingElementInstance))
+            if (!existingExtend.Children.Contains(existingElementInstance))
             {
-                existingExtend.ElementInstances.Add(existingElementInstance);
+                existingExtend.Children.Add(existingElementInstance);
                 existingElementInstance.Parent = existingExtend;
             }
             if (!existingExtend.IDs.Contains(revitSolidElement.ID)) existingExtend.IDs.Add(revitSolidElement.ID);
-
-            //将族中的参数添加到族中
-            foreach (var item in revitSolidElement.Parameters)
+        }
+        //全选或者全不选
+        internal void SelectAll(bool IsSelected)
+        {
+            foreach (var category in children)
             {
-                var existingParameter = existingExtend.Parameters.FirstOrDefault(p => p.Name == item.Name);
-                if (existingParameter == null)
+                category.IsChecked = IsSelected;
+                foreach (var family in category.Children)
                 {
-                    var newParameter = new ParameterSetVM(item);
-                    existingExtend.Parameters.Add(newParameter);
-                }
-                else
-                {
-                    //如果已经存在，需要判断是否已经添加过
-                    if (!existingParameter.Parameters.Contains(item))
-                        existingParameter.Parameters.Add(item);
+                    family.IsChecked = IsSelected;
+                    foreach (var extend in family.Children)
+                    {
+                        extend.IsChecked = IsSelected;
+                        foreach (var elementInstance in extend.Children)
+                        {
+                            elementInstance.IsChecked = IsSelected;
+                        }
+                    }
                 }
             }
-
-            if (revitSolidElement.RevitElementFamilyType != RevitElementFamilyType.SystemFamilyElement)
-            {             //将族中的参数添加到族中
-                foreach (var item in revitSolidElement.Parameters)
+        }
+        //获取所有的ElementInstanceViewModel
+        internal List<ElementInstanceViewModel> GetAllElements()
+        {
+            var result = new List<ElementInstanceViewModel>();
+            foreach (var category in children)
+            {
+                foreach (var family in category.Children)
                 {
-                    var existingParameter = existingFamily.Parameters.FirstOrDefault(p => p.Name == item.Name);
-                    if (existingParameter == null)
+                    foreach (var extend in family.Children)
                     {
-                        var newParameter = new ParameterSetVM(item);
-                        existingFamily.Parameters.Add(newParameter);
-                    }
-                    else
-                    {
-                        //如果已经存在，需要判断是否已经添加过
-                        if (!existingParameter.Parameters.Contains(item))
-                            existingParameter.Parameters.Add(item);
+                        foreach (var elementInstance in extend.Children)
+                        {
+                            result.Add(elementInstance);
+                        }
                     }
                 }
+            }
+            return result.Distinct().ToList();
+        }
+
+        internal void SelectObject(object obj)
+        {
+            if (obj is FamilyCategoryViewModel familyCategory)
+            {
+                familyCategory.IsChecked = true;
+                foreach (var family in familyCategory.Children)
+                {
+                    family.IsChecked = true;
+                    foreach (var familyExtend in family.Children)
+                    {
+                        familyExtend.IsChecked = true;
+                    }
+                }
+                var elements = familyCategory.GetAllElementInstanceViewModels();
+                elements.ForEach(e => e.IsChecked = true);
+            }
+            else if (obj is FamilyViewModel family)
+            {
+                family.IsChecked = true;
+                var elements = family.GetAllElementInstanceViewModels();
+                foreach (var familyExtend in family.Children)
+                {
+                    familyExtend.IsChecked = true;
+                }
+                elements.ForEach(e => e.IsChecked = true);
+                family.Parent.ResetIsChecked();
+            }
+            else if (obj is FamilyExtendViewModel familyExtend)
+            {
+                familyExtend.IsChecked = true;
+                var elements = familyExtend.GetAllElementInstanceViewModels();
+                elements.ForEach(e => e.IsChecked = true);
+                familyExtend.Parent.ResetIsChecked();
+                familyExtend.Parent.Parent.ResetIsChecked();
+            }
+            else if (obj is ElementInstanceViewModel elementInstance)
+            {
+                elementInstance.IsChecked = true;
+                elementInstance.Parent.ResetIsChecked();
+                elementInstance.Parent.Parent.ResetIsChecked();
+                elementInstance.Parent.Parent.Parent.ResetIsChecked();
             }
         }
     }

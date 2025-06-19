@@ -6,13 +6,27 @@ namespace RZData.ViewModels
 {
     public class ParameterSetVM : ObservableObject
     {
-        private string _value;
-        private string _status;
         private bool _isModified;
+        public bool IsModified
+        {
+            get => _isModified;
+            set => SetProperty(ref _isModified, value);
+        }
+        private string _value;
+        public string Value
+        {
+            get => _value; set
+            {
+                IsModified = true;
+                SetProperty(ref _value, value);
+            }
+        }
         public string Name { get; set; }
+        public string TDCName { get; set; }
+        public string ValueType { get; set; }
+        private string _status;
         private ObservableCollection<string> Values { get; set; }
         public ObservableCollection<ParameterVM> Parameters { get; set; }
-        public string ValueType { get; set; }
         public ParameterSetVM()
         {
             Values = new ObservableCollection<string>();
@@ -87,16 +101,6 @@ namespace RZData.ViewModels
             IsModified = false;
         }
         public string Status { get => _status; set => SetProperty(ref _status, value); }
-        public string Value
-        {
-            get => _value;
-            set
-            {
-                IsModified = true;
-                SetProperty(ref _value, value);
-            }
-        }
-        public bool IsModified { get => _isModified; set => SetProperty(ref _isModified, value); }
 
         public string ShowValue
         {

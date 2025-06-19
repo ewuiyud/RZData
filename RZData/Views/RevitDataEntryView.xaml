@@ -8,13 +8,179 @@
              xmlns:userControls="clr-namespace:RZData.UserControls"
              mc:Ignorable="d" 
              Title="数据批量录入"
-             MaxHeight="750" MinHeight="750" MaxWidth="900" MinWidth="900">
+             TextOptions.TextFormattingMode="Display" TextOptions.TextRenderingMode="ClearType" TextOptions.TextHintingMode="Fixed" UseLayoutRounding="True"
+             MinHeight="900" MaxHeight="900" MinWidth="1200" MaxWidth="1200">
+
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/RZData;component/Styles/Style.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <convert:BoolToColorConverter x:Key="BoolToColorConverter"/>
+            <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+            <convert:StringNullOrEmptyToTrueConverter x:Key="EmptyStringToTrue"/>
+            <convert:BoolToExpandCollapseConverter x:Key="BoolToExpandCollapseConverter"/>
+            <convert:IntToBoolConverter x:Key="IntToBoolConverter"/>
+
+            <!-- 控制面板样式 -->
+            <Style x:Key="ControlPanelStyle" TargetType="Border">
+                <Setter Property="Background" Value="#2C3E50"/>
+                <Setter Property="BorderBrush" Value="#34495E"/>
+                <Setter Property="BorderThickness" Value="0,0,1,0"/>
+                <Setter Property="Padding" Value="10"/>
+            </Style>
+
+            <Style x:Key="ControlPanelButtonStyle" TargetType="ToggleButton">
+                <Setter Property="Height" Value="35"/>
+                <Setter Property="Margin" Value="0,2"/>
+                <Setter Property="Padding" Value="10,0"/>
+                <Setter Property="FontFamily" Value="微软雅黑 Light"/>
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="BorderBrush" Value="#7F8C8D"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ToggleButton">
+                            <Border Background="{TemplateBinding Background}" 
+                                    BorderBrush="{TemplateBinding BorderBrush}" 
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="3">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <ContentPresenter Grid.Column="0" 
+                                                      HorizontalAlignment="Left" 
+                                                      VerticalAlignment="Center"
+                                                      Margin="5,0"/>
+                                    <TextBlock Grid.Column="1" 
+                                               Text="{Binding IsChecked, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BoolToExpandCollapseConverter}}"
+                                               FontFamily="微软雅黑 Light"
+                                               FontSize="10"
+                                               Foreground="#BDC3C7"
+                                               VerticalAlignment="Center"
+                                               Margin="5,0"/>
+                                </Grid>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#34495E"/>
+                                </Trigger>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter Property="Background" Value="#3498DB"/>
+                                    <Setter Property="BorderBrush" Value="#2980B9"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- 转换器：布尔值到展开/折叠图标 -->
+
+            <!-- 筛选器样式 -->
+            <Style x:Key="FilterGroupBoxStyle" TargetType="GroupBox">
+                <Setter Property="Background" Value="#FAFAFA"/>
+                <Setter Property="BorderBrush" Value="#E0E0E0"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Margin" Value="5"/>
+                <Setter Property="Padding" Value="10"/>
+                <Setter Property="FontFamily" Value="微软雅黑 Light"/>
+                <Setter Property="FontSize" Value="13"/>
+            </Style>
+
+            <Style x:Key="FilterButtonStyle" TargetType="Button">
+                <Setter Property="Height" Value="32"/>
+                <Setter Property="Padding" Value="12,0"/>
+                <Setter Property="Margin" Value="3"/>
+                <Setter Property="FontFamily" Value="微软雅黑 Light"/>
+                <Setter Property="FontSize" Value="13"/>
+                <Setter Property="Background" Value="#F5F5F5"/>
+                <Setter Property="BorderBrush" Value="#CCCCCC"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}" 
+                                    BorderBrush="{TemplateBinding BorderBrush}" 
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="3">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#E8E8E8"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter Property="Background" Value="#D0D0D0"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="PrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource FilterButtonStyle}">
+                <Setter Property="Background" Value="#007ACC"/>
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}" 
+                                    BorderBrush="{TemplateBinding BorderBrush}" 
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="3">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#005A9E"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter Property="Background" Value="#004578"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="FilterComboBoxStyle" TargetType="ComboBox">
+                <Setter Property="Height" Value="30"/>
+                <Setter Property="Margin" Value="3"/>
+                <Setter Property="FontFamily" Value="微软雅黑 Light"/>
+                <Setter Property="FontSize" Value="15"/>
+                <Setter Property="Background" Value="White"/>
+                <Setter Property="BorderBrush" Value="#CCCCCC"/>
+                <Setter Property="BorderThickness" Value="1"/>
+            </Style>
+
+            <Style x:Key="FilterTextBoxStyle" TargetType="TextBox">
+                <Setter Property="Height" Value="32"/>
+                <Setter Property="Margin" Value="3"/>
+                <Setter Property="Padding" Value="8,0"/>
+                <Setter Property="FontFamily" Value="微软雅黑 Light"/>
+                <Setter Property="FontSize" Value="15"/>
+                <Setter Property="Background" Value="White"/>
+                <Setter Property="BorderBrush" Value="#CCCCCC"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+            </Style>
+
+            <Style x:Key="FilterConditionItemStyle" TargetType="Border">
+                <Setter Property="Background" Value="#F0F8FF"/>
+                <Setter Property="BorderBrush" Value="#B0C4DE"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="CornerRadius" Value="3"/>
+                <Setter Property="Margin" Value="2"/>
+                <Setter Property="Padding" Value="8,4"/>
+            </Style>
+
             <!--datagrid样式-->
             <Style x:Key="DataGridStyle" TargetType="DataGrid">
                 <Setter Property="IsReadOnly" Value="True"/>
@@ -35,87 +201,353 @@
                 <Setter Property="Background" 
                     Value="{Binding IsModified, Converter={StaticResource BoolToColorConverter}}"/>
             </Style>
-
-
         </ResourceDictionary>
     </Window.Resources>
-    <Grid Background="#F9F5EB">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="auto"/>
-        </Grid.ColumnDefinitions>
-        <Grid Margin="20" >
-            <Grid.RowDefinitions>
-                <RowDefinition Height="auto"/>
-                <RowDefinition Height="auto"/>
-                <RowDefinition Height="auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
 
-            <userControls:SearchBox Grid.Row="1"  Text="{Binding SearchKeyword,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" Margin="2,5"/>
-            <ComboBox Style="{StaticResource cmbstyle}" Grid.Row="2"  Margin="2,0,2,5" FontFamily="微软雅黑 Light" FontSize="14"
-                      ItemsSource="{Binding Families}" DisplayMemberPath="Name" SelectedItem="{Binding SelectedElement}"  />
-            
-            <!--左侧族表树状图-->
-            <TreeView Grid.Row="3" ItemsSource="{Binding ShowElements.FamilyCategories}" Margin="2,0,2,0" HorizontalAlignment="Stretch" 
-                      FontSize="14" FontFamily="微软雅黑 Light" Background="#F5F8FA"
-                      SelectedItemChanged="TreeView_SelectedItemChanged">
-                <TreeView.ItemContainerStyle>
-                    <Style TargetType="{x:Type TreeViewItem}">
-                        <EventSetter Event="Loaded" Handler="TreeViewItem_Loaded"/>
-                    </Style>
-                </TreeView.ItemContainerStyle>
-                <TreeView.ItemTemplate>
-                    <HierarchicalDataTemplate ItemsSource="{Binding Families}">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="{Binding Name}"/>
-                        </StackPanel>
-                        <HierarchicalDataTemplate.ItemTemplate>
-                            <HierarchicalDataTemplate ItemsSource="{Binding FamilyExtends}">
-                                <StackPanel Orientation="Horizontal">
-                                    <CheckBox VerticalAlignment="Center" IsChecked="{Binding RelativeSource={RelativeSource AncestorType={x:Type TreeViewItem}},
-                                        Path=IsSelected}"/>
-                                    <TextBlock Text="{Binding Name}" Width="auto"/>
-                                </StackPanel>
-                                <HierarchicalDataTemplate.ItemTemplate>
-                                    <HierarchicalDataTemplate ItemsSource="{Binding ElementInstances}">
-                                        <StackPanel Orientation="Horizontal">
-                                            <CheckBox VerticalAlignment="Center" IsChecked="{Binding RelativeSource={RelativeSource AncestorType={x:Type TreeViewItem}},
-                                        Path=IsSelected}"/>
-                                            <TextBlock Text="{Binding Name}" Width="auto"/>
-                                        </StackPanel>
-                                    </HierarchicalDataTemplate>
-                                </HierarchicalDataTemplate.ItemTemplate>
-                            </HierarchicalDataTemplate>
-                        </HierarchicalDataTemplate.ItemTemplate>
-                    </HierarchicalDataTemplate>
-                </TreeView.ItemTemplate>
-            </TreeView>
-        </Grid>
-        <Border Grid.Column="1" BorderThickness="1" BorderBrush="#acacac" Margin="20">
-            <Grid Background="#F5F8FA">
+    <!-- 动态窗口大小绑定 -->
+    <Window.Style>
+        <Style TargetType="Window">
+            <Setter Property="Width" Value="900"/>
+            <Setter Property="Height" Value="750"/>
+            <Style.Triggers>
+                <!-- 只显示筛选器时的窗口大小 -->
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding ShowFilter}" Value="True"/>
+                        <Condition Binding="{Binding ShowProjectFeatures}" Value="False"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter Property="Width" Value="1000"/>
+                    <Setter Property="Height" Value="800"/>
+                </MultiDataTrigger>
+
+                <!-- 只显示项目特征时的窗口大小 -->
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding ShowFilter}" Value="False"/>
+                        <Condition Binding="{Binding ShowProjectFeatures}" Value="True"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter Property="Width" Value="900"/>
+                    <Setter Property="Height" Value="650"/>
+                </MultiDataTrigger>
+
+                <!-- 两者都显示时的窗口大小 -->
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding ShowFilter}" Value="True"/>
+                        <Condition Binding="{Binding ShowProjectFeatures}" Value="True"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter Property="Width" Value="1200"/>
+                    <Setter Property="Height" Value="900"/>
+                </MultiDataTrigger>
+
+                <!-- 两者都不显示时的窗口大小 -->
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding ShowFilter}" Value="False"/>
+                        <Condition Binding="{Binding ShowProjectFeatures}" Value="False"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter Property="Width" Value="600"/>
+                    <Setter Property="Height" Value="500"/>
+                </MultiDataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Style>
+
+    <Grid Background="#ECF0F1">
+        <Grid.ColumnDefinitions>
+            <!-- 控制面板 -->
+            <ColumnDefinition Width="150"/>
+            <!-- 主内容区域 -->
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- 左侧边缘控制面板 -->
+        <Border Grid.Column="0" Style="{StaticResource ControlPanelStyle}">
+            <StackPanel>
+                <TextBlock Text="显示控制" 
+                           Foreground="White" 
+                           FontSize="14" 
+                           FontWeight="Bold" 
+                           Margin="0,0,0,15"/>
+
+                <ToggleButton Content="筛选器" 
+                              Style="{StaticResource ControlPanelButtonStyle}"
+                              IsChecked="{Binding ShowFilter, Mode=TwoWay}"/>
+
+                <ToggleButton Content="项目特征" 
+                              Style="{StaticResource ControlPanelButtonStyle}"
+                              IsChecked="{Binding ShowProjectFeatures, Mode=TwoWay}"/>
+            </StackPanel>
+        </Border>
+
+        <!-- 主内容区域 -->
+        <Grid Grid.Column="1" Background="#F9F5EB">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- 左侧主要内容 -->
+            <Grid Grid.Column="0" Margin="20">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto"/>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto"/>
                 </Grid.RowDefinitions>
-                <DataGrid ItemsSource="{Binding SelectedItem.Parameters}" Style="{StaticResource DataGridStyle}" 
-                          FontSize="14" RowHeight="28" RowStyle="{StaticResource DataGridRowStyle}">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="参数名称" Binding="{Binding Name}" Width="100"/>
-                        <DataGridTextColumn Header="参数类型" Binding="{Binding ValueType}" Width="100"/>
-                        <DataGridTemplateColumn Header="参数值" Width="100">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <TextBox Text="{Binding Value,UpdateSourceTrigger=PropertyChanged}" Background="{Binding IsModified,Converter={StaticResource BoolToColorConverter}, Mode=TwoWay}" Style="{StaticResource SimbleTextBox}" />
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                        <DataGridTextColumn Header="状态" Binding="{Binding Status}" Width="50">
-                        </DataGridTextColumn>
-                    </DataGrid.Columns>
-                </DataGrid>
-                <Button Grid.Row="1" Content="确定" Margin="20" HorizontalAlignment="Right" Width="80" Height="30" FontSize="18" Command="{Binding OKCommand}"/>
+
+                <userControls:SearchBox Grid.Row="1"  
+                                        Text="{Binding SearchKeyword,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" 
+                                        Margin="2,5"/>
+                <ComboBox Style="{StaticResource cmbstyle}" 
+                          Grid.Row="2"  
+                          Margin="2,0,2,5" 
+                          FontFamily="微软雅黑 Light" 
+                          FontSize="14"
+                          ItemsSource="{Binding Families}" 
+                          DisplayMemberPath="Name" 
+                          SelectedItem="{Binding SelectedElement}"/>
+
+                <!--族表树状图-->
+                <userControls:MultiSelectTreeView Grid.Row="3" 
+                               ItemsSource="{Binding ShowElements.Children ,Mode=TwoWay}" 
+                               Margin="2,0,2,5" 
+                               HorizontalAlignment="Stretch"
+                               FontSize="14" 
+                               FontFamily="微软雅黑 Light" 
+                               Background="#F5F8FA"
+                               TreeViewDoubleClick="MultiSelectTreeView_TreeViewDoubleClick"/>
+
+                <!-- 树状图操作按钮 -->
+                <Grid Grid.Row="4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel  Orientation="Horizontal" HorizontalAlignment="Left">
+                        <Button Content="全选" Width="50" Style="{StaticResource FilterButtonStyle}" 
+                                        Command="{Binding SelectAllTreeItemsCommand}"/>
+                        <Button Content="全不选" Width="50" Style="{StaticResource FilterButtonStyle}" 
+                                        Command="{Binding DeselectAllTreeItemsCommand}"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1"  Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button  Content="在Revit中选中" Style="{StaticResource FilterButtonStyle}" 
+                                    HorizontalAlignment="Right" Width="120"
+                                    Command="{Binding SelectInRevitCommand}"/>
+                        <Button  Content="录入参数" Style="{StaticResource PrimaryButtonStyle}" 
+                                    HorizontalAlignment="Right" Width="100"
+                                    Command="{Binding EntryParametersCommand}"/>
+                    </StackPanel>
+                </Grid>
+                <!-- 筛选器部分 - 可控制显示/隐藏 -->
+                <Border Grid.Row="5" 
+                        Background="White" Padding="15" CornerRadius="5"
+                          Visibility="{Binding ShowFilter, Converter={StaticResource BoolToVis}}">
+                    <Border.Effect>
+                        <DropShadowEffect Color="Gray" Direction="320" ShadowDepth="2" Opacity="0.3"/>
+                    </Border.Effect>
+                    <StackPanel>
+                        <!-- 筛选条件输入 -->
+                        <GroupBox Header="添加筛选条件" Style="{StaticResource FilterGroupBoxStyle}" Margin="0,0,0,10">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="60"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="40"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- 属性选择 -->
+                                <Label Grid.Row="0" Grid.Column="0" Content="属性:" 
+                                       FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,5,0"/>
+                                <ComboBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3"
+                                          Style="{StaticResource FilterComboBoxStyle}"
+                                          DropDownOpened="FilterProperty_Drop" 
+                                          SelectedItem="{Binding SelectedFilterProperty, Mode=TwoWay}"/>
+
+                                <!-- 值选择 -->
+                                <Label Grid.Row="1" Grid.Column="0" Content="值:" 
+                                       FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,5,0"/>
+                                <ComboBox x:Name="FilterValueComboBox" Grid.Row="1" Grid.Column="1"
+                                          Style="{StaticResource FilterComboBoxStyle}"
+                                          DropDownOpened="FilterValue_DropDown" 
+                                          IsEnabled="{Binding ElementName=CustomFilterValueText, Path=Text.IsEmpty}"
+                                          SelectedItem="{Binding SelectedFilterValue , Mode=TwoWay}"/>
+                                <!--IsReadOnly="{Binding ElementName=CustomFilterValueText, Path=Text.Length , Converter= {StaticResource IntToBoolConverter}}"-->
+                                <Label Grid.Row="1" Grid.Column="2" Content="或:" 
+                                       FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                <TextBox x:Name="CustomFilterValueText" Grid.Row="1" Grid.Column="3"
+                                         Style="{StaticResource FilterTextBoxStyle}"
+                                         Text="{Binding CustomFilterValue, Mode=TwoWay}" 
+                                         Visibility="{Binding IsCustomValueEnabled, Converter={StaticResource BoolToVis}}"/>
+
+                                <!-- 逻辑选择和添加按钮 -->
+                                <Label Grid.Row="2" Grid.Column="0" Content="逻辑:" 
+                                       FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,5,0"/>
+                                <ComboBox Grid.Row="2" Grid.Column="1"
+                                          Style="{StaticResource FilterComboBoxStyle}"
+                                          ItemsSource="{Binding FilterLogics}" 
+                                          SelectedValue="等于"
+                                          SelectedItem="{Binding SelectedFilterLogic, Mode=TwoWay}"/>
+                                <Button Grid.Row="2" Grid.Column="3" Content="添加条件" 
+                                        Style="{StaticResource PrimaryButtonStyle}"
+                                        Command="{Binding AddFilterConditionCommand}"/>
+                            </Grid>
+                        </GroupBox>
+
+                        <!-- 已选筛选条件显示区域 -->
+                        <GroupBox Header="当前筛选条件" Style="{StaticResource FilterGroupBoxStyle}" Margin="0,0,0,10">
+                            <Border BorderThickness="1" BorderBrush="#E0E0E0" Background="White" 
+                                    MinHeight="80" MaxHeight="120">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                                    <ItemsControl ItemsSource="{Binding FilterConditions}" Margin="5">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Style="{StaticResource FilterConditionItemStyle}">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="{Binding PropertyName}" VerticalAlignment="Center" Margin="0 0 10 0"/>
+                                                            <TextBlock Text="{Binding Logic}" VerticalAlignment="Center" Margin="0 0 10 0"/>
+                                                            <TextBlock Text="{Binding PropertyValue}" VerticalAlignment="Center" Margin="0 0 10 0"/>
+                                                        </StackPanel>
+                                                        <Button Grid.Column="1" 
+                                                                Content="×" 
+                                                                Width="20" Height="20" 
+                                                                FontSize="12" 
+                                                                FontWeight="Bold"
+                                                                Background="Transparent" 
+                                                                BorderThickness="0"
+                                                                Foreground="Red"
+                                                                Cursor="Hand"
+                                                                Command="{Binding DataContext.RemoveFilterConditionCommand, 
+                                                                         RelativeSource={RelativeSource AncestorType=GroupBox}}"
+                                                                CommandParameter="{Binding}">
+                                                            <Button.Template>
+                                                                <ControlTemplate TargetType="Button">
+                                                                    <Border Background="{TemplateBinding Background}" 
+                                                                            CornerRadius="10">
+                                                                        <ContentPresenter HorizontalAlignment="Center" 
+                                                                                          VerticalAlignment="Center"/>
+                                                                    </Border>
+                                                                    <ControlTemplate.Triggers>
+                                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                                            <Setter Property="Background" Value="#FFE0E0"/>
+                                                                            <Setter Property="Foreground" Value="#CC0000"/>
+                                                                        </Trigger>
+                                                                    </ControlTemplate.Triggers>
+                                                                </ControlTemplate>
+                                                            </Button.Template>
+                                                        </Button>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel Orientation="Horizontal"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </Border>
+                        </GroupBox>
+
+                        <!-- 筛选执行按钮 -->
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <Button Content="应用筛选" 
+                                    Style="{StaticResource PrimaryButtonStyle}" 
+                                    Width="100"
+                                    Command="{Binding ApplyFilterCommand}"/>
+                            <Button Content="清除筛选" 
+                                    Style="{StaticResource FilterButtonStyle}" 
+                                    Width="100"
+                                    Command="{Binding ClearFilterCommand}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
             </Grid>
-        </Border>
+
+            <!--右侧参数详情-->
+            <Border Grid.Column="1" BorderThickness="1" BorderBrush="#acacac" Margin="20">
+                <Grid Background="#F5F8FA">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="2*"/>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!--参数表-->
+                    <DataGrid ItemsSource="{Binding SelectedItemParameters}" 
+                              Style="{StaticResource DataGridStyle}" 
+                              FontSize="14" RowHeight="28" 
+                              RowStyle="{StaticResource DataGridRowStyle}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="参数名称" Binding="{Binding Name}" Width="100"/>
+                            <DataGridTextColumn Header="参数类型" Binding="{Binding ValueType}" Width="100"/>
+                            <DataGridTemplateColumn Header="参数值" Width="100">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBox Text="{Binding Value,UpdateSourceTrigger=PropertyChanged}" 
+                                                 IsReadOnly="{Binding ValueType ,Converter={StaticResource EmptyStringToTrue}}"
+                                                 Background="{Binding IsModified,Converter={StaticResource BoolToColorConverter}, Mode=TwoWay}" 
+                                                 Style="{StaticResource SimbleTextBox}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="状态" Binding="{Binding Status}" Width="50"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <!--项目特征详情 - 可控制显示/隐藏-->
+                    <Grid Grid.Row="1" 
+                          Background="White" 
+                          Margin="20,0"
+                          Visibility="{Binding ShowProjectFeatures, Converter={StaticResource BoolToVis}}">
+                        <Grid.Effect>
+                            <DropShadowEffect Color="Gray" Direction="320" ShadowDepth="2" Opacity="0.3"/>
+                        </Grid.Effect>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Label Content="项目特征详情" 
+                               FontSize="14" 
+                               FontWeight="Bold" 
+                               Foreground="#2C3E50" 
+                               Margin="5"/>
+                        <DataGrid Grid.Row="1" 
+                                  Style="{StaticResource DataGridStyle}"  
+                                  ItemsSource="{Binding ShowMaterialList}"  
+                                  EnableRowVirtualization="False" 
+                                  Margin="5">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="材料名称" Binding="{Binding MaterialName}" Width="100"/>
+                                <DataGridTextColumn Header="使用方式"  Binding="{Binding UsageMethod}" Width="100"/>
+                                <DataGridTextColumn Header="项目特征"  Binding="{Binding ProjectFeatures}" Width="200"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+
+                    <Button Grid.Row="2" 
+                            Content="确定" 
+                            Margin="20" 
+                            HorizontalAlignment="Right" 
+                            Width="80" Height="30" 
+                            FontSize="18" 
+                            Command="{Binding OKCommand}"/>
+                </Grid>
+            </Border>
+        </Grid>
     </Grid>
 </Window>

@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.UI;
+using RZData.Models;
 using RZData.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -66,6 +67,26 @@ namespace RZData.Views
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
+        }
+
+        /// <summary>
+        /// 关联
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ComboBox_Loaded(object sender, RoutedEventArgs e)
+        {
+            System.Windows.Controls.ComboBox comboBox = sender as System.Windows.Controls.ComboBox;
+            var datacontext = comboBox.DataContext as MaterialViewModel;
+            if (datacontext.ProductLibraryList.Count==0)
+            {
+                comboBox.Visibility = Visibility.Hidden;
+            }
+        }
+
+        private void ComboBox_SelectionChanged_1(object sender, SelectionChangedEventArgs e)
+        {
+
         }
     }
 }

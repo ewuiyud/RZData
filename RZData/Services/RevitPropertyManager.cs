@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Markup;
 
 namespace RZData.Services
 {
@@ -33,11 +34,25 @@ namespace RZData.Services
 
                 try
                 {
-                    Dictionary<string, List<string>> addedParameters = new Dictionary<string, List<string>>();
+                    var allCategories = new List<string>();
                     foreach (var data in familyData)
                     {
                         CreateProjectParameter(_uIDocument, data, ParameterType.Text);
+                        data.CategoryNames.ForEach(a =>
+                        {
+                            if (!allCategories.Contains(a))
+                            {
+                                allCategories.Add(a);
+                            }
+                        });
                     }
+
+                    var inset = new InsetParameterData()
+                    {
+                        ParameterName = "关联材料库",
+                        CategoryNames = allCategories
+                    };
+                    CreateProjectParameter(_uIDocument, inset, ParameterType.Text);
 
                     trans.Commit();
                 }
@@ -69,8 +84,11 @@ namespace RZData.Services
 
             // 1.
             string filePath = "MySharedParameterFile.txt";
-            FileStream fs = File.Create(filePath);
-            fs.Close();
+            if (!File.Exists(filePath))
+            {
+                FileStream fs = File.Create(filePath);
+                fs.Close();
+            }
             // 2.
             app.SharedParametersFilename = filePath;
             // 3.
@@ -92,10 +110,6 @@ namespace RZData.Services
                 if (systemCategories.Contains(a))
                 {
                     categories.Insert(systemCategories.get_Item(a));
-                }
-                else
-                {
-
                 }
             });
 
