@@ -14,7 +14,7 @@ namespace RZData.ViewModels
     {
         public RevitTemplateLoadViewModel(UIDocument uIDocument)
         {
-            this.uIDocument = uIDocument;
+            this.UIDocument = uIDocument;
             LoadDataFromExcelCommand = new RelayCommand(LoadDataFromExcel);
             LoadParametersCommand = new AsyncRelayCommand(LoadParameters);
             OKCommand = new AsyncRelayCommand(OK);
@@ -22,7 +22,7 @@ namespace RZData.ViewModels
             CurrentFileName = string.IsNullOrEmpty(Path.GetFileName(CurrentTemplatePath)) ? "无" : Path.GetFileName(CurrentTemplatePath);
         }
 
-        private readonly UIDocument uIDocument;
+        public UIDocument UIDocument;
         private string currentTemplatePath;
         private string loadTemplatePath;
         private string currentFileName;
@@ -86,7 +86,7 @@ namespace RZData.ViewModels
                 {
                     return;
                 }
-                var uiDoc = uIDocument;
+                var uiDoc = UIDocument;
                 var doc = uiDoc.Document;
 
                 // 处理Excel数据

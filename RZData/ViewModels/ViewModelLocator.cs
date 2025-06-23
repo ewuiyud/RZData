@@ -16,6 +16,7 @@ namespace RZData.ViewModels
                 _instance = new ViewModelLocator(uiDocument);
             }
             _instance.UiDocument = uiDocument;
+            _instance.RevitTemplateLoadViewModel.UIDocument = uiDocument;
             return _instance;
         }
         public ObservableCollection<RevitSolidElement> AllSolidElements { get; set; }
@@ -32,11 +33,10 @@ namespace RZData.ViewModels
             this.UiDocument = _uiDocument;
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
             AllSolidElements = new ObservableCollection<RevitSolidElement>();
-            RevitTemplateLoadViewModel = new RevitTemplateLoadViewModel(UiDocument);
             this.Reset();
         }
 
-        public RevitTemplateLoadViewModel RevitTemplateLoadViewModel { get; }
+        public RevitTemplateLoadViewModel RevitTemplateLoadViewModel { get; set; }
         public RevitDataEntryViewModel RevitDataEntryViewModel { get; set; }
         public RevitDataCheckViewModel RevitDataCheckViewModel { get; set; }
         public RevitListSummaryViewModel RevitListSummaryViewModel { get; set; }
@@ -45,6 +45,7 @@ namespace RZData.ViewModels
         {
             RevitElementService _revitElementService = new RevitElementService();
             AllSolidElements = _revitElementService.LoadAllRevitElements(UiDocument);
+            RevitTemplateLoadViewModel = new RevitTemplateLoadViewModel(UiDocument);
             RevitDataCheckViewModel = new RevitDataCheckViewModel(UiDocument, AllSolidElements);
             RevitDataEntryViewModel = new RevitDataEntryViewModel(UiDocument, AllSolidElements);
             RevitListSummaryViewModel = new RevitListSummaryViewModel(UiDocument, AllSolidElements);
