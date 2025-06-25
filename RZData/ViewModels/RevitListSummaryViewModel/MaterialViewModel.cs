@@ -18,6 +18,14 @@ namespace RZData.ViewModels
             ProjectFeaturesDetail = new Dictionary<string, string>();
         }
         /// <summary>
+        /// 关联的产品物料库
+        /// </summary>
+        public ExcelProductMaterialLibraryModel ProductMaterialLibrary { get; set; }
+        /// <summary>
+        /// 是否关联物料库
+        /// </summary>
+        public bool HasProductMaterialLibrary { get; set; }
+        /// <summary>
         /// 分类编码
         /// </summary>
         public string ID;
@@ -37,32 +45,6 @@ namespace RZData.ViewModels
         /// 产品名称
         /// </summary>
         public string ProductName { get; set; }
-        /// <summary>
-        /// 关联的物料库
-        /// </summary>
-        public string ProductLibrary { get; set; }
-        /// <summary>
-        /// 可关联物料库的名称列表
-        /// </summary>
-        public List<string> ProductLibraryList
-        {
-            get
-            {
-                List<string> list = new List<string>();
-                if (ProductName != null)
-                {
-                    ExcelDataService.ExcelProductMaterialLibraryModels.FindAll(x => x.ProductName == ProductName)
-                        .ForEach(x => list.Add(x.Name));
-                }
-                //允许选空
-                if (list.Count != 0)
-                {
-                    list.Add("");
-                }
-                return list;
-            }
-        }
-
         /// <summary>
         /// 使用方式
         /// </summary>
@@ -86,17 +68,12 @@ namespace RZData.ViewModels
         public string ModelEngineeringUnit { get; set; }
 
         /// <summary>
-        /// 转换规则
-        /// </summary>
-        public string ConversionRule { get; set; }
-
-        /// <summary>
         /// 损耗值
         /// </summary>
         public double LossValue { get; set; }
 
         /// <summary>
-        /// 材料量
+        /// 材料工程量
         /// </summary>
         public double MaterialQuantity { get; set; }
 
@@ -104,6 +81,21 @@ namespace RZData.ViewModels
         /// 材料单位
         /// </summary>
         public string MaterialUnit { get; set; }
+
+        /// <summary>
+        /// 材料采购量
+        /// </summary>
+        public double MaterialProcurementQuantity { get; set; }
+
+        /// <summary>
+        /// 采购单位
+        /// </summary>
+        public string ProcurementUnit { get; set; }
+
         public ObservableCollection<RevitSolidElement> RevitSolidElements { get; set; }
+        /// <summary>
+        /// 户型
+        /// </summary>
+        public string Room { get; internal set; }
     }
 }

@@ -33,6 +33,10 @@ namespace RZData.Tools
             ParameterVM parameter = revitSolidElement.Parameters.FirstOrDefault(p => p.Name == propertyName);
             if (parameter == null || string.IsNullOrEmpty(parameter.Value))
             {
+                if (propertyValue == "")
+                {
+                    return true;
+                }
                 return false;
             }
 
@@ -60,6 +64,47 @@ namespace RZData.Tools
                     throw new ArgumentException($"不支持的筛选逻辑: {logic}");
             }
         }
+
+        internal static bool FilterMaterialList(MaterialViewModel materialViewModel, FilterConditionViewModel filterConditionViewModel)
+        {
+            if (!materialViewModel.HasProductMaterialLibrary && (materialViewModel.ProjectFeaturesDetail == null || materialViewModel.ProjectFeaturesDetail.Count == 0))
+            {
+                return false;
+            }
+            string propertyName = filterConditionViewModel.PropertyName;
+            string propertyValue = filterConditionViewModel.PropertyValue;
+
+            if (propertyName == ConstString.MaterialName)
+                return materialViewModel.HasProductMaterialLibrary ? materialViewModel.ProductMaterialLibrary.Name == propertyValue : materialViewModel.MaterialName == propertyValue;
+            else if (propertyName == ConstString.UsageMethod)
+                return materialViewModel.UsageMethod == propertyValue;
+            else if (propertyName == ConstString.RoomName)
+                return materialViewModel.Room == propertyValue;
+
+            // 查找指定名称的参数
+            //如果有库，库内有值直接返回true
+            if (materialViewModel.HasProductMaterialLibrary)
+            {
+                if (materialViewModel.ProductMaterialLibrary.SpecificationAttributesDetail.Keys.Contains(propertyName))
+                {
+                    if (materialViewModel.ProductMaterialLibrary.SpecificationAttributesDetail[propertyName] == propertyValue)
+                    {
+                        return true;
+                    }
+                }
+            }
+            if (materialViewModel.ProjectFeaturesDetail.Keys.Contains(propertyName))
+            {
+                return materialViewModel.ProjectFeaturesDetail[propertyName] == propertyValue;
+            }
+            return false;
+        }
+
+        internal static bool FilterMaterialList(MaterialViewModel materialViewModel, List<FilterConditionViewModel> filterConditionViewModels)
+        {
+            return filterConditionViewModels.All(f => FilterMaterialList(materialViewModel, f));
+        }
+
         /// <summary>
         /// 检查并比较数字
         /// </summary>
@@ -89,7 +134,7 @@ namespace RZData.Tools
                 Regex regex = new Regex(regexPattern);
                 return regex.IsMatch(paramValue);
             }
-            catch 
+            catch
             {
                 throw new ArgumentException("无效的正则表达式模式");
             }

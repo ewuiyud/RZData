@@ -16,13 +16,14 @@ namespace RZData.Tools
 {
     public static class PropertyMatchTool
     {
-        public static ObservableCollection<MaterialViewModel> FillMaterialList(UIDocument uIDocument, List<RevitSolidElement> list, out List<Element> noMatchedElement)
+        public static ObservableCollection<MaterialViewModel> FillMaterialList(UIDocument uIDocument, List<RevitSolidElement> list, out List<int> noMatchedElementID)
         {
             ObservableCollection<MaterialViewModel> result = new ObservableCollection<MaterialViewModel>();
-            noMatchedElement = new List<Element>();
+            noMatchedElementID = new List<int>();
             foreach (var revitSolidElement in list)
             {
                 var materialRecord = GetMaterail(uIDocument, revitSolidElement);
+
                 if (materialRecord != null)
                 {
                     var m = result.FirstOrDefault(a => a.MaterialName == materialRecord.MaterialName
@@ -31,7 +32,15 @@ namespace RZData.Tools
                     if (m != null)
                     {
                         m.RevitSolidElements.Add(revitSolidElement);
+                        //五个材料量需要累加
                         m.ModelEngineeringQuantity += materialRecord.ModelEngineeringQuantity;
+                        m.MaterialQuantity += materialRecord.MaterialQuantity;
+                        if (materialRecord.HasProductMaterialLibrary)
+                        {
+                            m.ProductMaterialLibrary.MaterialQuantity += materialRecord.ProductMaterialLibrary.MaterialQuantity;
+                            m.ProductMaterialLibrary.MaterialProcurementQuantity += materialRecord.ProductMaterialLibrary.MaterialProcurementQuantity;
+                        }
+                        m.MaterialProcurementQuantity += materialRecord.MaterialProcurementQuantity;
                     }
                     else
                     {
@@ -41,14 +50,13 @@ namespace RZData.Tools
                 }
                 else
                 {
-                    var element = uIDocument.Document.GetElement(new ElementId(revitSolidElement.ID));
-                    noMatchedElement.Add(element);
+                    noMatchedElementID.Add(revitSolidElement.ID);
                 }
             }
             return result;
         }
         /// <summary>
-        /// 新的解释字符串的方法，旧的方法应该在下次更新中删除
+        /// 新的解释字符串的方法
         ///1. 字符串中《xx》包裹的内容为查询值，可以从定义好的dictionary中查询对应的值；
         ///2. 字符传中((xx))包裹的内容为固定字符串，直接保留；
         ///3. 字符串[[xx]]包裹的内容为Revit中的元素参数；
@@ -57,7 +65,7 @@ namespace RZData.Tools
         /// <param name="input"></param>
         /// <param name="revitSolidElement"></param>
         /// <returns></returns>
-        public static string ExplainString(UIDocument uIDocument, string input, RevitSolidElement revitSolidElement)
+        public static string ExplainString(UIDocument uIDocument, string input, RevitSolidElement revitSolidElement, MaterialViewModel materialViewModel)
         {
             if (string.IsNullOrEmpty(input))
                 return string.Empty;
@@ -79,6 +87,14 @@ namespace RZData.Tools
                 }
                 else
                 {
+                    if (materialViewModel.HasProductMaterialLibrary)
+                    {
+                        var p1 = materialViewModel.ProductMaterialLibrary.SpecificationAttributesDetail.First(a => a.Key == tDCName);
+                        if (p1.Value != null)
+                        {
+                            return p1.Value;
+                        }
+                    }
                     var p = revitSolidElement.Parameters.FirstOrDefault(a => a.TDCName == tDCName);
                     if (p != null)
                     {
@@ -100,7 +116,7 @@ namespace RZData.Tools
             //3.处理[[xx]]格式 - Revit中的元素参数；
             result = Regex.Replace(result, @"\[\[([^)]+)\]\]", match =>
             {
-                return GetModelEngineeringQuantityValue(uIDocument, match.Groups[1].Value, revitSolidElement);
+                return GetModelEngineeringQuantityValue(uIDocument, match.Groups[1].Value, revitSolidElement, materialViewModel);
             });
 
             // 4. 处理%%xx%%格式 - 注释，直接移除
@@ -116,11 +132,26 @@ namespace RZData.Tools
         /// <param name="valueName"></param>
         /// <param name="revitSolidElement"></param>
         /// <returns></returns>
-        static string GetModelEngineeringQuantityValue(UIDocument uIDocument, string valueName, RevitSolidElement revitSolidElement)
+        static string GetModelEngineeringQuantityValue(UIDocument uIDocument, string valueName, RevitSolidElement revitSolidElement, MaterialViewModel materialViewModel)
         {
             if (valueName == "数量")
             {
                 return "1";
+            }
+            else if (valueName == "材料工程量")
+            {
+                if (materialViewModel.HasProductMaterialLibrary)
+                {
+                    return materialViewModel.ProductMaterialLibrary.MaterialQuantity.ToString();
+                }
+                else
+                {
+                    return materialViewModel.ModelEngineeringQuantity.ToString();
+                }
+            }
+            else if (valueName == "损耗率")
+            {
+                return materialViewModel.LossValue.ToString();
             }
 
             var doc = uIDocument.Document;
@@ -144,40 +175,151 @@ namespace RZData.Tools
             var record = SortMaterials(revitSolidElement);
             if (record != null)
             {
-                var materialRecord = new MaterialViewModel
+                var materialViewModel = new MaterialViewModel
                 {
                     MaterialName = record.Name,
                     ProductName = record.ProductName,
                 };
+                //先挂接产品库
+                var element = uIDocument.Document.GetElement(new ElementId(revitSolidElement.ID));
+                var materialString = element.LookupParameter("关联材料库").GetValue();
+                if (!string.IsNullOrEmpty(materialString))
+                {
+                    var str = materialString.Split('-');
+                    materialViewModel.ProductMaterialLibrary = ExcelDataService.ExcelProductMaterialLibraryModels.FirstOrDefault(a => a.Name == str[0] && a.SerialNumber == str[1]);
+                }
+                //成功挂接产品库的材料清单
+                if (materialViewModel.ProductMaterialLibrary != null)
+                {
+                    materialViewModel.HasProductMaterialLibrary = true;
+                    materialViewModel.MaterialName = materialViewModel.ProductMaterialLibrary.Name;
+                }
                 if (!string.IsNullOrEmpty(record.ID))
                 {
-                    materialRecord.ID = record.ID;
+                    materialViewModel.ID = record.ID;
                 }
                 if (!string.IsNullOrEmpty(record.UsageLocation))
                 {
-                    materialRecord.UsageMethod = ExplainString(uIDocument, record.UsageLocation, revitSolidElement);
+                    materialViewModel.UsageMethod = ExplainString(uIDocument, record.UsageLocation, revitSolidElement, materialViewModel);
                 }
-                materialRecord.ProjectFeatures = ExplainString(uIDocument, record.ProjectCharacteristics, revitSolidElement);
-                materialRecord.ProjectFeaturesDetail = ExplainProjectFeatures(materialRecord.ProjectFeatures);
-                if (!string.IsNullOrEmpty(record.Unit))
+                materialViewModel.ProjectFeatures = ExplainString(uIDocument, record.ProjectCharacteristics, revitSolidElement, materialViewModel);
+                materialViewModel.ProjectFeaturesDetail = ExplainProjectFeatures(materialViewModel.ProjectFeatures);
+                //计算模型工程量
+                if (!string.IsNullOrEmpty(record.ModelEngineeringQuantity))
                 {
-                    materialRecord.ModelEngineeringUnit = record.Unit;
-                }
-                if (!string.IsNullOrEmpty(record.Quantity))
-                {
-                    var mqStr = ExplainString(uIDocument, record.Quantity, revitSolidElement);
+                    var mqStr = ExplainString(uIDocument, record.ModelEngineeringQuantity, revitSolidElement, materialViewModel);
                     try
                     {
                         // 使用DataTable的Compute方法计算表达式
                         double mq = Convert.ToDouble(new System.Data.DataTable().Compute(mqStr, null));
-                        materialRecord.ModelEngineeringQuantity += mq;
+                        materialViewModel.ModelEngineeringQuantity = mq;
                     }
                     catch (Exception ex)
                     {
                         TaskDialog.Show("警告", $"表达式计算失败: {mqStr}\t\n错误详情:{ex}");
                     }
                 }
-                return materialRecord;
+                //模型工程量单位
+                if (!string.IsNullOrEmpty(record.ModelEngineeringUnit))
+                {
+                    materialViewModel.ModelEngineeringUnit = record.ModelEngineeringUnit;
+                }
+                //计算材料工程量（有库）
+                if (!string.IsNullOrEmpty(record.MaterialQuantityHasLibrary))
+                {
+                    var mqStr = ExplainString(uIDocument, record.MaterialQuantityHasLibrary, revitSolidElement, materialViewModel);
+                    if (materialViewModel.HasProductMaterialLibrary)
+                        try
+                        {
+                            // 使用DataTable的Compute方法计算表达式
+                            double mq = Convert.ToDouble(new System.Data.DataTable().Compute(mqStr, null));
+                            materialViewModel.ProductMaterialLibrary.MaterialQuantity = mq;
+                        }
+                        catch (Exception ex)
+                        {
+                            TaskDialog.Show("警告", $"表达式计算失败: {mqStr}\t\n错误详情:{ex}");
+                        }
+                }
+                //计算材料工程量（无库）
+                if (!string.IsNullOrEmpty(record.MaterialQuantityNoLibrary))
+                {
+                    var mqStr = ExplainString(uIDocument, record.MaterialQuantityNoLibrary, revitSolidElement, materialViewModel);
+                    try
+                    {
+                        // 使用DataTable的Compute方法计算表达式
+                        double mq = Convert.ToDouble(new System.Data.DataTable().Compute(mqStr, null));
+                        materialViewModel.MaterialQuantity = mq;
+                    }
+                    catch (Exception ex)
+                    {
+                        TaskDialog.Show("警告", $"表达式计算失败: {mqStr}\t\n错误详情:{ex}");
+                    }
+                }
+                //材料工程量单位
+                if (!string.IsNullOrEmpty(record.MaterialUnit))
+                {
+                    materialViewModel.MaterialUnit = record.MaterialUnit;
+                }
+                //损耗率
+                if (!string.IsNullOrEmpty(record.LossValue))
+                {
+                    var lossStr = ExplainString(uIDocument, record.LossValue, revitSolidElement, materialViewModel);
+                    try
+                    {
+                        // 使用DataTable的Compute方法计算表达式
+                        double loss = Convert.ToDouble(new System.Data.DataTable().Compute(lossStr, null));
+                        materialViewModel.LossValue = loss;
+                    }
+                    catch (Exception ex)
+                    {
+                        TaskDialog.Show("警告", $"表达式计算失败: {lossStr}\t\n错误详情:{ex}");
+                    }
+                }
+
+                //计算材料采购量（有库）
+                if (!string.IsNullOrEmpty(record.MaterialProcurementQuantityHasLibrary))
+                {
+                    var mqStr = ExplainString(uIDocument, record.MaterialProcurementQuantityHasLibrary, revitSolidElement, materialViewModel);
+                    if (materialViewModel.HasProductMaterialLibrary)
+                        try
+                        {
+                            // 使用DataTable的Compute方法计算表达式
+                            double mq = Convert.ToDouble(new System.Data.DataTable().Compute(mqStr, null));
+                            materialViewModel.ProductMaterialLibrary.MaterialProcurementQuantity = mq;
+                        }
+                        catch (Exception ex)
+                        {
+                            //TaskDialog.Show("警告", $"表达式计算失败: {mqStr}\t\n错误详情:{ex}");
+                        }
+                }
+                //计算材料采购量（无库）
+                if (!string.IsNullOrEmpty(record.MaterialProcurementQuantityNoLibrary))
+                {
+                    var mqStr = ExplainString(uIDocument, record.MaterialProcurementQuantityNoLibrary, revitSolidElement, materialViewModel);
+                    try
+                    {
+                        // 使用DataTable的Compute方法计算表达式
+                        double mq = Convert.ToDouble(new System.Data.DataTable().Compute(mqStr, null));
+                        materialViewModel.MaterialProcurementQuantity = mq;
+                    }
+                    catch (Exception ex)
+                    {
+                        //TaskDialog.Show("警告", $"表达式计算失败: {mqStr}\t\n错误详情:{ex}");
+                    }
+                }
+                //材料采购量的单位
+                if (!string.IsNullOrEmpty(record.ProcurementUnit))
+                {
+                    materialViewModel.ProcurementUnit = record.ProcurementUnit;
+                }
+                //户型
+                var roomP = revitSolidElement.Parameters.FirstOrDefault(a => a.Name == ConstString.RoomName);
+                if (roomP != null)
+                {
+                    materialViewModel.Room = roomP.Value;
+                }
+
+                return materialViewModel;
             }
             else
             {
@@ -197,7 +339,7 @@ namespace RZData.Tools
             return (prefix.Substring(2), suffix);
         }
 
-        static Dictionary<string, string> ExplainProjectFeatures(string input)
+        public static Dictionary<string, string> ExplainProjectFeatures(string input)
         {
             var result = new Dictionary<string, string>();
             if (string.IsNullOrEmpty(input))
@@ -299,7 +441,7 @@ namespace RZData.Tools
                         break;
                     case MatchedType.产品分类名称:
                         var productNode = ExcelDataService.ExcelProductCode.FirstOrDefault(a => a.Value == value);
-                        if (productNode != null || productNode.Children.Count == 0)
+                        if (productNode != null && productNode.Children.Count == 0)
                         {
                             foreach (var item in productNode.GetAllChirlds())
                             {

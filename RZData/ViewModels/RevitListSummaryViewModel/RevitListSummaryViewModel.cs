@@ -30,10 +30,22 @@ namespace RZData.ViewModels
         private AssemblyViewModel _selectedUnMatchedAssemblyRecord;
         private ObservableCollection<string> _propertyNames;
         private ObservableCollection<string> _propertyValues;
-        private string _selectedPropertyName;
-        private string _selectedPropertyValue;
         private ObservableCollection<(string, string)> _requiredProperties;
+        private string _selectedFilterProperty;
+        private ObservableCollection<FilterConditionViewModel> _filterConditions;
+        private string _selectedFilterValue;
 
+
+        //选择的过滤的值
+        public string SelectedFilterValue { get => _selectedFilterValue; set => SetProperty(ref _selectedFilterValue, value); }
+        /// <summary>
+        /// 过滤条件集合
+        /// </summary>
+        public ObservableCollection<FilterConditionViewModel> FilterConditions { get => _filterConditions; set => SetProperty(ref _filterConditions, value); }
+        /// <summary>
+        /// 筛选器中选中的筛选属性
+        /// </summary>
+        public string SelectedFilterProperty { get => _selectedFilterProperty; set => SetProperty(ref _selectedFilterProperty, value); }
 
         public ObservableCollection<MaterialViewModel> AllMaterialList
         {
@@ -86,28 +98,18 @@ namespace RZData.ViewModels
             get => _propertyValues;
             set => SetProperty(ref _propertyValues, value);
         }
-        public string SelectedPropertyName
-        {
-            get => _selectedPropertyName;
-            set => SetProperty(ref _selectedPropertyName, value);
-        }
-        public string SelectedPropertyValue
-        {
-            get => _selectedPropertyValue;
-            set => SetProperty(ref _selectedPropertyValue, value);
-        }
         public ObservableCollection<(string, string)> RequiredProperties
         {
             get => _requiredProperties;
             set => SetProperty(ref _requiredProperties, value);
         }
 
-        public ICommand CansoleCommand { get; }
-        public ICommand AddRequiredPropertiesCommand { get; }
-        public ICommand DeleteRequiredPropertiesCommand { get; }
         public ICommand OKWitheRequiredPropertiesCommand { get; }
         public ICommand DeleteRequiredPropertyCommand { get; }
         public ICommand ExportExcelCommand { get; }
+        public ICommand AddFilterConditionCommand { get; }
+        public ICommand ClearFilterCommand { get; }
+        public ICommand RemoveFilterConditionCommand { get; }
         public RevitListSummaryViewModel(UIDocument uiDocument, ObservableCollection<RevitSolidElement> solidElements)
         {
             UiDocument = uiDocument;
@@ -116,14 +118,67 @@ namespace RZData.ViewModels
             ShowMaterialList = new ObservableCollection<MaterialViewModel>();
             ShowAssemblyList = new ObservableCollection<AssemblyViewModel>();
             UnmatchedAssemblyList = new ObservableCollection<AssemblyViewModel>();
+            FilterConditions = new ObservableCollection<FilterConditionViewModel>();
             PropertyNames = new ObservableCollection<string>();
             PropertyValues = new ObservableCollection<string>();
             RequiredProperties = new ObservableCollection<(string, string)>();
-            AddRequiredPropertiesCommand = new RelayCommand(AddRequiredProperties);
-            DeleteRequiredPropertiesCommand = new RelayCommand(DeleteRequiredProperties);
+
             OKWitheRequiredPropertiesCommand = new RelayCommand(OKWithRequiredProperties);
             DeleteRequiredPropertyCommand = new RelayCommand<(string, string)>(DeleteRequiredProperty);
             ExportExcelCommand = new RelayCommand(ExportExcel);
+            AddFilterConditionCommand = new RelayCommand(AddFilterCondition);
+            ClearFilterCommand = new RelayCommand(ClearFilter);
+            RemoveFilterConditionCommand = new RelayCommand<FilterConditionViewModel>(RemoveFilterCondition);
+        }
+
+        private void RemoveFilterCondition(FilterConditionViewModel condition)
+        {
+            // condition 参数就是 CommandParameter 传递过来的数据
+            if (condition != null)
+            {
+                // 从集合中移除这个筛选条件
+                FilterConditions.Remove(condition);
+            }
+            //移除一个筛选条件后要对所有的条件从新进行筛选
+            ShowMaterialList = AllMaterialList;
+            try
+            {
+                ShowMaterialList = new ObservableCollection<MaterialViewModel>(ShowMaterialList.ToList().FindAll(a => FilterTool.FilterMaterialList(a, FilterConditions.ToList())).ToList());
+            }
+            catch
+            {
+                TaskDialog.Show("错误信息", "存在筛选条件不合法，将清空筛选项。");
+                FilterConditions = new ObservableCollection<FilterConditionViewModel>();
+                return;
+            }
+        }
+
+        private void ClearFilter()
+        {
+            FilterConditions = new ObservableCollection<FilterConditionViewModel>();
+            ShowMaterialList = AllMaterialList;
+        }
+
+        private void AddFilterCondition()
+        {
+            try
+            {
+                FilterConditionViewModel filterConditionViewModel = new FilterConditionViewModel()
+                {
+                    PropertyName = SelectedFilterProperty,
+                    PropertyValue = SelectedFilterValue,
+                    Logic = "等于"
+                };
+                //只对新增筛选条件筛选
+                var d = ShowMaterialList.ToList().FindAll(a => FilterTool.FilterMaterialList(a, filterConditionViewModel)).ToList();
+                ShowMaterialList = new ObservableCollection<MaterialViewModel>(ShowMaterialList.ToList().FindAll(a => FilterTool.FilterMaterialList(a, filterConditionViewModel)).ToList());
+                FilterConditions.Add(filterConditionViewModel);
+            }
+            catch (Exception ex)
+            {
+                TaskDialog.Show("错误信息", ex.Message);
+                return;
+            }
         }
 
         private void ExportExcel()
@@ -164,9 +219,9 @@ namespace RZData.ViewModels
         {
             switch (required.Item1)
             {
-                case "材料名称":
+                case ConstString.MaterialName:
                     return materialRecord.MaterialName == required.Item2;
-                case "使用方式":
+                case ConstString.UsageMethod:
                     return materialRecord.UsageMethod == required.Item2;
                 default:
                     foreach (var feature in materialRecord.ProjectFeaturesDetail)
@@ -185,42 +240,15 @@ namespace RZData.ViewModels
             }
         }
 
-        private void DeleteRequiredProperties()
-        {
-            try
-            {
-                RequiredProperties.Clear();
-            }
-            catch (Exception ex)
-            {
-                TaskDialog.Show("错误信息", ex.Message);
-            }
-        }
-
-        private void AddRequiredProperties()
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(SelectedPropertyName))
-                {
-                    return;
-                }
-                RequiredProperties.Add((SelectedPropertyName, SelectedPropertyValue));
-            }
-            catch (Exception ex)
-            {
-                TaskDialog.Show("错误信息", ex.Message);
-            }
-        }
-
         public void GetMaterialListFromDataElement()
         {
             try
             {
                 var list = AllElements.RevitSolidElements;
-                AllMaterialList = PropertyMatchTool.FillMaterialList(UiDocument, list, out List<Element> noMatchedElement);
-                foreach (var element in noMatchedElement)
+                AllMaterialList = PropertyMatchTool.FillMaterialList(UiDocument, list, out List<int> noMatchedElement);
+                foreach (var elementID in noMatchedElement)
                 {
+                    Element element = UiDocument.Document.GetElement(new ElementId(elementID));
                     UnmatchedAssemblyList.Add(new AssemblyViewModel()
                     {
                         AssemblyID = element.Id.ToString(),
@@ -273,8 +301,9 @@ namespace RZData.ViewModels
                         }
                     }
                 }
-                PropertyNames.Add("材料名称");
-                PropertyNames.Add("使用方式");
+                PropertyNames.Add(ConstString.MaterialName);
+                PropertyNames.Add(ConstString.UsageMethod);
+                PropertyNames.Add(ConstString.RoomName);
             }
             catch (Exception ex)
             {
@@ -286,36 +315,45 @@ namespace RZData.ViewModels
             try
             {
                 PropertyValues = new ObservableCollection<string>();
-                if (string.IsNullOrEmpty(SelectedPropertyName))
+                if (string.IsNullOrEmpty(SelectedFilterProperty))
                 {
                     return;
                 }
-                switch (SelectedPropertyName)
+                switch (SelectedFilterProperty)
                 {
-                    case "材料名称":
-                        foreach (var materialRecord in AllMaterialList)
+                    case ConstString.MaterialName:
+                        foreach (var materialViewModel in ShowMaterialList)
                         {
-                            if (!PropertyValues.Contains(materialRecord.MaterialName))
+                            if (!PropertyValues.Contains(materialViewModel.MaterialName))
                             {
-                                PropertyValues.Add(materialRecord.MaterialName);
+                                PropertyValues.Add(materialViewModel.MaterialName);
                             }
                         }
                         break;
-                    case "使用方式":
-                        foreach (var materialRecord in AllMaterialList)
+                    case ConstString.UsageMethod:
+                        foreach (var materialViewModel in ShowMaterialList)
                         {
-                            if (!PropertyValues.Contains(materialRecord.UsageMethod))
+                            if (!PropertyValues.Contains(materialViewModel.UsageMethod))
                             {
-                                PropertyValues.Add(materialRecord.UsageMethod);
+                                PropertyValues.Add(materialViewModel.UsageMethod);
+                            }
+                        }
+                        break;
+                    case ConstString.RoomName:
+                        foreach (var materialViewModel in ShowMaterialList)
+                        {
+                            if (!PropertyValues.Contains(materialViewModel.Room))
+                            {
+                                PropertyValues.Add(materialViewModel.Room);
                             }
                         }
                         break;
                     default:
-                        foreach (var materialRecord in AllMaterialList)
+                        foreach (var materialViewModel in ShowMaterialList)
                         {
-                            foreach (var feature in materialRecord.ProjectFeaturesDetail)
+                            foreach (var feature in materialViewModel.ProjectFeaturesDetail)
                             {
-                                if (SelectedPropertyName == feature.Key && !PropertyValues.Contains(feature.Value))
+                                if (SelectedFilterProperty == feature.Key && !PropertyValues.Contains(feature.Value))
                                 {
                                     PropertyValues.Add(feature.Value);
                                 }

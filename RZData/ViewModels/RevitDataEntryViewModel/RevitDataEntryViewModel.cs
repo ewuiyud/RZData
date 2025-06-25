@@ -3,6 +3,7 @@ using Autodesk.Revit.UI;
 using CommunityToolkit.Mvvm.Input;
 using RZData.ExternalEventHandlers;
 using RZData.Models;
+using RZData.Services;
 using RZData.Tools;
 using System;
 using System.Collections;
@@ -10,6 +11,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web.UI.WebControls;
 using System.Windows.Documents;
 using System.Windows.Input;
 
@@ -31,7 +33,14 @@ namespace RZData.ViewModels
         private ObservableCollection<FilterConditionViewModel> _filterConditions;
         private string _selectedFilterValue;
         private string _customFilterValue;
-        private string _selectedFilterLogic= "等于";
+        private string _selectedFilterLogic = "等于";
+        private bool _canAttachMaterialLibrary;
+        private ExcelProductMaterialLibraryModel _selectedMaterialLibrary;
+        public ExcelProductMaterialLibraryModel SelectedMaterialLibrary { get => _selectedMaterialLibrary; set => SetProperty(ref _selectedMaterialLibrary, value); }
+        private ObservableCollection<ExcelProductMaterialLibraryModel> _availableMaterialLibraries;
+        public ObservableCollection<ExcelProductMaterialLibraryModel> AvailableMaterialLibraries { get => _availableMaterialLibraries; set => SetProperty(ref _availableMaterialLibraries, value); }
+        //能够挂接材料库
+        public bool CanAttachMaterialLibrary { get => _canAttachMaterialLibrary; set => SetProperty(ref _canAttachMaterialLibrary, value); }
         //选择的过滤的逻辑
         public string SelectedFilterLogic { get => _selectedFilterLogic; set => SetProperty(ref _selectedFilterLogic, value); }
         //自定义的过滤的值
@@ -72,6 +81,7 @@ namespace RZData.ViewModels
         public ICommand ClearFilterCommand { get; }
         //应用筛选条件
         public ICommand ApplyFilterCommand { get; }
+        public ICommand ConfirmAttachCommand { get; }
 
         public object SelectedItem { get => _selectedItem; set => SetProperty(ref _selectedItem, value); }
 
@@ -154,6 +164,7 @@ namespace RZData.ViewModels
             SeletedElementID = new ObservableCollection<int>();
             ShowMaterialList = new ObservableCollection<MaterialViewModel>();
             FilterConditions = new ObservableCollection<FilterConditionViewModel>();
+            AvailableMaterialLibraries = new ObservableCollection<ExcelProductMaterialLibraryModel>();
 
             //命令初始化
             SearchCommand = new RelayCommand(Search);
@@ -165,10 +176,26 @@ namespace RZData.ViewModels
             AddFilterConditionCommand = new RelayCommand(AddFilterCondition);
             ApplyFilterCommand = new RelayCommand(ApplyFilter);
             ClearFilterCommand = new RelayCommand(ClearFilter);
+            ConfirmAttachCommand = new AsyncRelayCommand(ConfirmAttachAsync);
             OKCommand = new AsyncRelayCommand(OK);
             RemoveFilterConditionCommand = new RelayCommand<FilterConditionViewModel>(RemoveFilter);
 
             ResetShowElements();
+        }
+
+        private async Task ConfirmAttachAsync()
+        {
+            var elements = ShowElements.GetAllElements().FindAll(a => a.IsChecked);
+            var parameter = new ParameterSetVM()
+            {
+                Name = "关联材料库",
+                Value = $"{SelectedMaterialLibrary.Name}-{SelectedMaterialLibrary.SerialNumber}",
+                ValueType = "实例参数"
+            };
+            await CustomHandler.Run(a =>
+            {
+                SetParameter(a.ActiveUIDocument, parameter, elements);
+            });
         }
 
         private void ApplyFilter()
@@ -222,9 +249,7 @@ namespace RZData.ViewModels
                 ShowElements = new ElementViewModel(revitSolidElements);
                 FilterConditions.Add(filterConditionViewModel);
 
-                SelectedFilterProperty = null;
-                CustomFilterValue = null;
-                SelectedFilterValue = null;
+                ResetRightParametersList();
                 ResetShowElements();
             }
             catch (Exception ex)
@@ -232,7 +257,17 @@ namespace RZData.ViewModels
                 TaskDialog.Show("错误信息", ex.Message);
                 return;
             }
+        }
 
+        private void ResetRightParametersList()
+        {
+            SelectedFilterProperty = null;
+            CustomFilterValue = null;
+            SelectedFilterValue = null;
+            ShowMaterialList = new ObservableCollection<MaterialViewModel>();
+            SelectedMaterialLibrary = new ExcelProductMaterialLibraryModel();
+            AvailableMaterialLibraries = new ObservableCollection<ExcelProductMaterialLibraryModel>();
+            CanAttachMaterialLibrary = false;
         }
 
         private void DoubleClick()
@@ -241,25 +276,19 @@ namespace RZData.ViewModels
             ShowElements.SelectAll(false);
             //选中该类别下的所有元素,并处理上级的选中状态
             ShowElements.SelectObject(SelectedItem);
-            //分类处理选中，和录入参数的逻辑
-            List<ElementInstanceViewModel> elements = new List<ElementInstanceViewModel>();
             switch (SelectedItem)
             {
                 case FamilyCategoryViewModel familyCategory:
                     SelectElementInRevit(familyCategory);
-                    elements = familyCategory.GetAllElementInstanceViewModels();
                     break;
                 case FamilyViewModel family:
                     SelectElementInRevit(family);
-                    elements = family.GetAllElementInstanceViewModels();
                     break;
                 case FamilyExtendViewModel familyExtend:
                     SelectElementInRevit(familyExtend);
-                    elements = familyExtend.GetAllElementInstanceViewModels();
                     break;
                 case ElementInstanceViewModel elementInstance:
                     SelectElementInRevit(elementInstance);
-                    elements.Add(elementInstance);
                     break;
                 default:
                     break;
@@ -270,6 +299,7 @@ namespace RZData.ViewModels
         //同步选中元素的参数
         private void EntryParameters()
         {
+            //填充参数表
             SelectedItemParameters = new List<ParameterSetVM>();
             var elements = ShowElements.GetAllElements().FindAll(a => a.IsChecked);
             var eleParMin = elements.OrderBy(a => a.Parameters.Count).FirstOrDefault();
@@ -296,8 +326,28 @@ namespace RZData.ViewModels
                     SelectedItemParameters.Add(tempParameterSet);
                 }
             }
+            //填充可挂接材料库选项
+            GetAvailableMaterialLibraries();
+            //填充项目特征表
             GetMaterialViewModels(elements);
         }
+        /// <summary>
+        /// 填充可挂接材料库选项
+        /// </summary>
+        private void GetAvailableMaterialLibraries()
+        {
+            CanAttachMaterialLibrary = false;
+            //仅有唯一的产品名称时才可以关联材料库
+            var p = SelectedItemParameters.FirstOrDefault(a => a.Name == "产品分类名称");
+            if (p != null && !string.IsNullOrEmpty(p.Value) && p.Status != "多参数")
+            {
+                CanAttachMaterialLibrary = true;
+                var productName = p.Value;
+                AvailableMaterialLibraries = new ObservableCollection<ExcelProductMaterialLibraryModel>(ExcelDataService.ExcelProductMaterialLibraryModels.FindAll(e => e.ProductName == productName));
+                AvailableMaterialLibraries.Add(new ExcelProductMaterialLibraryModel());
+            }
+        }
+
         //从模型中选中isChecked的对象
         private void SelectInRevit()
         {
@@ -330,7 +380,7 @@ namespace RZData.ViewModels
                 RevitSolidElement revitSolidElement = AllElements.RevitSolidElements.FirstOrDefault(a => a.ID == elementInstance.Id);
                 revitSolidElementList.Add(revitSolidElement);
             }
-            ShowMaterialList = PropertyMatchTool.FillMaterialList(UiDocument, revitSolidElementList, out List<Element> noMatchedElement);
+            ShowMaterialList = PropertyMatchTool.FillMaterialList(UiDocument, revitSolidElementList, out List<int> noMatchedElement);
         }
 
         private void SelectElementInRevit(List<ElementInstanceViewModel> elementInstanceViewModels)
@@ -474,6 +524,12 @@ namespace RZData.ViewModels
                     {
                         Element element = uIDocument.Document.GetElement(new ElementId(elementInstance.Id));
                         var p = element.LookupParameter(name);
+                        if (p == null)
+                        {
+                            TaskDialog.Show("警告", "当前项目未启用关联数据库参数，无法关联数据库。");
+                            transaction.RollBack();
+                            return;
+                        }
                         if (p.IsReadOnly)
                         {
                             //错误操作需要回滚，重新读取属性表，结束当前录入的操作
@@ -493,7 +549,11 @@ namespace RZData.ViewModels
                         else
                         {
                             //在修改模型完成后也要将绑定属性的值同步修改
-                            elementInstance.Parameters.Find(a => a.Name == name).Value = value;
+                            var p1 = elementInstance.Parameters.Find(a => a.Name == name);
+                            if (p1 != null)
+                            {
+                                p1.Value = value;
+                            }
                         }
                     }
                 }
@@ -545,11 +605,14 @@ namespace RZData.ViewModels
             elements.ForEach(e =>
             {
                 var parameters = e.Parameters.FindAll(p => p.Name == name);
-                if (parameters != null)
-                {
-                    parameters.ForEach(p => result.Add(p.Value));
-                }
+                parameters?.ForEach(p => result.Add(p.Value));
             });
+            result = result.Distinct().ToList();
+            if (result.Contains(null))
+            {
+                result.Remove(null);
+                result.Add("");
+            }
             return result.Distinct().ToList();
         }
     }

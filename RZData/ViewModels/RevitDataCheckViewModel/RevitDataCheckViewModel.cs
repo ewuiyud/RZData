@@ -1,4 +1,3 @@
-using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
@@ -6,20 +5,16 @@ using System.Collections.ObjectModel;
 using System.Windows.Input;
 using System.Collections.Generic;
 using System.Linq;
-using OfficeOpenXml;
 using RZData.Models;
 using System;
 using RZData.Services;
 using RZData.Extensions;
 using WebService;
-using System.Reflection;
-using System.IO;
 using RZData.Tools;
 using RZData.ExternalEventHandlers;
 using Newtonsoft.Json;
 using System.Web.UI.WebControls;
 using System.Threading.Tasks;
-using Autodesk.Revit.Creation;
 
 namespace RZData.ViewModels
 {
@@ -29,12 +24,14 @@ namespace RZData.ViewModels
 
         private ElementViewModel _showElements;
         private object _selectedItem;
-        private string matchResult;
-        private bool showChangeNameBtn;
-        private string matchName;
-        public string MatchName { get => matchName; set => SetProperty(ref matchName, value); }
-        public bool ShowChangeNameBtn { get => showChangeNameBtn; set => SetProperty(ref showChangeNameBtn, value); }
-        public string MatchResult { get => matchResult; set => SetProperty(ref matchResult, value); }
+        private string _matchResult;
+        private bool _showChangeNameBtn;
+        private string _matchName;
+        private ObservableCollection<ParameterSetVM> _showedParameters;
+        public ObservableCollection<ParameterSetVM> ShowedParameters { get => _showedParameters; set => SetProperty(ref _showedParameters, value); }
+        public string MatchName { get => _matchName; set => SetProperty(ref _matchName, value); }
+        public bool ShowChangeNameBtn { get => _showChangeNameBtn; set => SetProperty(ref _showChangeNameBtn, value); }
+        public string MatchResult { get => _matchResult; set => SetProperty(ref _matchResult, value); }
 
         public RevitDataCheckViewModel(UIDocument uiDocument, ObservableCollection<RevitSolidElement> AllSolidElements)
         {
@@ -49,7 +46,46 @@ namespace RZData.ViewModels
             FamilyExportCommand = new RelayCommand(FamilyExport);
             PickObjectsCommand = new RelayCommand(PickObjects);
             AIMatchCommand = new RelayCommand(AIMatch);
+            SelectedItemChangedCommand = new RelayCommand(SelectedItemChanged);
             ChangeFamilyNameCommand = new AsyncRelayCommand(ChangeFamilyName);
+        }
+
+        private void SelectedItemChanged()
+        {
+            ShowedParameters = new ObservableCollection<ParameterSetVM>();
+            List<ElementInstanceViewModel> elements = new List<ElementInstanceViewModel>();
+            if (SelectedItem is FamilyViewModel family)
+            {
+                if (family.Name.StartsWith("MIC"))
+                {
+                    elements = family.GetAllElementInstanceViewModels();
+                }
+            }
+            else if (SelectedItem is FamilyExtendViewModel familyExtend) elements = familyExtend.GetAllElementInstanceViewModels();
+            var eleParMin = elements.OrderBy(a => a.Parameters.Count).FirstOrDefault();
+            if (eleParMin is null)
+            {
+                return;
+            }
+            foreach (var item in eleParMin.Parameters)
+            {
+                if (elements.All(a => a.Parameters.Exists(b => b.Name == item.Name)))
+                {
+                    var tempParameterSet = new ParameterSetVM(item);
+                    elements.ForEach(a =>
+                    {
+                        var parameter = a.Parameters.FirstOrDefault(b => b.Name == item.Name);
+                        if (parameter != null)
+                        {
+                            if (!tempParameterSet.Parameters.Contains(parameter))
+                            {
+                                tempParameterSet.Parameters.Add(parameter);
+                            }
+                        }
+                    });
+                    ShowedParameters.Add(tempParameterSet);
+                }
+            }
         }
 
         public string SearchKeyword
@@ -71,6 +107,7 @@ namespace RZData.ViewModels
         public ICommand FamilyExportCommand { get; }
         public ICommand PickObjectsCommand { get; }
         public ICommand AIMatchCommand { get; }
+        public ICommand SelectedItemChangedCommand { get; }
         public AsyncRelayCommand ChangeFamilyNameCommand { get; }
 
         public void AIMatchReset()

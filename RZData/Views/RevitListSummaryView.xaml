@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:RZData.Views"
-             xmlns:converters="clr-namespace:RZData.Converters"
+             xmlns:convert="clr-namespace:RZData.Converters"
              mc:Ignorable="d" 
              Title="清单计算"
              MaxHeight="900" MinHeight="900" MaxWidth="1400" MinWidth="1400">
@@ -13,7 +13,10 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/RZData;component/Styles/Style.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-            <converters:RowIndexConverter x:Key="RowIndexConverter"/>
+            <convert:StringNullToVisble x:Key="NullStringVisble"/>
+            <convert:StringNotNullToVisibleConverter x:Key="NotNullStringVisble"/>
+            <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+            <convert:RowIndexConverter x:Key="RowIndexConverter"/>
             <Style x:Key="TabItemStyle" TargetType="TabItem">
                 <Setter Property="FontSize" Value="14"/>
                 <Setter Property="Padding" Value="15,8"/>
@@ -112,31 +115,38 @@
                             </DataGridTemplateColumn>
                             <DataGridTextColumn Header="材料名称" Binding="{Binding MaterialName}" Width="100"/>
                             <DataGridTextColumn Header="使用方式"  Binding="{Binding UsageMethod}" Width="100"/>
-                            <DataGridTextColumn Header="项目特征"  Binding="{Binding ProjectFeatures}" Width="300"/>
-                            <DataGridTextColumn Header="模型工程量"  Binding="{Binding ModelEngineeringQuantity}" Width="100"/>
-                            <DataGridTextColumn Header="单位"  Binding="{Binding ModelEngineeringUnit}" Width="100"/>
-                            <DataGridTemplateColumn Header="关联物料库"  Width="100" Visibility="Hidden">
+                            <DataGridTemplateColumn Header="项目特征" Width="200">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <ComboBox ItemsSource="{Binding ProductLibraryList}"
-                                                  Loaded="ComboBox_Loaded"
-                                                  SelectionChanged="ComboBox_SelectionChanged_1"
-                                                  Height="25">
-                                        </ComboBox>
+                                        <Grid>
+                                            <TextBlock Text="{Binding ProductMaterialLibrary.Description}" 
+                                                           Visibility="{Binding ProductMaterialLibrary.Description,Converter={StaticResource NotNullStringVisble}}"/>
+                                            <TextBlock Text="{Binding ProjectFeatures}"
+                                                           Visibility="{Binding ProductMaterialLibrary.Description,Converter={StaticResource NullStringVisble}}"/>
+                                        </Grid>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="模型工程量"  Binding="{Binding ModelEngineeringQuantity}" Width="100"/>
+                            <DataGridTextColumn Header="模型工程量单位"  Binding="{Binding ModelEngineeringUnit}" Width="100"/>
+                            <DataGridTextColumn Header="关联物料库"  Binding="{Binding ProductMaterialLibrary.Name}" Width="100"/>
+                            <DataGridTextColumn Header="材料工程量"  Binding="{Binding MaterialQuantity}" Width="100"/>
+                            <DataGridTextColumn Header="材料工程量(有库)"  Binding="{Binding ProductMaterialLibrary.MaterialQuantity}" Width="100"/>
+                            <DataGridTextColumn Header="材料工程量单位"  Binding="{Binding MaterialUnit}" Width="100"/>
+                            <DataGridTextColumn Header="材料采购量(有库)"  Binding="{Binding ProductMaterialLibrary.MaterialQuantity}" Width="100"/>
+                            <DataGridTextColumn Header="材料采购量"  Binding="{Binding MaterialProcurementQuantity}" Width="100"/>
+                            <DataGridTextColumn Header="材料采购量单位"  Binding="{Binding ProcurementUnit}" Width="100"/>
                         </DataGrid.Columns>
                     </DataGrid>
                     <!-- 操作栏 -->
                     <Border Grid.Row="1" Background="#F8F9FA"  Margin="5 5 5 0">
                         <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="4*"/>
+                                <ColumnDefinition Width="7*"/>
                                 <ColumnDefinition Width="2*"/>
                             </Grid.ColumnDefinitions>
                             <!--筛选-->
-                            <Border BorderThickness="1" BorderBrush="Gray" CornerRadius="3" Background="#ffffff" Margin="0">
+                            <!--<Border BorderThickness="1" BorderBrush="Gray" CornerRadius="3" Background="#ffffff" Margin="0">
                                 <Grid >
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="* "/>
@@ -146,6 +156,7 @@
                                         <ColumnDefinition Width="5*"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
+
                                     <StackPanel Orientation="Horizontal" Height="40" HorizontalAlignment="Stretch">
                                         <Border BorderBrush="Gray" BorderThickness="0" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5,0">
                                             <Label Content="属性项:" Width="60" Height="25" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
@@ -190,11 +201,113 @@
                                         <Button Grid.Row="1" Grid.Column="1" Content="清除" Background="#A3BE8C" Style="{StaticResource ActionButtonStyle}" Command="{Binding DeleteRequiredPropertiesCommand}"/>
                                     </Grid>
                                 </Grid>
+                            </Border>-->
+
+                            <Border Grid.Row="5" 
+                        Background="White" CornerRadius="5">
+                                <Border.Effect>
+                                    <DropShadowEffect Color="Gray" Direction="320" ShadowDepth="2" Opacity="0.3"/>
+                                </Border.Effect>
+                                <StackPanel>
+                                    <!-- 筛选条件输入 -->
+                                    <GroupBox Style="{StaticResource FilterGroupBoxStyle}">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="60"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="40"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="150"/>
+                                                <ColumnDefinition Width="150"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <!-- 属性选择 -->
+                                            <Label Grid.Row="0" Grid.Column="0" Content="属性:" 
+                                       FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,5,0"/>
+                                            <ComboBox Grid.Row="0" Grid.Column="1"  ItemsSource="{Binding PropertyNames}"
+                                          Style="{StaticResource FilterComboBoxStyle}" Margin="0 0 50 0"
+                                          DropDownOpened="FilterProperty_Drop" 
+                                          SelectedItem="{Binding SelectedFilterProperty, Mode=TwoWay}"/>
+
+                                            <!-- 值选择 -->
+                                            <Label Grid.Row="0" Grid.Column="2" Content="值:" 
+                                       FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,5,0"/>
+                                            <ComboBox x:Name="FilterValueComboBox" Grid.Row="0" Grid.Column="3"
+                                          Style="{StaticResource FilterComboBoxStyle}" Margin="0 0 50 0"
+                                          DropDownOpened="FilterValue_DropDown"  ItemsSource="{Binding PropertyValues}"
+                                          IsEnabled="{Binding ElementName=CustomFilterValueText, Path=Text.IsEmpty}"
+                                          SelectedItem="{Binding SelectedFilterValue , Mode=TwoWay}"/>
+
+                                            <!-- 添加按钮和清除按钮-->
+                                            <Button Grid.Row="0" Grid.Column="4" Content="添加条件" 
+                                        Style="{StaticResource PrimaryButtonStyle}"
+                                        Command="{Binding AddFilterConditionCommand}"/>
+                                            <Button Content="清除筛选" Grid.Row="0" Grid.Column="5" 
+                                                    Style="{StaticResource FilterButtonStyle}" 
+                                                    Command="{Binding ClearFilterCommand}"/>
+
+                                            <!--  筛选条件展示 -->
+                                            <Border Grid.Row="1" Grid.ColumnSpan="6" BorderThickness="1" BorderBrush="#E0E0E0" Background="White" MinHeight="50" MaxHeight="120" Margin="20 10 0 0">
+                                                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                                                    <ItemsControl ItemsSource="{Binding FilterConditions}" Margin="5">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Border Style="{StaticResource FilterConditionItemStyle}">
+                                                                    <Grid>
+                                                                        <Grid.ColumnDefinitions>
+                                                                            <ColumnDefinition Width="*"/>
+                                                                            <ColumnDefinition Width="Auto"/>
+                                                                        </Grid.ColumnDefinitions>
+                                                                        <StackPanel Orientation="Horizontal">
+                                                                            <TextBlock Text="{Binding PropertyName}" VerticalAlignment="Center" Margin="0 0 10 0"/>
+                                                                            <TextBlock Text="{Binding Logic}" VerticalAlignment="Center" Margin="0 0 10 0"/>
+                                                                            <TextBlock Text="{Binding PropertyValue}" VerticalAlignment="Center" Margin="0 0 10 0"/>
+                                                                        </StackPanel>
+                                                                        <Button Grid.Column="1" Content="×" Width="20" Height="20" FontSize="12" FontWeight="Bold" Background="Transparent"  BorderThickness="0" Foreground="Red"
+                                                                                Cursor="Hand"
+                                                                                Command="{Binding DataContext.RemoveFilterConditionCommand, 
+                                                                            RelativeSource={RelativeSource AncestorType=GroupBox}}"
+                                                                                CommandParameter="{Binding}">
+                                                                            <Button.Template>
+                                                                                <ControlTemplate TargetType="Button">
+                                                                                    <Border Background="{TemplateBinding Background}" 
+                                                                                            CornerRadius="10">
+                                                                                        <ContentPresenter HorizontalAlignment="Center"
+                                                                                                          VerticalAlignment="Center"/>
+                                                                                    </Border>
+                                                                                    <ControlTemplate.Triggers>
+                                                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                                                            <Setter Property="Background" Value="#FFE0E0"/>
+                                                                                            <Setter Property="Foreground" Value="#CC0000"/>
+                                                                                        </Trigger>
+                                                                                    </ControlTemplate.Triggers>
+                                                                                </ControlTemplate>
+                                                                            </Button.Template>
+                                                                        </Button>
+                                                                    </Grid>
+                                                                </Border>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                        <ItemsControl.ItemsPanel>
+                                                            <ItemsPanelTemplate>
+                                                                <WrapPanel Orientation="Horizontal"/>
+                                                            </ItemsPanelTemplate>
+                                                        </ItemsControl.ItemsPanel>
+                                                    </ItemsControl>
+                                                </ScrollViewer>
+                                            </Border>
+                                        </Grid>
+                                    </GroupBox>
+                                </StackPanel>
                             </Border>
 
                             <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
-                                <Button Content="取消" Style="{StaticResource ActionButtonStyle}" Name="ConfigMappingBtn" Click="Button_Click"/>
-                                <Button Content="导出报告" Style="{StaticResource ActionButtonStyle}"  Command="{Binding ExportExcelCommand}"/>
+                                <Button Content="取消" Style="{StaticResource ActionButtonStyle}"  Margin="10 50" Name="ConfigMappingBtn" Click="Button_Click"/>
+                                <Button Content="导出报告" Style="{StaticResource ActionButtonStyle}" Margin="10 50"  Command="{Binding ExportExcelCommand}"/>
                             </StackPanel>
                         </Grid>
                     </Border>
@@ -262,8 +375,80 @@
                     </Grid>
                 </Grid>
             </TabItem>
-            <TabItem Header="工程量清单"/>
-            <TabItem Header="采购工程量清单"/>
+            <TabItem Header="工程量清单">
+                <DataGrid Grid.Row="0" Style="{StaticResource DataGridStyle}" ItemsSource="{Binding ShowMaterialList}"  EnableRowVirtualization="False"
+                  SelectedItem="{Binding SelectedMaterialRecord}" SelectionChanged="DataGrid_SelectionChanged" Margin="5 5 5 0">
+                    <DataGrid.Columns>
+                        <DataGridTemplateColumn Header="行号" >
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}},Converter={StaticResource RowIndexConverter}}"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="材料名称" Binding="{Binding MaterialName}" Width="100"/>
+                        <DataGridTextColumn Header="使用方式"  Binding="{Binding UsageMethod}" Width="100"/>
+                        <DataGridTemplateColumn Header="项目特征" Width="200">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <TextBlock Text="{Binding ProductMaterialLibrary.Description}" 
+                                                           Visibility="{Binding ProductMaterialLibrary.Description,Converter={StaticResource NotNullStringVisble}}"/>
+                                        <TextBlock Text="{Binding ProjectFeatures}"
+                                                           Visibility="{Binding ProductMaterialLibrary.Description,Converter={StaticResource NullStringVisble}}"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="模型工程量"  Binding="{Binding ModelEngineeringQuantity}" Width="100"/>
+                        <DataGridTextColumn Header="模型工程量单位"  Binding="{Binding ModelEngineeringUnit}" Width="100"/>
+                        <DataGridTextColumn Header="关联物料库"  Binding="{Binding ProductMaterialLibrary.Name}" Width="100"/>
+                        <DataGridTextColumn Header="材料工程量"  Binding="{Binding MaterialQuantity}" Width="100"/>
+                        <DataGridTextColumn Header="材料工程量(有库)"  Binding="{Binding ProductMaterialLibrary.MaterialQuantity}" Width="100"/>
+                        <DataGridTextColumn Header="材料工程量单位"  Binding="{Binding MaterialUnit}" Width="100"/>
+                        <DataGridTextColumn Header="材料采购量(有库)"  Binding="{Binding ProductMaterialLibrary.MaterialQuantity}" Width="100"/>
+                        <DataGridTextColumn Header="材料采购量"  Binding="{Binding MaterialProcurementQuantity}" Width="100"/>
+                        <DataGridTextColumn Header="材料采购量单位"  Binding="{Binding ProcurementUnit}" Width="100"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+            <TabItem Header="采购工程量清单">
+                <DataGrid Grid.Row="0" Style="{StaticResource DataGridStyle}" ItemsSource="{Binding ShowMaterialList}"  EnableRowVirtualization="False"
+                  SelectedItem="{Binding SelectedMaterialRecord}" SelectionChanged="DataGrid_SelectionChanged" Margin="5 5 5 0">
+                    <DataGrid.Columns>
+                        <DataGridTemplateColumn Header="行号" >
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}},Converter={StaticResource RowIndexConverter}}"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="材料名称" Binding="{Binding MaterialName}" Width="100"/>
+                        <DataGridTextColumn Header="使用方式"  Binding="{Binding UsageMethod}" Width="100"/>
+                        <DataGridTemplateColumn Header="项目特征" Width="200">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <TextBlock Text="{Binding ProductMaterialLibrary.Description}" 
+                                                           Visibility="{Binding ProductMaterialLibrary.Description,Converter={StaticResource NotNullStringVisble}}"/>
+                                        <TextBlock Text="{Binding ProjectFeatures}"
+                                                           Visibility="{Binding ProductMaterialLibrary.Description,Converter={StaticResource NullStringVisble}}"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="模型工程量"  Binding="{Binding ModelEngineeringQuantity}" Width="100"/>
+                        <DataGridTextColumn Header="模型工程量单位"  Binding="{Binding ModelEngineeringUnit}" Width="100"/>
+                        <DataGridTextColumn Header="关联物料库"  Binding="{Binding ProductMaterialLibrary.Name}" Width="100"/>
+                        <DataGridTextColumn Header="材料工程量"  Binding="{Binding MaterialQuantity}" Width="100"/>
+                        <DataGridTextColumn Header="材料工程量(有库)"  Binding="{Binding ProductMaterialLibrary.MaterialQuantity}" Width="100"/>
+                        <DataGridTextColumn Header="材料工程量单位"  Binding="{Binding MaterialUnit}" Width="100"/>
+                        <DataGridTextColumn Header="材料采购量(有库)"  Binding="{Binding ProductMaterialLibrary.MaterialQuantity}" Width="100"/>
+                        <DataGridTextColumn Header="材料采购量"  Binding="{Binding MaterialProcurementQuantity}" Width="100"/>
+                        <DataGridTextColumn Header="材料采购量单位"  Binding="{Binding ProcurementUnit}" Width="100"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
         </TabControl>
     </Grid>
 </Window>

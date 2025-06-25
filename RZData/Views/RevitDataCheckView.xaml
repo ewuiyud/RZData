@@ -34,6 +34,7 @@
                           SelectedItemChanged="TreeView_SelectedItemChanged">
                         <TreeView.ItemContainerStyle>
                             <Style TargetType="{x:Type TreeViewItem}">
+                                <EventSetter Event="Loaded" Handler="TreeViewItem_Loaded"/>
                                 <Setter Property="IsExpanded" Value="True"/>
                             </Style>
                         </TreeView.ItemContainerStyle>
@@ -73,25 +74,35 @@
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="auto"/>
                     </Grid.RowDefinitions>
-                    <TreeView Grid.Row="1"  ItemsSource="{Binding FamilyNameCheckElements.FamilyCategories}" Margin="10,10,10,0" HorizontalAlignment="Stretch" 
+                    <TreeView Grid.Row="1"  ItemsSource="{Binding FamilyNameCheckElements.Children}" Margin="10,10,10,0" HorizontalAlignment="Stretch" 
       SelectedItemChanged="TreeView_SelectedItemChanged">
                         <TreeView.ItemContainerStyle>
                             <Style TargetType="{x:Type TreeViewItem}">
                                 <Setter Property="IsExpanded" Value="True"/>
+                                <EventSetter Event="Loaded" Handler="TreeViewItem_Loaded"/>
                             </Style>
                         </TreeView.ItemContainerStyle>
                         <TreeView.ItemTemplate>
-                            <HierarchicalDataTemplate ItemsSource="{Binding Families}">
+                            <HierarchicalDataTemplate ItemsSource="{Binding Children}">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBox Style="{StaticResource NoBorderTextBox}" Text="{Binding Name}"/>
                                 </StackPanel>
                                 <HierarchicalDataTemplate.ItemTemplate>
-                                    <HierarchicalDataTemplate ItemsSource="{Binding FamilyExtends}">
+                                    <HierarchicalDataTemplate ItemsSource="{Binding Children}">
                                         <StackPanel Orientation="Horizontal">
                                             <CheckBox VerticalAlignment="Center" IsChecked="{Binding RelativeSource={RelativeSource AncestorType={x:Type TreeViewItem}},
                                               Path=IsSelected}"/>
                                             <TextBox PreviewMouseLeftButtonDown="TextBox_PreviewMouseLeftButtonDown" Style="{StaticResource NoBorderTextBox}" Text="{Binding Name}" Width="200"/>
                                         </StackPanel>
+                                        <HierarchicalDataTemplate.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <CheckBox VerticalAlignment="Center" IsChecked="{Binding RelativeSource={RelativeSource AncestorType={x:Type TreeViewItem}},
+                                              Path=IsSelected}"/>
+                                                    <TextBox PreviewMouseLeftButtonDown="TextBox_PreviewMouseLeftButtonDown" Style="{StaticResource NoBorderTextBox}" Text="{Binding Name}" Width="200"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </HierarchicalDataTemplate.ItemTemplate>
                                     </HierarchicalDataTemplate>
                                 </HierarchicalDataTemplate.ItemTemplate>
                             </HierarchicalDataTemplate>
@@ -136,7 +147,7 @@
         <!--右侧显示参数项 -->
         <Border Grid.Column="1" BorderThickness="1" BorderBrush="#acacac" Margin="20">
             <Grid Background="#F5F8FA" >
-                <DataGrid ItemsSource="{Binding SelectedItem.Parameters}" IsReadOnly="True" CanUserAddRows="False" FontSize="14"
+                <DataGrid ItemsSource="{Binding ShowedParameters}" IsReadOnly="True" CanUserAddRows="False" FontSize="14"
                        FontFamily="微软雅黑 Light" Background="White" RowHeight="28" 
                       HorizontalScrollBarVisibility="Disabled" CanUserResizeColumns="False"
                   AutoGenerateColumns="False" Margin="20" Width="auto" CanUserSortColumns="False" ColumnHeaderHeight="40" RowHeaderWidth="0">

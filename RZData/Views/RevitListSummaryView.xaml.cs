@@ -50,16 +50,9 @@ namespace RZData.Views
             viewModel.PropertyValueDroped();
         }
 
-        private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            var viewModel = DataContext as RevitListSummaryViewModel;
-            viewModel.SelectedPropertyValue = null;
-        }
-
         private void DataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             var viewModel = DataContext as RevitListSummaryViewModel;
-            viewModel.SelectedPropertyValue = null;
             var dataGrid = sender as DataGrid;
             viewModel.DoubleClickAndPickObjects(dataGrid.Name != "UnmatchedAssemblyDataGrid");
         }
@@ -69,24 +62,17 @@ namespace RZData.Views
             this.Close();
         }
 
-        /// <summary>
-        /// 关联
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void ComboBox_Loaded(object sender, RoutedEventArgs e)
+        private void FilterProperty_Drop(object sender, System.EventArgs e)
         {
-            System.Windows.Controls.ComboBox comboBox = sender as System.Windows.Controls.ComboBox;
-            var datacontext = comboBox.DataContext as MaterialViewModel;
-            if (datacontext.ProductLibraryList.Count==0)
-            {
-                comboBox.Visibility = Visibility.Hidden;
-            }
+            var viewModel = DataContext as RevitListSummaryViewModel;
+            viewModel.PropertyNameDroped();
+            viewModel.SelectedFilterValue = null;
         }
 
-        private void ComboBox_SelectionChanged_1(object sender, SelectionChangedEventArgs e)
+        private void FilterValue_DropDown(object sender, System.EventArgs e)
         {
-
+            var viewModel = DataContext as RevitListSummaryViewModel;
+            viewModel.PropertyValueDroped();
         }
     }
 }

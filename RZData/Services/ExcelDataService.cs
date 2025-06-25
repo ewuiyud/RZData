@@ -3,6 +3,7 @@ using Microsoft.Win32;
 using Models;
 using OfficeOpenXml;
 using RZData.Models;
+using RZData.Tools;
 using RZData.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -86,6 +87,7 @@ namespace RZData.Services
                     Description = worksheet.Cells[row, 2].Text,
                     Brand = worksheet.Cells[row, 3].Text,
                     SpecificationAttributes = worksheet.Cells[row, 4].Text,
+                    SpecificationAttributesDetail = ExplainSpecificationAttributes(worksheet.Cells[row, 4].Text),
                     ProductName = worksheet.Cells[row, 5].Text,
                     SerialNumber = worksheet.Cells[row, 6].Text
                 };
@@ -94,6 +96,37 @@ namespace RZData.Services
                     ExcelProductMaterialLibraryModels.Add(record);
                 }
             }
+        }
+
+        /// <summary>
+        /// 将规格属性字符串解释为规格属性字典
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        private static Dictionary<string, string> ExplainSpecificationAttributes(string input)
+        {
+            var result = new Dictionary<string, string>();
+
+            if (string.IsNullOrEmpty(input))
+                return result;
+
+            string[] lines = input.Split(
+                new[] { Environment.NewLine, "\n", "\r" },
+                StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (string line in lines)
+            {
+                int separatorIndex = line.IndexOf('=');
+                if (separatorIndex > 0 && separatorIndex < line.Length - 1)
+                {
+                    string key = line.Substring(0, separatorIndex).Trim();
+                    string value = line.Substring(separatorIndex + 1).Trim();
+                    result[key] = value;
+                }
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -117,8 +150,15 @@ namespace RZData.Services
                     ExtendRule = worksheet.Cells[row, 6].Text,
                     ProjectCharacteristics = worksheet.Cells[row, 7].Text,
                     UsageLocation = worksheet.Cells[row, 8].Text,
-                    Quantity = worksheet.Cells[row, 9].Text,
-                    Unit = worksheet.Cells[row, 10].Text
+                    ModelEngineeringQuantity = worksheet.Cells[row, 9].Text,
+                    ModelEngineeringUnit = worksheet.Cells[row, 10].Text,
+                    MaterialQuantityHasLibrary = worksheet.Cells[row, 11].Text,
+                    MaterialQuantityNoLibrary = worksheet.Cells[row, 12].Text,
+                    MaterialUnit = worksheet.Cells[row, 13].Text,
+                    LossValue = worksheet.Cells[row, 14].Text,
+                    MaterialProcurementQuantityHasLibrary = worksheet.Cells[row, 15].Text,
+                    MaterialProcurementQuantityNoLibrary = worksheet.Cells[row, 16].Text,
+                    ProcurementUnit = worksheet.Cells[row, 17].Text,
                 };
 
                 if (!ExcelMaterialBusinessRules.Contains(record))

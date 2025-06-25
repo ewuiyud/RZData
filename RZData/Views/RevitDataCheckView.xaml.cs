@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.UI;
+using RZData.Services;
 using RZData.ViewModels;
 using System;
 using System.Windows;
@@ -14,7 +15,6 @@ namespace RZData.Views
     /// </summary>
     public partial class RevitDataCheckView : Window
     {
-        private const string DefaultSearchText = "请输入关键词搜索";
         public RevitDataCheckView(UIDocument uiDocument)
         {
             ViewModelLocator.Instance(uiDocument).Reset();
@@ -36,6 +36,7 @@ namespace RZData.Views
                     viewModel.SelectedItem = family;
                 }
                 viewModel.PickObjectsCommand.Execute(null);
+                viewModel.SelectedItemChangedCommand.Execute(null);
                 viewModel.AIMatchReset();
             }
             catch (Exception ex)
@@ -62,6 +63,24 @@ namespace RZData.Views
                 return parent;
             else
                 return FindVisualParent<T>(parentObject);
+        }
+        private void TreeViewItem_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is TreeViewItem item)
+            {
+
+                if (item.DataContext is FamilyViewModel familyViewModel)
+                {
+                    if (familyViewModel.Name.StartsWith("MIC"))
+                    {
+                        item.ItemsSource = null;
+                    }
+                }
+                else
+                {
+                    item.IsExpanded = true;
+                }
+            }
         }
     }
 }

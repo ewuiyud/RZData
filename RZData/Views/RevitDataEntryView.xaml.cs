@@ -15,30 +15,6 @@ namespace RZData.Views
             var revitDataEntryViewModel = ViewModelLocator.Instance(uiDocument).RevitDataEntryViewModel;
             DataContext = revitDataEntryViewModel;
         }
-        //private void TreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
-        //{
-        //    try
-        //    {
-        //        var viewModel = DataContext as RevitDataEntryViewModel;
-        //        if (e.NewValue is ViewModels.FamilyExtendViewModel familyExtend)
-        //        {
-        //            viewModel.SelectedItem = familyExtend;
-        //        }
-        //        else if (e.NewValue is ViewModels.FamilyViewModel family)
-        //        {
-        //            viewModel.SelectedItem = family;
-        //        }
-        //        else if (e.NewValue is ViewModels.ElementInstanceViewModel elementInstance)
-        //        {
-        //            viewModel.SelectedItem = elementInstance;
-        //        }
-        //        viewModel.PickObjectsCommand.Execute(null);
-        //    }
-        //    catch (System.Exception ex)
-        //    {
-        //        TaskDialog.Show("错误信息", ex.Message);
-        //    }
-        //}
 
         private void MultiSelectTreeView_TreeViewDoubleClick(object sender, RoutedEventArgs e)
         {

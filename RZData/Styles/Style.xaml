@@ -384,4 +384,103 @@
         </Setter>
     </Style>
 
+    <!-- 筛选器样式 -->
+    <Style x:Key="FilterGroupBoxStyle" TargetType="GroupBox">
+        <Setter Property="Background" Value="#FAFAFA"/>
+        <Setter Property="BorderBrush" Value="#E0E0E0"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Margin" Value="5"/>
+        <Setter Property="Padding" Value="10"/>
+        <Setter Property="FontFamily" Value="微软雅黑 Light"/>
+        <Setter Property="FontSize" Value="13"/>
+    </Style>
+
+    <Style x:Key="FilterButtonStyle" TargetType="Button">
+        <Setter Property="Height" Value="32"/>
+        <Setter Property="Padding" Value="12,0"/>
+        <Setter Property="Margin" Value="3"/>
+        <Setter Property="FontFamily" Value="微软雅黑 Light"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Background" Value="#F5F5F5"/>
+        <Setter Property="BorderBrush" Value="#CCCCCC"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="{TemplateBinding Background}" 
+                                    BorderBrush="{TemplateBinding BorderBrush}" 
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="3">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="#E8E8E8"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter Property="Background" Value="#D0D0D0"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="PrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource FilterButtonStyle}">
+        <Setter Property="Background" Value="#007ACC"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="{TemplateBinding Background}" 
+                                    BorderBrush="{TemplateBinding BorderBrush}" 
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="3">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="#005A9E"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter Property="Background" Value="#004578"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="FilterComboBoxStyle" TargetType="ComboBox">
+        <Setter Property="Height" Value="30"/>
+        <Setter Property="Margin" Value="3"/>
+        <Setter Property="FontFamily" Value="微软雅黑 Light"/>
+        <Setter Property="FontSize" Value="15"/>
+        <Setter Property="Background" Value="White"/>
+        <Setter Property="BorderBrush" Value="#CCCCCC"/>
+        <Setter Property="BorderThickness" Value="1"/>
+    </Style>
+
+    <Style x:Key="FilterTextBoxStyle" TargetType="TextBox">
+        <Setter Property="Height" Value="32"/>
+        <Setter Property="Margin" Value="3"/>
+        <Setter Property="Padding" Value="8,0"/>
+        <Setter Property="FontFamily" Value="微软雅黑 Light"/>
+        <Setter Property="FontSize" Value="15"/>
+        <Setter Property="Background" Value="White"/>
+        <Setter Property="BorderBrush" Value="#CCCCCC"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+
+    <Style x:Key="FilterConditionItemStyle" TargetType="Border">
+        <Setter Property="Background" Value="#F0F8FF"/>
+        <Setter Property="BorderBrush" Value="#B0C4DE"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="3"/>
+        <Setter Property="Margin" Value="2"/>
+        <Setter Property="Padding" Value="8,4"/>
+    </Style>
+
 </ResourceDictionary>
