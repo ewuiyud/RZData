@@ -71,7 +71,7 @@ namespace RZData.Views
 
                 if (item.DataContext is FamilyViewModel familyViewModel)
                 {
-                    if (familyViewModel.Name.StartsWith("MIC"))
+                    if (familyViewModel.Name.StartsWith(ConstString.ParameterPrex))
                     {
                         item.ItemsSource = null;
                     }

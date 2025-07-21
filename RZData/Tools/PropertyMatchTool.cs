@@ -182,7 +182,7 @@ namespace RZData.Tools
                 };
                 //先挂接产品库
                 var element = uIDocument.Document.GetElement(new ElementId(revitSolidElement.ID));
-                var materialString = element.LookupParameter("关联材料库").GetValue();
+                var materialString = element.LookupParameter(ConstString.MaterialName).GetValue();
                 if (!string.IsNullOrEmpty(materialString))
                 {
                     var str = materialString.Split('-');

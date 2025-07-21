@@ -56,7 +56,7 @@ namespace RZData.ViewModels
             List<ElementInstanceViewModel> elements = new List<ElementInstanceViewModel>();
             if (SelectedItem is FamilyViewModel family)
             {
-                if (family.Name.StartsWith("MIC"))
+                if (family.Name.StartsWith(ConstString.ParameterPrex))
                 {
                     elements = family.GetAllElementInstanceViewModels();
                 }
@@ -164,7 +164,7 @@ namespace RZData.ViewModels
             string categoryName = "";
             string familyName = "";
             string extendName = "";
-            List<ExcelFamilyModel> matchList = new List<ExcelFamilyModel>();
+            List<ExcelFamilyNameModel> matchList = new List<ExcelFamilyNameModel>();
             if (SelectedItem is FamilyExtendViewModel familyExtend)
             {
                 Element element = UiDocument.Document.GetElement(new ElementId(familyExtend.IDs[0]));

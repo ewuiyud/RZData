@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 
@@ -31,7 +32,6 @@ namespace RZData.ViewModels
         {
             Values = new ObservableCollection<string>();
             Parameters = new ObservableCollection<ParameterVM>();
-            Parameters.CollectionChanged += Parameters_CollectionChanged;
             IsModified = false;
         }
 
@@ -45,40 +45,11 @@ namespace RZData.ViewModels
             };
             Name = parameter.Name;
             ValueType = parameter.ValueType;
-            Parameters.CollectionChanged += Parameters_CollectionChanged;
             UpdateValues();
             IsModified = false;
         }
 
-        private void Parameters_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            if (e.NewItems != null)
-            {
-                foreach (ParameterVM newItem in e.NewItems)
-                {
-                    newItem.PropertyChanged += Parameter_PropertyChanged;
-                }
-            }
-
-            if (e.OldItems != null)
-            {
-                foreach (ParameterVM oldItem in e.OldItems)
-                {
-                    oldItem.PropertyChanged -= Parameter_PropertyChanged;
-                }
-            }
-            UpdateValues();
-            IsModified = false;
-        }
-        private void Parameter_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(Parameter.Value))
-            {
-                UpdateValues();
-            }
-        }
-
-        private void UpdateValues()
+        public void UpdateValues()
         {
             Values.Clear();
             foreach (var parameter in Parameters)
@@ -106,17 +77,32 @@ namespace RZData.ViewModels
         {
             get
             {
-                if (string.IsNullOrEmpty(ValueType))
+                if (Value == ConstString.LossParameterName)
                 {
-                    return "缺失";
+                    return ConstString.LossParameterName;
                 }
                 else
                 {
-                    return "正常";
+                    return ConstString.NormalParameterName ;
                 }
             }
         }
 
-        public ParameterVM Parameter { get; }
+        /// <summary>
+        /// 单位   
+        /// /// </summary>
+        public string Unit { get; set; }
+        /// <summary>
+        /// 有预设值的都是只读的
+        /// </summary>
+        public bool IsReadOnly { get; set; }
+        /// <summary>
+        /// 参考值
+        /// </summary>
+        public string Reference { get; set; }
+        /// <summary>
+        /// 枚举值列表
+        /// </summary>
+        public List<string> ValueEnum { get; set; }
     }
 }

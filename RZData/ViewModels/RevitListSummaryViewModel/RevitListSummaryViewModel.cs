@@ -1,20 +1,13 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using CommunityToolkit.Mvvm.Input;
-using RZData.Extensions;
 using RZData.Models;
 using RZData.Services;
 using RZData.Tools;
-using RZData.Views;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using System.Windows.Input;
 
 namespace RZData.ViewModels

@@ -20,7 +20,7 @@ namespace RZData.Services
         /// <summary>
         /// 族匹配表
         /// </summary>
-        public static List<ExcelFamilyModel> ExcelFamilyRecords = new List<ExcelFamilyModel>();
+        public static List<ExcelFamilyNameModel> ExcelFamilyRecords = new List<ExcelFamilyNameModel>();
         /// <summary>
         /// 元素编码
         /// </summary>
@@ -242,12 +242,12 @@ namespace RZData.Services
                         break;
                 }
                 TreeNode treeNode = new TreeNode(key, value);
-                var parent = ExcelProductCode.Find(x => x.Key == key.Substring(0, key.Length - 3));
+                var parent = ExcelElementCode.Find(x => x.Key == key.Substring(0, key.Length - 3));
                 if (parent != null)
                 {
                     treeNode.SetParent(parent);
                 }
-                ExcelProductCode.Add(treeNode);
+                ExcelElementCode.Add(treeNode);
             }
         }
 
@@ -257,7 +257,7 @@ namespace RZData.Services
         /// <param name="package"></param>
         public static void GetExcelFamilyRecords(ExcelPackage package)
         {
-            ExcelFamilyRecords = new List<ExcelFamilyModel>();
+            ExcelFamilyRecords = new List<ExcelFamilyNameModel>();
             var worksheets = new[] { "族匹配表-装修", "族匹配表-机电", "族匹配表-结构" };
             foreach (var sheetName in worksheets)
             {
@@ -269,43 +269,40 @@ namespace RZData.Services
             }
         }
 
-        private static void ReadFamilyWorksheet(ExcelWorksheet worksheet, List<ExcelFamilyModel> records)
+        private static void ReadFamilyWorksheet(ExcelWorksheet worksheet, List<ExcelFamilyNameModel> records)
         {
             int rowCount = worksheet.Dimension.Rows;
             string result = "";
             for (int row = 2; row <= rowCount; row++)
             {
-                ExcelFamilyModel excelRecord = new ExcelFamilyModel
+                ExcelFamilyNameModel excelRecord = new ExcelFamilyNameModel
                 {
                     FamilyCategory = worksheet.Cells[row, 2].Text, // B列
                     FamilyName = worksheet.Cells[row, 3].Text, // C列
                     ExtendName = worksheet.Cells[row, 4].Text,// D列
                     ElementName = worksheet.Cells[row, 6].Text // F列
                 };
-
-                var requiredPropertie = worksheet.Cells[row, 7].Text; // G列
-                var tDCName = worksheet.Cells[row, 8].Text; // H列
-                if (string.IsNullOrEmpty(tDCName))
+                var excelParameterModel = FillParameters(worksheet, row, excelRecord);
+                if (string.IsNullOrEmpty(excelParameterModel.TDCName))
                 {
                     continue;
                 }
-                excelRecord.RequiredProperties.Add(tDCName, requiredPropertie);
+                excelRecord.RequiredProperties.Add(excelParameterModel);
 
                 var nextFamilyName = row < rowCount ? worksheet.Cells[row + 1, 2].Text : null;
 
                 while (string.IsNullOrWhiteSpace(nextFamilyName) && row < rowCount)
                 {
                     row++;
-                    requiredPropertie = worksheet.Cells[row, 7].Text; // G列
-                    tDCName = worksheet.Cells[row, 8].Text; // H列
-                    if (string.IsNullOrEmpty(tDCName))
+                    excelParameterModel = FillParameters(worksheet, row, excelRecord);
+                    if (string.IsNullOrEmpty(excelParameterModel.TDCName))
                     {
                         continue;
                     }
-                    excelRecord.RequiredProperties.Add(tDCName, requiredPropertie);
+                    excelRecord.RequiredProperties.Add(excelParameterModel);
                     nextFamilyName = row < rowCount ? worksheet.Cells[row + 1, 2].Text : null;
                 }
-                if (!excelRecord.FamilyName.StartsWith("MIC"))
+                if (!excelRecord.FamilyName.StartsWith(ConstString.ParameterPrex))
                 {
                     if (!excelRecord.ExtendName.StartsWith(ConstString.ExtendNamePrefix))
                     {
@@ -320,6 +317,22 @@ namespace RZData.Services
                 TaskDialog.Show("载入结果", $"表格{worksheet}中:\n" + result);
             }
         }
+
+        private static ExcelParameterModel FillParameters(ExcelWorksheet worksheet, int row, ExcelFamilyNameModel excelRecord)
+        {
+            ExcelParameterModel excelParameterModel = new ExcelParameterModel
+            {
+                Name = worksheet.Cells[row, 7].Text, // G列
+                TDCName = worksheet.Cells[row, 8].Text, // H列
+                ValueEnumString = worksheet.Cells[row, 9].Text, // I列
+                StandardValue = worksheet.Cells[row, 10].Text, // J列
+                Unit = worksheet.Cells[row, 11].Text, // K列
+                IsShowed = string.IsNullOrEmpty(worksheet.Cells[row, 12].Text), // L列
+                Reference = worksheet.Cells[row, 13].Text // M列
+            };
+            return excelParameterModel;
+        }
+
         public static void ExportToExcelFromMaterialList(ObservableCollection<MaterialViewModel> materialViewModels)
         {
             // 从 Resources 中加载模板文件

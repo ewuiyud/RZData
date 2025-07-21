@@ -18,7 +18,7 @@ namespace RZData.Tools
         public static string AIMatchForSystemFamily(string categoryName, string familyName, string extendName)
         {
             string matchResult = "";
-            List<ExcelFamilyModel> matchList = new List<ExcelFamilyModel>();
+            List<ExcelFamilyNameModel> matchList = new List<ExcelFamilyNameModel>();
             matchList = ExcelDataService.ExcelFamilyRecords.FindAll(a => a.FamilyCategory == categoryName && familyName == a.FamilyName);
             string listString = "";
             foreach (var item in matchList)

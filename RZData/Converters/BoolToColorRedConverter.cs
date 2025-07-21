@@ -9,7 +9,7 @@ using System.Windows.Media;
 namespace RZData.Converters
 {
     // 用于根据IsModified属性设置行背景色的转换器
-    public class BoolToColorConverter : IValueConverter
+    public class BoolToColorRedConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {

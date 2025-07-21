@@ -9,8 +9,14 @@ namespace RZData
     internal static class ConstString
     {
         public const string ExtendNamePrefix = "类型=";
-        public const string RoomName = "户型";
+        public const string RoomName = "箱体类型";
         public const string UsageMethod = "使用方式";
         public const string MaterialName = "材料名称";
+        public const string MaterialParameterName = "关联材料库";
+        public const string InstanceParameterName = "实例参数";
+        public const string TypeParameterName = "类型参数";
+        public const string LossParameterName = "缺失";
+        public const string ParameterPrex = "MIC";
+        public const string NormalParameterName = "正常";
     }
 }

@@ -188,9 +188,9 @@ namespace RZData.ViewModels
             var elements = ShowElements.GetAllElements().FindAll(a => a.IsChecked);
             var parameter = new ParameterSetVM()
             {
-                Name = "关联材料库",
+                Name = ConstString.MaterialName,
                 Value = $"{SelectedMaterialLibrary.Name}-{SelectedMaterialLibrary.SerialNumber}",
-                ValueType = "实例参数"
+                ValueType = ConstString.InstanceParameterName
             };
             await CustomHandler.Run(a =>
             {
@@ -323,6 +323,17 @@ namespace RZData.ViewModels
                             }
                         }
                     });
+                    tempParameterSet.UpdateValues();
+                    if (tempParameterSet.Parameters.Count > 0)
+                    {
+                        tempParameterSet.IsReadOnly = tempParameterSet.Parameters.ToList().Exists(a => a.IsReadOnly);//只要有一个不可修改，就不可修改
+                        tempParameterSet.Reference = tempParameterSet.Parameters.All(a => a.Reference == tempParameterSet.Parameters[0].Reference) ? tempParameterSet.Parameters[0].Reference : "参考值不唯一。";
+
+                        var d = tempParameterSet.Parameters.Select(a => a.ValueEnum.SequenceEqual(tempParameterSet.Parameters[0].ValueEnum));
+                        //如果可选的值域不唯一，则不可以修改
+                        if (tempParameterSet.Parameters.All(a => a.ValueEnum.SequenceEqual(tempParameterSet.Parameters[0].ValueEnum))) tempParameterSet.ValueEnum = tempParameterSet.Parameters[0].ValueEnum;
+                        else tempParameterSet.IsReadOnly = true;
+                    }
                     SelectedItemParameters.Add(tempParameterSet);
                 }
             }
@@ -518,7 +529,7 @@ namespace RZData.ViewModels
             using (Transaction transaction = new Transaction(uIDocument.Document, "SetParameter"))
             {
                 transaction.Start();
-                if (parameterSet.ValueType == "实例参数")
+                if (parameterSet.ValueType == ConstString.InstanceParameterName)
                 {
                     foreach (var elementInstance in elements)
                     {
@@ -557,7 +568,7 @@ namespace RZData.ViewModels
                         }
                     }
                 }
-                else if (parameterSet.ValueType == "类型参数")
+                else if (parameterSet.ValueType == ConstString.TypeParameterName)
                 {
                     Element element = UiDocument.Document.GetElement(
                         UiDocument.Document.GetElement(new ElementId(elements[0].Id)

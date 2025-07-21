@@ -16,10 +16,12 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/RZData;component/Styles/Style.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-            <convert:BoolToColorConverter x:Key="BoolToColorConverter"/>
+            <convert:BoolToColorRedConverter x:Key="BoolToColorConverter"/>
+            <convert:BoolToColorGrayConverter x:Key="BoolToColorGrayConverter"/>
             <BooleanToVisibilityConverter x:Key="BoolToVis"/>
             <convert:StringNullOrEmptyToTrueConverter x:Key="EmptyStringToTrue"/>
             <convert:StringNotNullToVisibleConverter x:Key="NotNullStringVisble"/>
+            <convert:ListNotNullToVisble x:Key="ListNotNullToVis"/>
             <convert:StringNullToVisble x:Key="NullStringVisble"/>
             <convert:TrueToColorRed x:Key="TrueToRed"/>
             <convert:BoolToExpandCollapseConverter x:Key="BoolToExpandCollapseConverter"/>
@@ -102,8 +104,7 @@
             </Style>
             <!--datagrid 行样式-->
             <Style x:Key="DataGridRowStyle" TargetType="DataGridRow">
-                <Setter Property="Background" 
-                    Value="{Binding IsModified, Converter={StaticResource BoolToColorConverter}}"/>
+                <Setter Property="Background" Value="{Binding IsModified, Converter={StaticResource BoolToColorConverter}}"/>
             </Style>
         </ResourceDictionary>
     </Window.Resources>
@@ -421,10 +422,27 @@
                             <DataGridTemplateColumn Header="参数值" Width="100">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBox Text="{Binding Value,UpdateSourceTrigger=PropertyChanged}" 
-                                                 IsReadOnly="{Binding ValueType ,Converter={StaticResource EmptyStringToTrue}}"
+                                        <Grid>
+                                            <TextBlock  
+                                                Text="{Binding Value,UpdateSourceTrigger=PropertyChanged}" 
+                                                Panel.ZIndex="2" 
+                                                Visibility="{Binding IsReadOnly,Converter={StaticResource BoolToVis}}" Background="LightGray" />
+                                            <ComboBox ItemsSource="{Binding ValueEnum}" 
+                                                       Background="{Binding IsModified,Converter={StaticResource BoolToColorConverter}, Mode=TwoWay}" 
+                                                      Panel.ZIndex="1" 
+                                                      SelectedValue="{Binding Value,UpdateSourceTrigger=PropertyChanged}"
+                                                      Visibility="{Binding ValueEnum,Converter={StaticResource ListNotNullToVis}}"/>
+                                            <TextBox Text="{Binding Value,UpdateSourceTrigger=PropertyChanged}" 
+                                                 IsReadOnly="{Binding IsReadOnly}"
                                                  Background="{Binding IsModified,Converter={StaticResource BoolToColorConverter}, Mode=TwoWay}" 
-                                                 Style="{StaticResource SimbleTextBox}"/>
+                                                 Style="{StaticResource SimbleTextBox}">
+                                                <TextBox.ToolTip >
+                                                    <Grid Width="auto" Height="auto">
+                                                        <Label Content="{Binding Reference}" />
+                                                    </Grid>
+                                                </TextBox.ToolTip>
+                                            </TextBox>
+                                        </Grid>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>

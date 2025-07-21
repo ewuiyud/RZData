@@ -49,7 +49,7 @@ namespace RZData.Services
 
                     var inset = new InsetParameterData()
                     {
-                        ParameterName = "关联材料库",
+                        ParameterName = ConstString.MaterialName,
                         CategoryNames = allCategories
                     };
                     CreateProjectParameter(_uIDocument, inset, ParameterType.Text);

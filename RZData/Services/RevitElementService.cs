@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Xml;
 
 namespace RZData.Services
@@ -93,10 +94,10 @@ namespace RZData.Services
         }
         public ObservableCollection<RevitSolidElement> LoadAllRevitElements(UIDocument UiDocument)
         {
-            List<ExcelFamilyModel> records = ExcelDataService.ExcelFamilyRecords;
+            List<ExcelFamilyNameModel> records = ExcelDataService.ExcelFamilyRecords;
             //表格中以MIC开头的族为可加载族，其他为系统族
-            var systemFamilyDictionary = records.FindAll(a => !a.FamilyName.StartsWith("MIC"));
-            var loadableFamilyDictionary = records.FindAll(a => a.FamilyName.StartsWith("MIC"));
+            var systemFamilyDictionary = records.FindAll(a => !a.FamilyName.StartsWith(ConstString.ParameterPrex));
+            var loadableFamilyDictionary = records.FindAll(a => a.FamilyName.StartsWith(ConstString.ParameterPrex));
             var familyList = new List<string>();
             records.ForEach(a => { if (!familyList.Contains(a.FamilyCategory)) familyList.Add(a.FamilyCategory); });
             var document = UiDocument.Document;
@@ -167,7 +168,7 @@ namespace RZData.Services
         /// <param name="document"></param>
         /// <param name="element"></param>
         /// <param name="revitSolidElement"></param>
-        public void ProcessNonFamilyInstance(List<ExcelFamilyModel> systemFamilyDictionary,
+        public void ProcessNonFamilyInstance(List<ExcelFamilyNameModel> systemFamilyDictionary,
             Document document, Element element, RevitSolidElement revitSolidElement)
         {
             var extendName = element.GetExtendName();
@@ -191,7 +192,7 @@ namespace RZData.Services
         /// <param name="document"></param>
         /// <param name="element"></param>
         /// <param name="revitSolidElement"></param>
-        public void ProcessFamilyInstance(List<ExcelFamilyModel> loadableFamilyDictionary,
+        public void ProcessFamilyInstance(List<ExcelFamilyNameModel> loadableFamilyDictionary,
             Document document, Element element, RevitSolidElement revitSolidElement)
         {
             var typeName = element.GetFamilyName();
@@ -209,7 +210,7 @@ namespace RZData.Services
                 CheckParameters(record, document, element, revitSolidElement);
             }
         }
-        public bool CheckRecordExtendName(ExcelFamilyModel excelRecord, Document document, Element element)
+        public bool CheckRecordExtendName(ExcelFamilyNameModel excelRecord, Document document, Element element)
         {
             var recordExtendName = excelRecord.ExtendName;
             string incorrectMessage = $"补充属性不合理，族：{excelRecord.FamilyCategory} 类型：{excelRecord.FamilyName} 补充属性：{excelRecord.ExtendName}";
@@ -260,7 +261,7 @@ namespace RZData.Services
         /// <param name="document"></param>
         /// <param name="element"></param>
         /// <returns></returns>
-        public bool CheckRecordExtendRequired(ExcelFamilyModel excelRecord, Document document, Element element)
+        public bool CheckRecordExtendRequired(ExcelFamilyNameModel excelRecord, Document document, Element element)
         {
             //若为不填，则不需要考虑
             if (excelRecord.ExtendName == "不填")
@@ -286,22 +287,70 @@ namespace RZData.Services
                 return value.IsSameAs(require[1]);
             });
         }
-        public bool CheckParameters(ExcelFamilyModel excelRecord, Document document, Element element, RevitSolidElement revitSolidElement)
+        public bool CheckParameters(ExcelFamilyNameModel excelRecord, Document document, Element element, RevitSolidElement revitSolidElement)
         {
             var familyElementID = element.LookupParameter("族与类型")?.AsElementId();
             var familyElement = document.GetElement(familyElementID);
 
-            foreach (var propertyName in excelRecord.RequiredProperties)
+            foreach (var excelParameter in excelRecord.RequiredProperties)
             {
-                var parameter = element.LookupParameter(propertyName.Value) ?? familyElement?.LookupParameter(propertyName.Value);
-                var name = propertyName.Value;
-                var value = parameter != null ? parameter.GetValue() : "缺失";
-                var tdcName = propertyName.Key;
-                var type = parameter != null ? (parameter.Element.Id == element.Id ? "实例参数" : "类型参数") : "";
-                revitSolidElement.Parameters.Add(new ParameterVM(name, value, tdcName, type));
+                ParameterVM parameterVM = new ParameterVM();
+                parameterVM.Name = excelParameter.Name;
+                parameterVM.Unit = excelParameter.Unit;
+                parameterVM.Reference = excelParameter.Reference;
+                parameterVM.IsShowed = excelParameter.IsShowed;
+                parameterVM.TDCName = excelParameter.TDCName;
+                if (!string.IsNullOrEmpty(excelParameter.StandardValue))
+                {
+                    parameterVM.Value = excelParameter.StandardValue;
+                    parameterVM.IsReadOnly = true;
+                }
+                else
+                {
+                    var parameter = element.LookupParameter(parameterVM.Name) ?? familyElement?.LookupParameter(parameterVM.Name);
+                    if (parameter == null)
+                    {
+                        parameterVM.Value = ConstString.LossParameterName;
+                        parameterVM.IsReadOnly = true;
+                    }
+                    else
+                    {
+                        var value = parameter.GetValue();
+                        //当有值且存在验证公式的时候
+                        if (!string.IsNullOrEmpty(excelParameter.ValueEnumString))
+                        {
+                            if (value!=null&& Regex.IsMatch(value, excelParameter.ValueEnumString.Trim('/')))
+                            {
+                                parameterVM.Value = value;
+                            }
+                            parameterVM.ValueEnum = ExtractRegexOptions(excelParameter.ValueEnumString);
+                        }
+                        else
+                            parameterVM.Value = value;
+                    }
+                    parameterVM.ValueType = parameter != null ? (parameter.Element.Id == element.Id ? ConstString.InstanceParameterName : ConstString.TypeParameterName) : "";
+                }
+                revitSolidElement.Parameters.Add(parameterVM);
             }
-            revitSolidElement.IsPropertiesCorrect = revitSolidElement.Parameters.All(p => p.Value != "缺失");
+            revitSolidElement.IsPropertiesCorrect = revitSolidElement.Parameters.All(p => p.Value != ConstString.LossParameterName);
             return revitSolidElement.IsPropertiesCorrect;
+        }
+        public static List<string> ExtractRegexOptions(string regexPattern)
+        {
+            List<string> options = new List<string>();
+
+            // 使用竖线分割模式字符串
+            string[] parts = regexPattern.Trim('/').Split('|');
+
+            foreach (string part in parts)
+            {
+                // 去除可能存在的转义字符
+                var cleanedPart = part.TrimStart('^');
+                cleanedPart = cleanedPart.TrimEnd('$');
+                options.Add(cleanedPart);
+            }
+
+            return options;
         }
     }
 }
