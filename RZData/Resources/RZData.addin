@@ -2,7 +2,7 @@
 <RevitAddIns>
   <AddIn Type="Application">
     <Name>RZData</Name>
-    <Assembly>C:\ProgramData\Autodesk\Revit\Addins\2020\睿住数据\RZData.dll</Assembly>
+    <Assembly>C:\ProgramData\Autodesk\Revit\Addins\2024\睿住数据\RZData.dll</Assembly>
     <AddInId>A36813DE-EE95-4985-9703-0FA1DC71E120</AddInId>
     <VendorId>董文涛</VendorId>
     <VendorDescription>睿住天元</VendorDescription>

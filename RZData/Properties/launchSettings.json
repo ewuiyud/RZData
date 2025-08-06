@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "RZData": {
+      "commandName": "Project"
+    },
+    "Revit2024": {
+      "commandName": "Executable",
+      "executablePath": "D:\\Revit 2024\\Revit.exe"
+    }
+  }
+}

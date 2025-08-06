@@ -119,6 +119,13 @@ namespace RZData.Services
                     {
                         var revitSolidElement = new RevitSolidElement(element);
                         ProcessFamilyInstance(loadableFamilyDictionary, document, element, revitSolidElement);
+                        Parameter volumeParam = element.get_Parameter(BuiltInParameter.HOST_VOLUME_COMPUTED);
+                        var dd = element.LookupParameter("体积");
+                        var d = dd.GetValue();
+                        var cc = element.LookupParameter("面积");
+                        var dc = cc.GetValue();
+                        var bb = element.LookupParameter("厚度");
+                        var bc = bb.GetValue();
                         AllSolidElements.Add(revitSolidElement);
                     }
                     else
